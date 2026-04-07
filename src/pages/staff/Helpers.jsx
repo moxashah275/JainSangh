@@ -29,12 +29,12 @@ export default function Helpers() {
     { 
       key: 'status', 
       label: 'Status', 
-      render: (row) => <StatusBadge status={row.status} /> 
+      render: (value) => <StatusBadge status={value} /> 
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (row) => (
+      render: () => (
         <div className="flex items-center gap-1">
           <button className="w-7 h-7 rounded-md hover:bg-teal-50 hover:text-teal-600 flex items-center justify-center text-slate-400 transition-all">
             <Eye className="w-3.5 h-3.5" />
@@ -68,7 +68,7 @@ export default function Helpers() {
         <SearchBar 
           placeholder="Search by name or role..." 
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={setSearch}
         />
       </div>
 

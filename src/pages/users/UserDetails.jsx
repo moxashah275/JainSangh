@@ -9,7 +9,7 @@ import UserDocuments from '../../components/users/UserDocuments'
 import UserActivity from '../../components/users/UserActivity'
 import { getRole, getRoleName, getUserDocs, getUserActivities, getDocCount } from './userData'
 import { INITIAL_USERS, INITIAL_USER_DOCS, INITIAL_ACTIVITIES } from './userData'
-import { getCount } from '../RolesAndPermissions/roleData'
+import { getCount } from '../RolesAndPermissions/RoleData'
 import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS, getTrustName, getDeptName } from '../organization/orgData'
 
 var TABS = ['Details', 'Permissions', 'Documents', 'Activity', 'Status History']

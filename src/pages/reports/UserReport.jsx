@@ -55,7 +55,7 @@ export default function UserReport() {
             <SearchBar 
               placeholder="Search by user or role..." 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={setSearch}
             />
           </div>
         </div>

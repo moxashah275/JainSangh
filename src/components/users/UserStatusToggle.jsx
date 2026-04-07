@@ -1,28 +1,29 @@
-import React from 'react';
-
 export default function UserStatusToggle({ status, onChange }) {
-  const statuses = ['Active', 'Inactive', 'Suspended'];
-  
+  const active = status === 'Active'
   return (
-    <div className="flex items-center gap-2">
-      {statuses.map((st) => {
-        const isActive = status === st;
-        const cls = isActive
-          ? st === 'Active' ? 'bg-teal-600 text-white border-transparent shadow-sm'
-          : st === 'Inactive' ? 'bg-slate-700 text-white border-transparent shadow-sm'
-          : 'bg-amber-500 text-white border-transparent shadow-sm'
-          : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 cursor-pointer';
-          
-        return (
-          <button 
-            key={st} 
-            onClick={() => onChange(st)}
-            className={`px-4 py-2 rounded-xl text-[12px] font-bold transition-all border ${cls}`}
-          >
-            {st}
-          </button>
-        );
-      })}
-    </div>
-  );
+    <button
+      type="button"
+      onClick={function() { onChange(active ? 'Inactive' : 'Active') }}
+      className={`inline-flex items-center gap-3 rounded-full border px-2 py-1.5 transition-all ${
+        active
+          ? 'border-emerald-200 bg-emerald-50'
+          : 'border-slate-200 bg-slate-100'
+      }`}
+    >
+      <span
+        className={`relative flex h-7 w-12 items-center rounded-full transition-all ${
+          active ? 'bg-emerald-500' : 'bg-slate-300'
+        }`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${
+            active ? 'left-6' : 'left-1'
+          }`}
+        />
+      </span>
+      <span className={`min-w-[52px] text-left text-[12px] font-semibold ${active ? 'text-emerald-700' : 'text-slate-600'}`}>
+        {active ? 'Active' : 'Inactive'}
+      </span>
+    </button>
+  )
 }

@@ -5,7 +5,7 @@ import UserForm from '../../components/users/UserForm'
 import { useState, useMemo } from 'react'
 import { INITIAL_USERS, INITIAL_ACTIVITIES } from './userData'
 import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData'
-import { INITIAL_ROLES } from '../RolesAndPermissions/roleData'
+import { INITIAL_ROLES } from '../RolesAndPermissions/RoleData'
 
 export default function EditUser() {
   var params = useParams(); var userId = parseInt(params.id)

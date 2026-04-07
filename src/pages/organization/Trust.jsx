@@ -1,51 +1,62 @@
-import { Building, ShieldCheck, CreditCard, ExternalLink } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Landmark, Building2, UserCog, Plus } from 'lucide-react'
+import Button from '../../components/common/Button'
+import EmptyState from '../../components/common/EmptyState'
+import CommonPageLayout from '../../components/common/CommonPageLayout'
+import TrustCard from '../../components/organization/TrustCard'
+import { INITIAL_TRUSTS } from './orgData'
 
 export default function Trust() {
+  const [search, setSearch] = useState('')
+  const trusts = useMemo(function() {
+    try {
+      const stored = localStorage.getItem('org_trusts')
+      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
+    } catch {
+      return INITIAL_TRUSTS
+    }
+  }, [])
+
+  const filteredTrusts = useMemo(function() {
+    return trusts.filter(function(trust) {
+      const query = search.toLowerCase()
+      return !query || [trust.name, trust.address, trust.admin, trust.code].some(function(value) {
+        return String(value || '').toLowerCase().includes(query)
+      })
+    })
+  }, [search, trusts])
+
+  const stats = useMemo(function() {
+    const active = trusts.filter(function(trust) { return trust.status === 'Active' }).length
+    const totalSanghs = trusts.reduce(function(sum, trust) { return sum + (trust.sanghCount || 0) }, 0)
+    const totalManagers = trusts.reduce(function(sum, trust) { return sum + (trust.managerCount || 0) }, 0)
+    return [
+      { title: 'Total Trusts', value: trusts.length, icon: Landmark, color: 'teal' },
+      { title: 'Active Trusts', value: active, icon: Building2, color: 'emerald' },
+      { title: 'Managed Sanghs', value: totalSanghs, icon: Building2, color: 'sky' },
+      { title: 'Managers', value: totalManagers, icon: UserCog, color: 'amber' },
+    ]
+  }, [trusts])
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Trust Management</h1>
-        <p className="text-sm text-slate-500">Central corporate management for Pedhi</p>
+    <CommonPageLayout
+      title="Trust Management"
+      subtitle="Manage the trust layer above sanghs for Sathandji Kalyanji Sangh, Palitana."
+      breadcrumbs={[{ label: 'Organization' }, { label: 'Trust' }]}
+      action={<Button icon={Plus}>Add Trust</Button>}
+      stats={stats}
+      searchValue={search}
+      onSearchChange={setSearch}
+      searchPlaceholder="Search trust, admin, code, or address..."
+      isEmpty={!filteredTrusts.length}
+      emptyState={<EmptyState message="No trust records found" description="Try a different search or add a new trust record." icon={Landmark} action={<Button variant="secondary" size="sm" icon={Plus}>Add Trust</Button>} />}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {filteredTrusts.map(function(trust, index) {
+          return <TrustCard key={trust.id} trust={trust} index={index} />
+        })}
       </div>
-
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-5">
-          <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-lg">AK</div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-800">Sheth Anandji Kalyanji Pedhi</h2>
-            <p className="text-sm text-slate-400">Head Office: Ahmedabad</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-400">Total Managed Tirthas</p>
-            <p className="text-sm font-semibold text-slate-700">1200+ Temples</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-slate-400">Structure Type</p>
-            <p className="text-sm font-semibold text-slate-700">9 Active Trustees</p>
-          </div>
-        </div>
-      </div>
-
-      <h3 className="text-base font-bold text-slate-800 mt-8 mb-4">Core Funds (7 Kshetras)</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { icon: Building, label: 'Dev Dravya', desc: 'Temple & Idol Upkeep' },
-          { icon: ShieldCheck, label: 'Sadhu Raksha', desc: 'Care for Monks' },
-          { icon: CreditCard, label: 'Anukampa', desc: 'Helping Poor/Needy' },
-          { icon: ExternalLink, label: 'General Fund', desc: 'Administrative Costs' }
-        ].map((item, idx) => (
-          <div key={idx} className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center mb-4">
-              <item.icon className="w-4 h-4 text-teal-600" />
-            </div>
-            <h4 className="text-sm font-bold text-slate-800">{item.label}</h4>
-            <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+    </CommonPageLayout>
   )
 }
+

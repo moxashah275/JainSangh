@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Input from '../common/Input'; // તમારી પાસે ઓલરેડી છે
 
-export default function UserForm({ user, roles, trusts, onSave, onCancel }) {
+export default function UserForm({ user, roles, onSave, onCancel }) {
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',

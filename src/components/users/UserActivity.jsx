@@ -31,6 +31,9 @@ export default function UserActivity({ activities = [] }) {
       {activities.map((act) => {
         const Icon = ACTION_ICON[act.action] || Pencil;
         const clr = ACTION_CLR[act.action] || 'text-slate-500 bg-slate-50';
+        const title = act.title || (act.action === 'status_change' ? 'Status Updated' : act.action === 'login' ? 'User Login' : act.action === 'created' ? 'User Created' : act.action === 'updated' ? 'Profile Updated' : 'Activity Logged');
+        const description = act.desc || act.description || 'No details available';
+        const time = act.time || act.date || '-';
         
         return (
           <div key={act.id} className="relative flex items-start gap-3">
@@ -38,11 +41,12 @@ export default function UserActivity({ activities = [] }) {
               <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-100 flex-1 hover:border-slate-200 transition-colors">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[12px] font-bold text-slate-700">{act.title}</p>
-                <span className="text-[10px] text-slate-400 font-medium">{act.time}</span>
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <p className="text-[12px] font-bold text-slate-700">{title}</p>
+                <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">{time}</span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">{act.desc}</p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">{description}</p>
+              {act.doneBy ? <p className="text-[10px] text-slate-400 font-medium mt-2">Updated by {act.doneBy}</p> : null}
             </div>
           </div>
         );

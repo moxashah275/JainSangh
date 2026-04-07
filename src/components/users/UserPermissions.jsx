@@ -1,6 +1,6 @@
-import React from 'react';
-import { Settings, ShieldCheck } from 'lucide-react';
-import PermissionChip from '../common/PermissionChip';
+import { ShieldCheck } from 'lucide-react'
+import PermissionChip from '../common/PermissionChip'
+import { PERM_GROUPS, hasPerm } from '../../pages/RolesAndPermissions/RoleData'
 
 export default function UserPermissions({ role, extraPerms }) {
   if (!role) return null;

@@ -1,22 +1,75 @@
-import { Plus } from 'lucide-react'
-import PageHeader from '../../components/common/PageHeader'
+import { useMemo, useState } from 'react'
+import { BookOpen, GraduationCap, CalendarCheck2, Plus } from 'lucide-react'
 import Button from '../../components/common/Button'
-import Table from '../../components/common/Table'
+import EmptyState from '../../components/common/EmptyState'
+import CommonCard from '../../components/common/CommonCard'
+import CommonPageLayout from '../../components/common/CommonPageLayout'
 
-const DATA = [{ id: 1, name: 'Shree Chandraprabhu Bhagwan', derasar: 'Chandraprabhu Derasar', type: 'Mulnayak', height: '3.5 feet', material: 'Panchdhatu' }]
-const columns = [
-  { key: 'name', label: 'Pratima Name', render: (v) => <span className="font-medium text-rose-600">{v}</span> },
-  { key: 'derasar', label: 'Derasar' },
-  { key: 'type', label: 'Type', render: (v) => <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${v === 'Mulnayak' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}>{v}</span> },
-  { key: 'height', label: 'Height' },
-  { key: 'material', label: 'Material' }
+const DATA = [
+  { id: 1, name: 'Aarav Shah', standard: 'Bal Varg 2', subject: 'Navkar Mantra', guardian: 'Rajesh Shah', attendance: 92, status: 'Active' },
+  { id: 2, name: 'Kavya Mehta', standard: 'Junior A', subject: 'Jain Stories', guardian: 'Meena Mehta', attendance: 88, status: 'Active' },
+  { id: 3, name: 'Krish Doshi', standard: 'Senior', subject: 'Tattvartha Sutra', guardian: 'Hiral Doshi', attendance: 81, status: 'Inactive' },
 ]
 
-export default function Pratima() {
+export default function Students() {
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(function() {
+    return DATA.filter(function(item) {
+      const query = search.toLowerCase()
+      return !query || [item.name, item.standard, item.subject, item.guardian].some(function(value) {
+        return String(value || '').toLowerCase().includes(query)
+      })
+    })
+  }, [search])
+
+  const stats = useMemo(function() {
+    const active = DATA.filter(function(item) { return item.status === 'Active' }).length
+    const batches = new Set(DATA.map(function(item) { return item.standard })).size
+    const avgAttendance = Math.round(DATA.reduce(function(sum, item) { return sum + item.attendance }, 0) / DATA.length)
+    return [
+      { title: 'Students', value: DATA.length, icon: GraduationCap, color: 'teal' },
+      { title: 'Active Students', value: active, icon: BookOpen, color: 'emerald' },
+      { title: 'Batches', value: batches, icon: CalendarCheck2, color: 'sky' },
+      { title: 'Avg Attendance', value: avgAttendance + '%', icon: CalendarCheck2, color: 'amber' },
+    ]
+  }, [])
+
   return (
-    <div className="space-y-5">
-      <PageHeader title="Pratima Management" subtitle="Murti details & history" breadcrumbs={[{ label: 'Home' }, { label: 'Derasar' }, { label: 'Pratima' }]} action={<Button size="sm" icon={Plus}>Add Pratima</Button>} />
-      <Table columns={columns} data={DATA} emptyMessage="No pratima records" />
-    </div>
+    <CommonPageLayout
+      title="Students"
+      subtitle="Manage Pathshala students, attendance, guardians, and subject focus."
+      breadcrumbs={[{ label: 'Pathshala' }, { label: 'Students' }]}
+      action={<Button icon={Plus}>Add Student</Button>}
+      stats={stats}
+      searchValue={search}
+      onSearchChange={setSearch}
+      searchPlaceholder="Search student, batch, guardian, or subject..."
+      isEmpty={!filtered.length}
+      emptyState={<EmptyState message="No students found" description="Add Pathshala students to manage batches and attendance." icon={GraduationCap} />}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {filtered.map(function(item, index) {
+          return (
+            <CommonCard
+              key={item.id}
+              icon={GraduationCap}
+              iconWrapperClassName="bg-teal-50 border-teal-100"
+              iconClassName="text-teal-600"
+              accentClassName="bg-teal-500"
+              title={item.name}
+              subtitle={`${item.standard} - ${item.subject}`}
+              status={item.status}
+              meta={[
+                { value: `Guardian: ${item.guardian}` },
+                { value: `Attendance: ${item.attendance}%`, className: 'text-teal-600 font-bold' },
+              ]}
+              footerLeft={<span className="text-[11px] font-bold text-slate-400">Student Record</span>}
+              index={index}
+            />
+          )
+        })}
+      </div>
+    </CommonPageLayout>
   )
 }

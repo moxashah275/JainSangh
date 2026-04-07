@@ -1,7 +1,5 @@
 import { Check, Minus, Settings } from 'lucide-react'
-import { PERM_GROUPS, hasPerm } from './roleData'
-
-var ICONS = { Settings: Settings }
+import { ICONS, PERM_GROUPS, hasPerm } from './RoleData'
 
 export default function PermissionGrid({ role, filterType }) {
   if (!role) return null

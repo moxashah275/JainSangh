@@ -3,9 +3,23 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import Loader from './Loader';
 import EmptyState from './EmptyState';
 
-export default function Table({ columns, data, loading, sortKey, sortDir, onSort, onRowClick }) {
+export default function Table({
+  columns,
+  data,
+  loading,
+  sortKey,
+  sortDir,
+  onSort,
+  onRowClick,
+  emptyMessage = 'No data found',
+  emptyDescription,
+  emptyAction,
+  rowKey = 'id',
+}) {
   if (loading) return <Loader className="py-12" />;
-  if (!data || data.length === 0) return <EmptyState message="No data found" />;
+  if (!data || data.length === 0) {
+    return <EmptyState message={emptyMessage} description={emptyDescription} action={emptyAction} />;
+  }
 
   return (
     <div className="border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -33,13 +47,13 @@ export default function Table({ columns, data, loading, sortKey, sortDir, onSort
           <tbody className="divide-y divide-slate-50">
             {data.map((row, i) => (
               <tr 
-                key={row.id || i} 
+                key={row?.[rowKey] || i} 
                 onClick={() => { if (onRowClick) onRowClick(row); }}
                 className={`hover:bg-slate-50/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
               >
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3.5 text-[12px] font-medium text-slate-700">
-                    {col.render ? col.render(row) : row[col.key]}
+                    {col.render ? col.render(row?.[col.key], row, i) : row?.[col.key]}
                   </td>
                 ))}
               </tr>

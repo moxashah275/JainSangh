@@ -1,171 +1,367 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
-  LayoutDashboard, MapPin, Users, Landmark, HandHeart,
-  BookOpen, BarChart3, Bell, Gem, UserCog, Settings,
-  CalendarDays, FileText, Receipt
+  LayoutDashboard,
+  MapPin,
+  Users,
+  Landmark,
+  BookOpen,
+  BarChart3,
+  Gem,
+  Shield,
+  Receipt,
+  UserCog,
 } from 'lucide-react'
 
-export var ICONS = {
-  LayoutDashboard: LayoutDashboard, MapPin: MapPin, Users: Users, Landmark: Landmark, HandHeart: HandHeart,
-  BookOpen: BookOpen, BarChart3: BarChart3, Bell: Bell, Gem: Gem, UserCog: UserCog, Settings: Settings,
-  CalendarDays: CalendarDays, FileText: FileText, Receipt: Receipt
+export const ICONS = {
+  LayoutDashboard,
+  MapPin,
+  Users,
+  Landmark,
+  BookOpen,
+  BarChart3,
+  Gem,
+  Shield,
+  Receipt,
+  UserCog,
 }
 
-export var PERM_GROUPS = [
-  { key: 'dashboard',     label: 'Dashboard',         icon: 'LayoutDashboard', perms: ['View'],                                              type: 'System' },
-  { key: 'settings',      label: 'Settings',          icon: 'Settings',        perms: ['View', 'Edit'],                                     type: 'System' },
-  { key: 'notifications', label: 'Notifications',     icon: 'Bell',            perms: ['View', 'Send'],                                     type: 'System' },
-  { key: 'documents',     label: 'Documents',         icon: 'FileText',        perms: ['View', 'Upload', 'Delete'],                          type: 'System' },
-  { key: 'location',      label: 'Location Setup',    icon: 'MapPin',          perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'sangh',         label: 'Sangh Management',  icon: 'Users',           perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'members',       label: 'Members & Families', icon: 'Users',          perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'derasar',       label: 'Derasar',           icon: 'Gem',             perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'pathshala',     label: 'Pathshala',         icon: 'BookOpen',        perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'events',        label: 'Events & Festivals', icon: 'CalendarDays',   perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Sangh' },
-  { key: 'trust',         label: 'Trust Management',  icon: 'Landmark',        perms: ['View', 'Create', 'Edit', 'Delete'],                   type: 'Trust' },
-  { key: 'donations',     label: 'Donations',         icon: 'HandHeart',       perms: ['View', 'Create', 'Edit', 'Delete', 'Export 80G', 'Export'], type: 'Trust' },
-  { key: 'accounts',      label: 'Income & Expense',  icon: 'Receipt',         perms: ['View', 'Create', 'Edit', 'Approve'],                  type: 'Trust' },
-  { key: 'reports',       label: 'Reports',           icon: 'BarChart3',       perms: ['View', 'Export'],                                   type: 'Trust' },
+export const PERM_GROUPS = [
+  { key: 'dashboard', label: 'Dashboard View', icon: 'LayoutDashboard', perms: ['View'], type: 'System' },
+  { key: 'users', label: 'User Create / Edit / Delete', icon: 'UserCog', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'System' },
+  { key: 'trust', label: 'Trust Create / Edit / Delete', icon: 'Landmark', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Trust' },
+  { key: 'sangh', label: 'Sangh Create / Edit / Delete', icon: 'Users', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'location', label: 'Location Create / Edit / Delete', icon: 'MapPin', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'System' },
+  { key: 'accounts', label: 'Accounts Create / Edit / Delete', icon: 'Receipt', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Trust' },
+  { key: 'committee', label: 'Committee Create / Edit / Delete', icon: 'Users', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'derasar', label: 'Derasar Create / Edit / Delete', icon: 'Gem', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'pathshala_students', label: 'Pathshala Student Create / Edit / Delete', icon: 'BookOpen', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'pathshala_exams', label: 'Pathshala Exam Create / Edit / Delete', icon: 'BookOpen', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'pathshala_results', label: 'Pathshala Result Create / Edit / Delete', icon: 'BarChart3', perms: ['View', 'Create', 'Edit', 'Delete'], type: 'Sangh' },
+  { key: 'reports', label: 'Reports View / Export', icon: 'BarChart3', perms: ['View', 'Export'], type: 'Trust' },
+  { key: 'permissions', label: 'Permission Change', icon: 'Shield', perms: ['View', 'Change'], type: 'System' },
 ]
 
-var PERM_LABEL_MAP = {}
+let PERM_LABEL_MAP = {}
 function rebuildLabelMap() {
   PERM_LABEL_MAP = {}
-  PERM_GROUPS.forEach(function(g) {
-    g.perms.forEach(function(p) {
-      PERM_LABEL_MAP[g.key + '_' + p.toLowerCase().replace(/\s+/g, '_')] = p
+  PERM_GROUPS.forEach(function(group) {
+    group.perms.forEach(function(permission) {
+      PERM_LABEL_MAP[group.key + '_' + permission.toLowerCase().replace(/\s+/g, '_')] = permission
     })
   })
 }
 rebuildLabelMap()
 
 export function getTotalPerms() {
-  return PERM_GROUPS.reduce(function(s, g) { return s + g.perms.length }, 0)
+  return PERM_GROUPS.reduce(function(sum, group) { return sum + group.perms.length }, 0)
 }
-export function getAllPermKeys() {
-  return PERM_GROUPS.flatMap(function(g) {
-    return g.perms.map(function(p) { return g.key + '_' + p.toLowerCase().replace(/\s+/g, '_') })
-  })
-}
-export function getPermsByType(type) {
-  return PERM_GROUPS.filter(function(g) { return g.type === type })
-}
-export function getFullPermKeysForType(type) {
-  return getPermsByType(type).flatMap(function(g) {
-    return g.perms.map(function(p) { return g.key + '_' + p.toLowerCase().replace(/\s+/g, '_') })
-  })
-}
-export function P(g, a) { return g + '_' + a.toLowerCase().replace(/\s+/g, '_') }
 
-export function getPerms(role) { return role.permissions === 'all' ? getAllPermKeys() : role.permissions }
+export function getAllPermKeys() {
+  return PERM_GROUPS.flatMap(function(group) {
+    return group.perms.map(function(permission) {
+      return group.key + '_' + permission.toLowerCase().replace(/\s+/g, '_')
+    })
+  })
+}
+
+export function getPermsByType(type) {
+  return PERM_GROUPS.filter(function(group) { return group.type === type })
+}
+
+export function getFullPermKeysForType(type) {
+  return getPermsByType(type).flatMap(function(group) {
+    return group.perms.map(function(permission) {
+      return group.key + '_' + permission.toLowerCase().replace(/\s+/g, '_')
+    })
+  })
+}
+
+export function P(groupKey, action) {
+  return groupKey + '_' + action.toLowerCase().replace(/\s+/g, '_')
+}
+
+export function getPerms(role) {
+  return role.permissions === 'all' ? getAllPermKeys() : role.permissions
+}
+
 export function getCount(role) {
   if (role.permissions === 'all') return getTotalPerms()
   return Array.isArray(role.permissions) ? role.permissions.length : 0
 }
+
 export function hasPerm(role, key) {
   if (role.permissions === 'all') return true
   return Array.isArray(role.permissions) && role.permissions.indexOf(key) !== -1
 }
-export function getUserCount(roleId, users) { return users.filter(function(u) { return u.roleId === roleId }).length }
+
+export function getUserCount(roleId, users) {
+  return users.filter(function(user) { return user.roleId === roleId }).length
+}
 
 export function permsToNested(perms) {
   if (perms === 'all' || !Array.isArray(perms)) return {}
-  var nested = {}
+  const nested = {}
+
   perms.forEach(function(key) {
-    var label = PERM_LABEL_MAP[key]
+    const label = PERM_LABEL_MAP[key]
     if (!label) return
-    var group = PERM_GROUPS.find(function(g) {
-      return g.perms.some(function(p) { return g.key + '_' + p.toLowerCase().replace(/\s+/g, '_') === key })
+
+    const group = PERM_GROUPS.find(function(item) {
+      return item.perms.some(function(permission) {
+        return item.key + '_' + permission.toLowerCase().replace(/\s+/g, '_') === key
+      })
     })
+
     if (!group) return
     if (!nested[group.key]) nested[group.key] = {}
     nested[group.key][label] = true
   })
+
   return nested
 }
+
 export function nestedToPerms(nested) {
   if (!nested || typeof nested !== 'object') return []
-  var perms = []
+  const permissions = []
+
   Object.keys(nested).forEach(function(groupKey) {
-    var actions = nested[groupKey]
+    const actions = nested[groupKey]
     if (!actions || typeof actions !== 'object') return
+
     Object.keys(actions).forEach(function(label) {
       if (actions[label]) {
-        var key = groupKey + '_' + label.toLowerCase().replace(/\s+/g, '_')
-        if (PERM_LABEL_MAP[key]) perms.push(key)
+        const key = groupKey + '_' + label.toLowerCase().replace(/\s+/g, '_')
+        if (PERM_LABEL_MAP[key]) permissions.push(key)
       }
     })
   })
-  return perms
+
+  return permissions
 }
 
 export function addPermToGroup(groupKey, permLabel) {
-  var group = PERM_GROUPS.find(function(g) { return g.key === groupKey })
+  const group = PERM_GROUPS.find(function(item) { return item.key === groupKey })
   if (!group || group.perms.indexOf(permLabel) !== -1) return false
   group.perms.push(permLabel)
   rebuildLabelMap()
   return true
 }
+
 export function updatePermInGroup(groupKey, oldLabel, newLabel) {
-  var group = PERM_GROUPS.find(function(g) { return g.key === groupKey })
+  const group = PERM_GROUPS.find(function(item) { return item.key === groupKey })
   if (!group) return false
-  var idx = group.perms.indexOf(oldLabel)
-  if (idx === -1) return false
-  group.perms[idx] = newLabel
+  const index = group.perms.indexOf(oldLabel)
+  if (index === -1) return false
+  group.perms[index] = newLabel
   rebuildLabelMap()
   return true
 }
+
 export function deletePermFromGroup(groupKey, permLabel) {
-  var group = PERM_GROUPS.find(function(g) { return g.key === groupKey })
+  const group = PERM_GROUPS.find(function(item) { return item.key === groupKey })
   if (!group) return false
-  var idx = group.perms.indexOf(permLabel)
-  if (idx === -1) return false
-  group.perms.splice(idx, 1)
+  const index = group.perms.indexOf(permLabel)
+  if (index === -1) return false
+  group.perms.splice(index, 1)
   rebuildLabelMap()
   return true
 }
+
 export function addPermGroup(key, label, icon, type) {
-  if (PERM_GROUPS.find(function(g) { return g.key === key })) return false
-  PERM_GROUPS.push({ key: key, label: label, icon: icon || 'Settings', perms: [], type: type || 'System' })
+  if (PERM_GROUPS.find(function(group) { return group.key === key })) return false
+  PERM_GROUPS.push({ key, label, icon: icon || 'Shield', perms: [], type: type || 'System' })
   rebuildLabelMap()
   return true
 }
+
 export function deletePermGroup(groupKey) {
-  var idx = PERM_GROUPS.findIndex(function(g) { return g.key === groupKey })
-  if (idx === -1) return false
-  PERM_GROUPS.splice(idx, 1)
+  const index = PERM_GROUPS.findIndex(function(group) { return group.key === groupKey })
+  if (index === -1) return false
+  PERM_GROUPS.splice(index, 1)
   rebuildLabelMap()
   return true
 }
 
 export function sortRoles(roles, sortBy, sortDir, users) {
   return roles.slice().sort(function(a, b) {
-    var cmp = 0
-    if (sortBy === 'name') cmp = a.name.localeCompare(b.name)
-    else if (sortBy === 'type') cmp = a.type.localeCompare(b.type) || a.name.localeCompare(b.name)
-    else if (sortBy === 'users') cmp = getUserCount(a.id, users) - getUserCount(b.id, users)
-    else if (sortBy === 'perms') cmp = getCount(a) - getCount(b)
-    else cmp = a.name.localeCompare(b.name)
-    return sortDir === 'asc' ? cmp : -cmp
+    let comparison = 0
+    if (sortBy === 'name') comparison = a.name.localeCompare(b.name)
+    else if (sortBy === 'type') comparison = a.type.localeCompare(b.type) || a.name.localeCompare(b.name)
+    else if (sortBy === 'users') comparison = getUserCount(a.id, users) - getUserCount(b.id, users)
+    else if (sortBy === 'perms') comparison = getCount(a) - getCount(b)
+    else comparison = a.name.localeCompare(b.name)
+    return sortDir === 'asc' ? comparison : -comparison
   })
 }
 
-export var INITIAL_ROLES = [
-  { id: 1, name: 'Super Admin', type: 'System', description: 'Complete system access — all modules, all actions', status: 'Active', isLocked: true, permissions: 'all' },
-  { id: 2, name: 'Trust Admin', type: 'Trust', description: 'Full trust operations, donations, and financial management', status: 'Active', isLocked: false, permissions: getFullPermKeysForType('Trust') },
-  { id: 3, name: 'Secretary', type: 'Sangh', description: 'Day-to-day sangh operations, events, and record keeping', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('location','View'), P('sangh','View'), P('sangh','Create'), P('sangh','Edit'), P('trust','View'), P('donations','View'), P('donations','Create'), P('donations','Edit'), P('members','View'), P('members','Create'), P('members','Edit'), P('derasar','View'), P('pathshala','View'), P('events','View'), P('events','Create'), P('reports','View'), P('notifications','View'), P('notifications','Send')] },
-  { id: 4, name: 'Manager', type: 'Sangh', description: 'Oversees sangh activities, members, derasar, and pathshala', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('sangh','View'), P('sangh','Create'), P('sangh','Edit'), P('sangh','Delete'), P('trust','View'), P('members','View'), P('members','Create'), P('members','Edit'), P('members','Delete'), P('derasar','View'), P('derasar','Create'), P('derasar','Edit'), P('derasar','Delete'), P('pathshala','View'), P('pathshala','Create'), P('pathshala','Edit'), P('pathshala','Delete'), P('events','View'), P('events','Create'), P('events','Edit'), P('reports','View'), P('notifications','View')] },
-  { id: 5, name: 'Accountant', type: 'Trust', description: 'Handles donations, accounting, and financial reports', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('donations','View'), P('donations','Create'), P('donations','Edit'), P('donations','Export 80G'), P('donations','Export'), P('accounts','View'), P('accounts','Create'), P('accounts','Edit'), P('accounts','Approve'), P('members','View'), P('reports','View'), P('reports','Export'), P('notifications','View')] },
-  { id: 6, name: 'Committee Member', type: 'Trust', description: 'View-only access for trust oversight and monitoring', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('sangh','View'), P('trust','View'), P('donations','View'), P('accounts','View'), P('reports','View'), P('notifications','View')] },
-  { id: 7, name: 'Teacher (Pathshala)', type: 'Sangh', description: 'Manages pathshala students, attendance, and exams', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('pathshala','View'), P('pathshala','Edit'), P('reports','View'), P('notifications','View')] },
-  { id: 8, name: 'Poojari', type: 'Sangh', description: 'Manages derasar daily operations and pooja records', status: 'Inactive', isLocked: false, permissions: [P('dashboard','View'), P('derasar','View'), P('derasar','Edit'), P('notifications','View')] },
-  { id: 9, name: 'Helper', type: 'System', description: 'Basic view access for data entry and support tasks', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('donations','View'), P('members','View'), P('derasar','View'), P('notifications','View')] },
-  { id: 10, name: 'Data Operator', type: 'System', description: 'Bulk data entry across all master modules', status: 'Active', isLocked: false, permissions: [P('dashboard','View'), P('location','View'), P('location','Create'), P('location','Edit'), P('location','Delete'), P('sangh','View'), P('sangh','Create'), P('sangh','Edit'), P('sangh','Delete'), P('trust','View'), P('trust','Create'), P('trust','Edit'), P('members','View'), P('members','Create'), P('members','Edit'), P('donations','View'), P('donations','Create'), P('donations','Edit'), P('derasar','View'), P('derasar','Create'), P('derasar','Edit'), P('pathshala','View'), P('pathshala','Create'), P('pathshala','Edit'), P('documents','View'), P('documents','Upload'), P('reports','View'), P('reports','Export')] },
+export const INITIAL_ROLES = [
+  {
+    id: 1,
+    name: 'Super Admin',
+    type: 'System',
+    description: 'Complete access across all trusts, sanghs, modules, and permission controls.',
+    status: 'Active',
+    isLocked: true,
+    permissions: 'all',
+  },
+  {
+    id: 2,
+    name: 'Trust Admin',
+    type: 'Trust',
+    description: 'Can manage only the assigned trust and its sanghs.',
+    status: 'Active',
+    isLocked: false,
+    permissions: [
+      P('dashboard', 'View'),
+      P('users', 'View'),
+      P('users', 'Create'),
+      P('users', 'Edit'),
+      P('trust', 'View'),
+      P('trust', 'Edit'),
+      P('sangh', 'View'),
+      P('sangh', 'Create'),
+      P('sangh', 'Edit'),
+      P('location', 'View'),
+      P('location', 'Create'),
+      P('location', 'Edit'),
+      P('accounts', 'View'),
+      P('accounts', 'Create'),
+      P('accounts', 'Edit'),
+      P('committee', 'View'),
+      P('committee', 'Create'),
+      P('committee', 'Edit'),
+      P('derasar', 'View'),
+      P('derasar', 'Create'),
+      P('derasar', 'Edit'),
+      P('pathshala_students', 'View'),
+      P('pathshala_students', 'Create'),
+      P('pathshala_students', 'Edit'),
+      P('pathshala_exams', 'View'),
+      P('pathshala_exams', 'Create'),
+      P('pathshala_exams', 'Edit'),
+      P('pathshala_results', 'View'),
+      P('pathshala_results', 'Create'),
+      P('pathshala_results', 'Edit'),
+      P('reports', 'View'),
+      P('reports', 'Export'),
+      P('permissions', 'View'),
+    ],
+  },
+  {
+    id: 3,
+    name: 'Sangh Admin',
+    type: 'Sangh',
+    description: 'Can manage only the assigned sangh.',
+    status: 'Active',
+    isLocked: false,
+    permissions: [
+      P('dashboard', 'View'),
+      P('users', 'View'),
+      P('users', 'Create'),
+      P('users', 'Edit'),
+      P('sangh', 'View'),
+      P('sangh', 'Edit'),
+      P('location', 'View'),
+      P('location', 'Edit'),
+      P('committee', 'View'),
+      P('committee', 'Create'),
+      P('committee', 'Edit'),
+      P('derasar', 'View'),
+      P('derasar', 'Create'),
+      P('derasar', 'Edit'),
+      P('pathshala_students', 'View'),
+      P('pathshala_students', 'Create'),
+      P('pathshala_students', 'Edit'),
+      P('pathshala_exams', 'View'),
+      P('pathshala_exams', 'Create'),
+      P('pathshala_exams', 'Edit'),
+      P('pathshala_results', 'View'),
+      P('pathshala_results', 'Create'),
+      P('pathshala_results', 'Edit'),
+      P('reports', 'View'),
+    ],
+  },
+  {
+    id: 4,
+    name: 'Manager',
+    type: 'Sangh',
+    description: 'Can add and edit but cannot delete.',
+    status: 'Active',
+    isLocked: false,
+    permissions: [
+      P('dashboard', 'View'),
+      P('users', 'View'),
+      P('users', 'Create'),
+      P('users', 'Edit'),
+      P('sangh', 'View'),
+      P('sangh', 'Create'),
+      P('sangh', 'Edit'),
+      P('location', 'View'),
+      P('location', 'Create'),
+      P('location', 'Edit'),
+      P('committee', 'View'),
+      P('committee', 'Create'),
+      P('committee', 'Edit'),
+      P('derasar', 'View'),
+      P('derasar', 'Create'),
+      P('derasar', 'Edit'),
+      P('pathshala_students', 'View'),
+      P('pathshala_students', 'Create'),
+      P('pathshala_students', 'Edit'),
+      P('pathshala_exams', 'View'),
+      P('pathshala_exams', 'Create'),
+      P('pathshala_exams', 'Edit'),
+      P('pathshala_results', 'View'),
+      P('pathshala_results', 'Create'),
+      P('pathshala_results', 'Edit'),
+    ],
+  },
+  {
+    id: 5,
+    name: 'Accounts User',
+    type: 'Trust',
+    description: 'Can manage accounts and reports only.',
+    status: 'Active',
+    isLocked: false,
+    permissions: [
+      P('dashboard', 'View'),
+      P('accounts', 'View'),
+      P('accounts', 'Create'),
+      P('accounts', 'Edit'),
+      P('reports', 'View'),
+      P('reports', 'Export'),
+    ],
+  },
+  {
+    id: 6,
+    name: 'Normal User',
+    type: 'System',
+    description: 'View-only access across the assigned trust and sangh records.',
+    status: 'Active',
+    isLocked: false,
+    permissions: [
+      P('dashboard', 'View'),
+      P('users', 'View'),
+      P('trust', 'View'),
+      P('sangh', 'View'),
+      P('location', 'View'),
+      P('accounts', 'View'),
+      P('committee', 'View'),
+      P('derasar', 'View'),
+      P('pathshala_students', 'View'),
+      P('pathshala_exams', 'View'),
+      P('pathshala_results', 'View'),
+      P('reports', 'View'),
+      P('permissions', 'View'),
+    ],
+  },
 ]
 
-export var INITIAL_USERS = [
-  { id: 1, roleId: 1, name: 'Naman Doshi', email: 'naman@jainsangh.com',  phone: '9876543210', status: 'Active', joined: '2024-01-15' },
+export const INITIAL_USERS = [
+  { id: 1, roleId: 1, name: 'Naman Doshi', email: 'naman@jainsangh.com', phone: '9876543210', status: 'Active', joined: '2024-01-15' },
   { id: 2, roleId: 2, name: 'Rajesh Shah', email: 'rajesh@jainsangh.com', phone: '9876512340', status: 'Active', joined: '2024-02-10' },
-  { id: 3, roleId: 3, name: 'Amit Patel',  email: 'amit@jainsangh.com',   phone: '9876534562', status: 'Active', joined: '2024-01-20' },
-  { id: 4, roleId: 4, name: 'Mehul Shah',  email: 'mehul@jainsangh.com',  phone: '9876567895', status: 'Active', joined: '2024-03-01' },
-  { id: 5, roleId: 5, name: 'Anil Shah',   email: 'anil@jainsangh.com',   phone: '9876589017', status: 'Active', joined: '2024-02-01' },
+  { id: 3, roleId: 3, name: 'Amit Patel', email: 'amit@jainsangh.com', phone: '9876534562', status: 'Active', joined: '2024-01-20' },
+  { id: 4, roleId: 4, name: 'Mehul Shah', email: 'mehul@jainsangh.com', phone: '9876567895', status: 'Active', joined: '2024-03-01' },
+  { id: 5, roleId: 5, name: 'Anil Shah', email: 'anil@jainsangh.com', phone: '9876589017', status: 'Active', joined: '2024-02-01' },
+  { id: 6, roleId: 6, name: 'Vipul Shah', email: 'vipul@jainsangh.com', phone: '9876767890', status: 'Active', joined: '2024-04-15' },
 ]

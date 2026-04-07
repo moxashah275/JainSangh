@@ -1,5 +1,5 @@
 import { Check, Minus, Settings } from 'lucide-react'
-import { PERM_GROUPS } from '../../pages/RolesAndPermissions/roleData'
+import { PERM_GROUPS } from '../../pages/RolesAndPermissions/RoleData'
 
 export default function PermissionTable({ role }) {
   if (!role) return null
