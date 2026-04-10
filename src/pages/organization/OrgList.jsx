@@ -9,7 +9,7 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 import { mockOrgs } from './orgData';
 
 export default function OrgList() {
-  const [orgs, setOrgs] = useState(mockOrgs);
+  const [orgs] = useState(mockOrgs);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ type: '', status: '' });
   const [page, setPage] = useState(1);
@@ -43,9 +43,9 @@ export default function OrgList() {
     { 
       key: 'type', 
       label: 'Type', 
-      render: (row) => (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${row.type === 'Sangh' ? 'bg-indigo-50 text-indigo-600' : 'bg-pink-50 text-pink-600'}`}>
-          {row.type}
+      render: (value) => (
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${value === 'Sangh' ? 'bg-indigo-50 text-indigo-600' : 'bg-pink-50 text-pink-600'}`}>
+          {value}
         </span>
       )
     },
@@ -54,12 +54,12 @@ export default function OrgList() {
     { 
       key: 'status', 
       label: 'Status', 
-      render: (row) => <StatusBadge status={row.status} /> 
+      render: (value) => <StatusBadge status={value} /> 
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (row) => (
+      render: () => (
         <div className="flex items-center gap-1">
           <button className="w-7 h-7 rounded-md hover:bg-teal-50 hover:text-teal-600 flex items-center justify-center text-slate-400 transition-all">
             <Eye className="w-3.5 h-3.5" />
@@ -91,7 +91,7 @@ export default function OrgList() {
           <SearchBar 
             placeholder="Search by name or contact person..." 
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
           />
         </div>
         <div className="w-full md:w-2/3 flex justify-end">

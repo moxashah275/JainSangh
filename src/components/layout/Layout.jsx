@@ -7,7 +7,6 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
-  
   const mainMargin = sidebarOpen ? 'lg:ml-[260px]' : 'lg:ml-[68px]'
 
   return (
@@ -26,8 +25,7 @@ export default function Layout() {
       
       <Sidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} isMobile={true} />
 
-      
-      <div className={`transition-all duration-300 ease-out flex flex-col flex-1 pt-16 ${mainMargin}`}>
+      <div className={`transition-all duration-300 ease-in-out flex flex-col flex-1 pt-16 ${mainMargin}`}>
         <main className="p-5 lg:p-8 flex-1">
           <Outlet />
         </main>

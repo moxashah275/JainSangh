@@ -5,7 +5,7 @@ import UserForm from '../../components/users/UserForm'
 import { useState, useEffect } from 'react'
 import { INITIAL_USERS, INITIAL_USER_DOCS, INITIAL_ACTIVITIES } from './userData'
 import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData'
-import { INITIAL_ROLES } from '../RolesAndPermissions/roleData'
+import { INITIAL_ROLES } from '../RolesAndPermissions/RoleData'
 
 export default function AddUser() {
   var navigate = useNavigate()

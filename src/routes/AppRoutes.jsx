@@ -5,10 +5,8 @@ import OrgOverview from '../pages/organization/OrgOverview'
 import Trust from '../pages/organization/Trust'
 import Sangh from '../pages/organization/Sangh'
 import Departments from '../pages/organization/Departments'
+import Location from '../pages/organization/Location'
 import UserList from '../pages/users/UserList'
-import UserDetails from '../pages/users/UserDetails'
-import AddUser from '../pages/users/AddUser'
-import EditUser from '../pages/users/EditUser'
 import UserDocumentsPage from '../pages/users/UserDocumentsPage'
 import RolesAndPermissionsPage from '../pages/RolesAndPermissions/RolesAndPermissionsPage'
 import Managers from '../pages/staff/Managers'
@@ -22,7 +20,7 @@ import EditDonation from '../pages/donations/EditDonation'
 import Receipt from '../pages/donations/Receipt'
 import DerasarList from '../pages/derasar/DerasarList'
 import Salgirah from '../pages/derasar/Salgirah'
-import Poojari from '../pages/derasar/Poojari' 
+import Poojari from '../pages/derasar/Poojari'
 import Pratima from '../pages/derasar/Pratima'
 import Students from '../pages/pathshala/Students'
 import Teachers from '../pages/pathshala/Teachers'
@@ -33,24 +31,26 @@ import DonationReport from '../pages/reports/DonationReport'
 import ExpenseReport from '../pages/reports/ExpenseReport'
 import UserReport from '../pages/reports/UserReport'
 import Notifications from '../pages/notifications/Notifications'
-
-
-import Location from '../pages/organization/Location' 
+import Accounts from '../pages/accounts/Accounts'
+import Income from '../pages/accounts/Income'
+import Expense from '../pages/accounts/Expense'
+import Settings from '../pages/settings/Settings'
+import Profile from '../pages/settings/Profile'
+import Permissions from '../pages/settings/Permissions'
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
-        <Route path="location" element={<Location />} /> 
         <Route path="organization" element={<OrgOverview />} />
         <Route path="organization/trust" element={<Trust />} />
         <Route path="organization/sangh" element={<Sangh />} />
         <Route path="organization/departments" element={<Departments />} />
+        <Route path="organization/location" element={<Location />} />
+        <Route path="location" element={<Navigate to="/organization/location" replace />} />
         <Route path="users" element={<UserList />} />
-        <Route path="users/add" element={<AddUser />} />
-        <Route path="users/edit/:id" element={<EditUser />} />
-        <Route path="users/:id" element={<UserDetails />} />
+        <Route path="users/:id" element={<Navigate to="/users" replace />} />
         <Route path="users/:id/documents" element={<UserDocumentsPage />} />
         <Route path="roles" element={<RolesAndPermissionsPage />} />
         <Route path="staff/managers" element={<Managers />} />
@@ -70,6 +70,12 @@ export default function AppRoutes() {
         <Route path="pathshala/teachers" element={<Teachers />} />
         <Route path="pathshala/exams" element={<Exams />} />
         <Route path="pathshala/results" element={<Results />} />
+        <Route path="accounts" element={<Accounts />} />
+        <Route path="accounts/income" element={<Income />} />
+        <Route path="accounts/expense" element={<Expense />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="settings/profile" element={<Profile />} />
+        <Route path="settings/permissions" element={<Permissions />} />
         <Route path="reports/analytics" element={<Analytics />} />
         <Route path="reports/donations" element={<DonationReport />} />
         <Route path="reports/expenses" element={<ExpenseReport />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Shield, Users, Landmark, ArrowLeft, Save, Lock, ShieldCheck, Settings } from 'lucide-react'
-import { getPermsByType, getFullPermKeysForType, ICONS, permsToNested, nestedToPerms, PERM_GROUPS, getTotalPerms } from './roleData'
+import { getPermsByType, getFullPermKeysForType, ICONS, permsToNested, nestedToPerms, PERM_GROUPS, getTotalPerms } from './RoleData'
 import { PermissionManager } from './PermissionGrid'
 
 var TYPE_OPTIONS = [
@@ -46,6 +46,7 @@ var PermGroupCard = React.memo(function(props) {
           )
         })}
       </div>
+      <p className="text-[9px] text-slate-500 mt-1 leading-tight">{group.label}</p>
     </div>
   )
 })
@@ -143,7 +144,7 @@ export default function RoleFormModal(props) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-6 py-6 space-y-5">
+<form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-6 py-6 space-y-5">
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
             <label className={labelCls}>Role Name <span className="text-rose-400">*</span></label>
@@ -196,6 +197,16 @@ export default function RoleFormModal(props) {
               {form.permissions === 'custom' && !showPermMgr && <p className="text-[11px] text-slate-400 font-medium mt-0.5">{customCount} permission{customCount !== 1 ? 's' : ''} selected</p>}
             </div>
             <div className="flex items-center gap-2">
+              {['Active', 'Inactive'].map(function(s) {
+                return (
+                  <button key={s} type="button" onClick={function() { setForm(Object.assign({}, form, { status: s })) }}
+                    className={'px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all border ' + (form.status === s ? (s === 'Active' ? 'bg-teal-600 text-white border-transparent shadow-sm' : 'bg-slate-700 text-white border-transparent shadow-sm') : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 cursor-pointer')}>
+                    {s}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex items-center gap-2">
               {!isSuperAdmin && !showPermMgr && (
                 <button type="button" onClick={toggleFullAccess} className={'text-[12px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ' + (form.permissions === 'all' ? 'bg-teal-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')}>
                   {form.permissions === 'all' ? '✓ Full Access' : 'Set Full Access'}
@@ -226,7 +237,7 @@ export default function RoleFormModal(props) {
           )}
 
           {form.permissions !== 'all' && !isSuperAdmin && !showPermMgr && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 max-h-[500px] overflow-y-auto pr-1">
               {filteredGroups.map(function(group) {
                 return <PermGroupCard key={group.key} group={group} customPerms={form.customPerms} onTogglePerm={togglePerm} onToggleGroupAll={toggleGroupAll} />
               })}
