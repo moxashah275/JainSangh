@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Landmark, ChevronDown, X, PlusCircle, Shield,
   UserCog, Building2, HardHat, HandHeart, BookOpen, BarChart3, Bell,
   ClipboardList, MapPin, Receipt, Settings
 } from 'lucide-react'
+import { ROLES } from '../../config/roles'
+import { sanghAdminDropdownSections, sanghAdminTopFlatItems, sanghAdminBottomFlatItems } from '../../config/sanghAdminnav'
 
 const dropdownSections = [
   {
@@ -96,18 +98,28 @@ function isRouteActive(pathname, to) {
 
 export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [openSection, setOpenSection] = useState(null)
   const showLabels = isMobile || isSidebarOpen
+  const userRole = localStorage.getItem('userRole') || ROLES.SUPER_ADMIN
+  const isSanghAdmin = userRole === ROLES.SANGH_ADMIN
+
+  const currentDropdownSections = isSanghAdmin ? sanghAdminDropdownSections : dropdownSections
+  const topFlatItems = isSanghAdmin ? sanghAdminTopFlatItems : flatItems
 
   useEffect(() => {
-    dropdownSections.forEach(section => {
+    currentDropdownSections.forEach(section => {
       const isActive = section.children.some(child => isRouteActive(pathname, child.to))
       if (isActive) setOpenSection(section.trigger.label)
     });
-  }, [pathname])
+  }, [pathname, currentDropdownSections])
 
-  const toggleSection = (label) => {
-    setOpenSection(openSection === label ? null : label)
+  const handleSectionClick = (section) => {
+    if (!isSidebarOpen && section.children && section.children.length > 0) {
+      navigate(section.children[0].to);
+      return;
+    }
+    setOpenSection(openSection === section.trigger.label ? null : section.trigger.label)
   }
 
   const content = (
@@ -124,8 +136,8 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
       
       <nav className={`flex-1 overflow-y-auto px-3 ${isMobile ? 'py-4' : 'pt-7 pb-4'} space-y-3 custom-scrollbar`}>
         
-        {/* Dashboard & Notifications */}
-        {flatItems.map((item) => {
+        {/* Dashboard & Notifications (or Top Flat Items) */}
+        {topFlatItems.map((item) => {
           const active = isRouteActive(pathname, item.to)
           return (
             <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
@@ -140,14 +152,14 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
         })}
 
         {/* Dropdown Menu Items */}
-        {dropdownSections.map((section) => {
+        {currentDropdownSections.map((section) => {
           const isSectionActive = section.children.some(child => isRouteActive(pathname, child.to))
           const isOpen = openSection === section.trigger.label
 
           return (
             <div key={section.trigger.label} className="space-y-1">
               <button
-                onClick={() => showLabels ? toggleSection(section.trigger.label) : null}
+                onClick={() => handleSectionClick(section)}
                 className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
                   ${isSectionActive || isOpen ? 'bg-slate-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
                   ${!showLabels ? 'justify-center' : 'gap-3'}`}
@@ -161,16 +173,17 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
                 )}
               </button>
 
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showLabels && isOpen ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
-                <div className="ml-4 space-y-1">
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
                   {section.children.map((child) => {
                     const active = isRouteActive(pathname, child.to)
                     return (
                       <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
-                        <div className={`flex items-center gap-3 px-4 py-2 rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
-                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}`}>
+                        <div className={`flex items-center rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
+                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}
+                          ${!showLabels ? 'justify-center py-2' : 'gap-3 px-4 py-2'}`}>
                           <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                          {child.label}
+                          {showLabels && child.label}
                         </div>
                       </NavLink>
                     )
@@ -180,6 +193,22 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
             </div>
           )
         })}
+
+        {isSanghAdmin && sanghAdminBottomFlatItems.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
+            {sanghAdminBottomFlatItems.map((item) => {
+               const active = isRouteActive(pathname, item.to)
+               return (
+                 <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
+                   <div className={`relative flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-all duration-200 transform active:scale-95 ${active ? 'bg-teal-50 text-teal-700' : 'text-slate-600'} ${!showLabels ? 'justify-center' : 'gap-3'}`}>
+                     <item.icon className={`w-5 h-5 shrink-0 ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                     {showLabels && <span className="text-sm font-semibold">{item.label}</span>}
+                   </div>
+                 </NavLink>
+               )
+            })}
+          </div>
+        )}
       </nav>
     </div>
   )
