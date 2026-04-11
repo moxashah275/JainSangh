@@ -38,6 +38,7 @@ import Settings from '../pages/settings/Settings'
 import Profile from '../pages/settings/Profile'
 import Permissions from '../pages/settings/Permissions'
 import SanghAdminDashboard from '../pages/sanghAdmin/SanghAdminDashboard'
+import SanghDetails from '../pages/sanghAdmin/mySangh/SanghDetails'
 
 import { ROLES } from '../config/roles'
 import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
@@ -99,6 +100,7 @@ export default function AppRoutes() {
         <Route element={<RoleGuard allowedRoles={[ROLES.SANGH_ADMIN]} />}>
           <Route path="/sangh-admin" element={<Layout />}>
             <Route index element={<SanghAdminDashboard />} />
+            <Route path="my-sangh/details" element={<SanghDetails />} />
           </Route>
         </Route>
       </Route>

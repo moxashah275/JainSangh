@@ -1,0 +1,310 @@
+import { useState, useEffect } from "react";
+import { 
+  Building2, MapPin, Calendar, Info, 
+  Phone, Mail, User, ShieldCheck, Globe, 
+  Clock, Edit, Landmark, BookOpen 
+} from "lucide-react";
+import PageHeader from "../../../components/common/PageHeader";
+import Button from "../../../components/common/Button";
+import Card from "../../../components/common/Card";
+import Loader from "../../../components/common/Loader";
+import Modal from "../../../components/common/Modal";
+import Input from "../../../components/common/Input";
+import DatePicker from "../../../components/common/DatePicker";
+import StatusToggle from "../../../components/users/UserStatusToggle";
+
+export default function SanghDetails() {
+  const [sangh, setSangh] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Overview");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchSanghDetails = async () => {
+      try {
+        setLoading(true);
+        const stored = localStorage.getItem("sangh_data");
+        const defaultData = {
+          id: 1,
+          name: "Sathandji Kalyanji Sangh",
+          date: "26 January 1992",
+          type: "Main Sangh",
+          address: "123, Jain Layout, Near Mahaveer Temple, Palitana, Bhavnagar, Gujarat - 364270",
+          totalFamilies: "1,240",
+          totalMembers: "4,850",
+          head: "Arvindbhai Mehta",
+          totalTrusts: "05",
+          contactPhone: "9825012345",
+          email: "sathandjikalyanji@gmail.com",
+          website: "www.sathandjisangh.org",
+          status: "Active",
+          city: "Palitana",
+          state: "Gujarat",
+          area: "Sathandji Area",
+          code: "SKS-001"
+        };
+        
+        const data = stored ? JSON.parse(stored) : defaultData;
+        setSangh(data);
+        setFormData(data);
+      } catch (error) {
+        console.error("Failed to fetch sangh details", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSanghDetails();
+  }, []);
+
+  const validate = () => {
+    let newErrors = {};
+    if (!formData.name?.trim()) newErrors.name = "Sangh name is required";
+    if (!formData.head?.trim()) newErrors.head = "Admin head is required";
+    if (!formData.email?.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!formData.contactPhone) {
+      newErrors.contactPhone = "Phone number is required";
+    } else if (!phoneRegex.test(formData.contactPhone)) {
+      newErrors.contactPhone = "Invalid 10-digit number";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const toggleStatus = async (newStatus) => {
+    try {
+      const updatedSangh = { ...sangh, status: newStatus };
+      localStorage.setItem("sangh_data", JSON.stringify(updatedSangh));
+      setSangh(updatedSangh);
+      setFormData(updatedSangh);
+    } catch (err) {
+      console.error("Failed to toggle status", err);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!validate()) return;
+    try {
+      setSaving(true);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      localStorage.setItem("sangh_data", JSON.stringify(formData));
+      setSangh(formData);
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  if (loading) return <Loader fullPage />;
+
+  return (
+    <div className="space-y-6 max-w-[1000px] mx-auto">
+      <PageHeader 
+        title="Sangh Details" 
+        subtitle="Review and manage your Sangh information"
+      />
+
+      <Card className="!p-0 overflow-hidden relative border-none shadow-xl ring-1 ring-slate-100">
+        {/* Main Header Profile */}
+        <div className="p-8 pb-6 border-b border-slate-50 relative">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <div className="w-24 h-24 rounded-3xl bg-teal-50 border-4 border-white shadow-lg flex items-center justify-center text-teal-600 shrink-0">
+              <Building2 className="w-12 h-12" />
+            </div>
+            
+            <div className="flex-1 text-center md:text-left space-y-3">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">{sangh.name}</h1>
+                <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">{sangh.type}</p>
+              </div>
+
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <StatusToggle 
+                    status={sangh.status} 
+                    onChange={toggleStatus} 
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 absolute top-6 right-6 md:static">
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-teal-50 hover:text-teal-600 flex items-center justify-center border border-slate-100 transition-all shadow-sm"
+              >
+                <Edit className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="p-8 pt-6 pb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <StatSmall label="Sangh Admin" value={sangh.head} icon={User} color="text-teal-600" bg="bg-teal-50/40" />
+            <StatSmall label="Total Trust" value={sangh.totalTrusts} icon={ShieldCheck} color="text-sky-600" bg="bg-sky-50/40" />
+          </div>
+        </div>
+
+        {/* Tab switcher - Enhanced Pill Style */}
+        <div className="mx-8 mt-8 mb-2">
+          <div className="flex items-center gap-1.5 p-1.5 bg-slate-50 border border-slate-100/50 rounded-2xl w-fit">
+            {["Overview", "Finance", "Institutions"].map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-5 py-2 text-[12px] font-bold rounded-xl transition-all duration-300 ${
+                  activeTab === tab 
+                  ? 'bg-white text-teal-600 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.12)] border border-slate-100' 
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Detail Content - Premium Cards */}
+        <div className="p-8 pt-6 pb-12">
+          {activeTab === "Overview" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <DetailBox label="OFFICIAL EMAIL" value={sangh.email} icon={Mail} />
+              <DetailBox label="CONTACT PHONE" value={sangh.contactPhone} icon={Phone} />
+              <DetailBox label="ESTABLISHED DATE" value={sangh.date} icon={Calendar} />
+              <DetailBox label="SANGH TYPE" value={sangh.type} icon={Info} />
+              <DetailBox label="CITY / TOWN" value={sangh.city} icon={Globe} />
+              <DetailBox label="LOCATION AREA" value={sangh.area} icon={MapPin} />
+              <div className="md:col-span-2">
+                <DetailBox label="FULL REGISTERED ADDRESS" value={sangh.address} icon={MapPin} />
+              </div>
+            </div>
+          )}
+          {activeTab === "Finance" && (
+            <div className="h-48 flex flex-col items-center justify-center bg-slate-50/50 border border-dashed border-slate-200 rounded-[32px] animate-in zoom-in-95 duration-300">
+               <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-3">
+                 <Clock className="w-6 h-6 text-slate-300" />
+               </div>
+               <p className="text-[13px] text-slate-400 font-bold tracking-tight uppercase">Records Coming Soon</p>
+               <p className="text-[11px] text-slate-400 mt-1">Financial summaries are being generated.</p>
+            </div>
+          )}
+          {activeTab === "Institutions" && (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-right-4 duration-500">
+                <InstitutionCard icon={Landmark} title="Derasar Units" count="2" />
+                <InstitutionCard icon={BookOpen} title="Pathshala units" count="1" />
+             </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Edit Modal mirroring the Design */}
+      <Modal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Sangh Profile"
+        subtitle="Update the core details of your Sangh organization"
+        size="lg"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+            <Button loading={saving} onClick={handleUpdate}>Save Changes</Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Input label="Sangh Official Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} icon={Building2} required />
+            <Input label="Admin / Head Name" name="head" value={formData.head} onChange={handleChange} error={errors.head} icon={User} required />
+            <Input label="Total Trusts" name="totalTrusts" value={formData.totalTrusts} onChange={handleChange} icon={ShieldCheck} />
+            <Input label="Sangh Type" name="type" value={formData.type} onChange={handleChange} icon={Info} />
+            <DatePicker 
+                label="Establishment Date" 
+                value={formData.date} 
+                onChange={handleChange} 
+            />
+
+            <Input label="Official Email" name="email" value={formData.email} onChange={handleChange} error={errors.email} icon={Mail} required />
+            <Input label="Contact Phone" name="contactPhone" value={formData.contactPhone} onChange={handleChange} error={errors.contactPhone} icon={Phone} required />
+          </div>
+          
+          <div className="pt-4 border-t border-slate-100">
+             <div className="grid grid-cols-2 gap-5 mb-4">
+                <Input label="City" name="city" value={formData.city} onChange={handleChange} icon={Globe} />
+                <Input label="Area" name="area" value={formData.area} onChange={handleChange} icon={MapPin} />
+             </div>
+             <div className="space-y-1.5">
+               <label className="block text-[13px] font-medium text-slate-600">Full Registered Address</label>
+               <textarea 
+                 name="address"
+                 value={formData.address}
+                 onChange={handleChange}
+                 rows={3}
+                 className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-50 outline-none transition-all resize-none"
+               />
+             </div>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// ── Internal Presentation Components ──
+
+function StatSmall({ label, value, icon: Icon, color, bg }) {
+  return (
+    <div className={`p-4 rounded-2xl border border-slate-100 flex items-center justify-between group hover:border-teal-100 hover:shadow-sm transition-all duration-300 ${bg}`}>
+      <div className="space-y-0.5">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-[14px] font-bold text-slate-700 truncate max-w-[150px]">{value || '-'}</p>
+      </div>
+      <div className={`w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
+        <Icon className="w-4.5 h-4.5" />
+      </div>
+    </div>
+  );
+}
+
+function DetailBox({ label, value, icon: Icon }) {
+  return (
+    <div className="space-y-1.5 group">
+      <div className="flex items-center gap-2">
+        <Icon className="w-3.5 h-3.5 text-slate-400" />
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+      </div>
+      <p className="text-[14px] font-bold text-slate-700 pl-5.5 leading-relaxed group-hover:text-teal-600 transition-colors">{value || '-'}</p>
+    </div>
+  );
+}
+
+function InstitutionCard({ icon: Icon, title, count }) {
+  return (
+    <div className="p-4 bg-white rounded-2xl border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow cursor-default group">
+      <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-[13px] font-bold text-slate-800">{title}</p>
+        <p className="text-[11px] font-medium text-slate-400 mt-0.5">{count} Registered Units</p>
+      </div>
+    </div>
+  );
+}
