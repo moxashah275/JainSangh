@@ -37,11 +37,19 @@ import Expense from '../pages/accounts/Expense'
 import Settings from '../pages/settings/Settings'
 import Profile from '../pages/settings/Profile'
 import Permissions from '../pages/settings/Permissions'
+import SanghAdminDashboard from '../pages/sanghAdmin/SanghAdminDashboard'
+
+import { ROLES } from '../config/roles'
+import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route element={<ProtectedRoute />}>
+        
+        {/* SUPER ADMIN PROTECTED ROUTES */}
+        <Route element={<RoleGuard allowedRoles={[ROLES.SUPER_ADMIN]} />}>
+          <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="organization" element={<OrgOverview />} />
         <Route path="organization/trust" element={<Trust />} />
@@ -81,8 +89,20 @@ export default function AppRoutes() {
         <Route path="reports/expenses" element={<ExpenseReport />} />
         <Route path="reports/users" element={<UserReport />} />
         <Route path="notifications" element={<Notifications />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Route>
+    </Route>
+
+      {/* SANGH ADMIN PROTECTED ROUTES */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleGuard allowedRoles={[ROLES.SANGH_ADMIN]} />}>
+          <Route path="/sangh-admin" element={<Layout />}>
+            <Route index element={<SanghAdminDashboard />} />
+          </Route>
+        </Route>
+      </Route>
+      
     </Routes>
   )
 }
