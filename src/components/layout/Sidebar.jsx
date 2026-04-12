@@ -1,183 +1,84 @@
-import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Users, Landmark, ChevronDown, X, PlusCircle, Shield,
-  UserCog, Building2, HardHat, HandHeart, BookOpen, BarChart3, Bell,
-  ClipboardList, MapPin, Receipt, Settings
+  LayoutDashboard, MapPin, Building2, UserCog, Users2, Hotel, 
+  CalendarDays, ClipboardList, Briefcase, Receipt, HandHeart, 
+  Users, BarChart3, Bell, Settings, X
 } from 'lucide-react'
 
-const dropdownSections = [
-  {
-    trigger: { icon: Building2, label: 'Organization' },
-    children: [
-      { to: '/organization', icon: LayoutDashboard, label: 'Overview' },
-      { to: '/organization/trust', icon: Landmark, label: 'Trust' },
-      { to: '/organization/sangh', icon: Users, label: 'Sangh' },
-      { to: '/organization/departments', icon: Building2, label: 'Departments' },
-      { to: '/organization/location', icon: MapPin, label: 'Location' },
-    ],
-  },
-  {
-    trigger: { icon: UserCog, label: 'Users' },
-    children: [
-      { to: '/users', icon: Users, label: 'All Users' },
-      { to: '/roles', icon: Shield, label: 'Roles & Permissions' },
-      { to: '/committee', icon: Users, label: 'Committee' },
-    ],
-  },
-  {
-    trigger: { icon: HardHat, label: 'Staff' },
-    children: [
-      { to: '/staff/managers', icon: UserCog, label: 'Managers' },
-      { to: '/staff/accountants', icon: UserCog, label: 'Accountants' },
-      { to: '/staff/helpers', icon: UserCog, label: 'Helpers' },
-      { to: '/staff/volunteers', icon: UserCog, label: 'Volunteers' },
-    ],
-  },
-  {
-    trigger: { icon: Receipt, label: 'Accounts' },
-    children: [
-      { to: '/accounts', icon: Receipt, label: 'Accounts List' },
-      { to: '/accounts/income', icon: BarChart3, label: 'Income' },
-      { to: '/accounts/expense', icon: ClipboardList, label: 'Expense' },
-    ],
-  },
-  {
-    trigger: { icon: HandHeart, label: 'Donations' },
-    children: [
-      { to: '/donations', icon: ClipboardList, label: 'Donation List' },
-      { to: '/donations/add', icon: PlusCircle, label: 'Add Donation' },
-    ],
-  },
-  {
-    trigger: { icon: Building2, label: 'Derasar' },
-    children: [
-      { to: '/derasar', icon: Landmark, label: 'Derasar List' },
-      { to: '/derasar/salgirah', icon: ClipboardList, label: 'Salgirah' },
-      { to: '/derasar/poojari', icon: Users, label: 'Poojari' },
-      { to: '/derasar/pratima', icon: Landmark, label: 'Pratima' },
-    ],
-  },
-  {
-    trigger: { icon: BookOpen, label: 'Pathshala' },
-    children: [
-      { to: '/pathshala/students', icon: Users, label: 'Students' },
-      { to: '/pathshala/teachers', icon: UserCog, label: 'Teachers' },
-      { to: '/pathshala/exams', icon: ClipboardList, label: 'Exams' },
-      { to: '/pathshala/results', icon: BarChart3, label: 'Results' },
-    ],
-  },
-  {
-    trigger: { icon: BarChart3, label: 'Reports' },
-    children: [
-      { to: '/reports/analytics', icon: BarChart3, label: 'Analytics' },
-      { to: '/reports/donations', icon: ClipboardList, label: 'Donation Reports' },
-      { to: '/reports/expenses', icon: ClipboardList, label: 'Expense Reports' },
-    ],
-  },
-  {
-    trigger: { icon: Settings, label: 'Settings' },
-    children: [
-      { to: '/settings', icon: Settings, label: 'General Settings' },
-      { to: '/settings/profile', icon: UserCog, label: 'Profile' },
-    ],
-  },
-]
-
-const flatItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+const menuItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/locations', icon: MapPin, label: 'Locations' },
+  { to: '/organizations', icon: Building2, label: 'Organization' },
+  { to: '/user-management', icon: UserCog, label: 'User Management' },
+  { to: '/members', icon: Users2, label: 'Members' },
+  { to: '/institutions', icon: Hotel, label: 'Institutions' },
+  { to: '/activities', icon: CalendarDays, label: 'Activities' },
+  { to: '/leave-management', icon: ClipboardList, label: 'Leave Management' },
+  { to: '/daily-work', icon: Briefcase, label: 'Daily Work' },
+  { to: '/finance', icon: Receipt, label: 'Finance' },
+  { to: '/donations', icon: HandHeart, label: 'Donations' },
+  { to: '/staff', icon: Users, label: 'Departments & Staff' },
+  { to: '/reports', icon: BarChart3, label: 'Reports' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
+  { to: '/settings', icon: Settings, label: 'System Settings' },
 ]
-
-function isRouteActive(pathname, to) {
-  if (to === '/') return pathname === '/'
-  return pathname === to || pathname.startsWith(to + '/')
-}
 
 export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const { pathname } = useLocation()
-  const [openSection, setOpenSection] = useState(null)
   const showLabels = isMobile || isSidebarOpen
 
-  useEffect(() => {
-    dropdownSections.forEach(section => {
-      const isActive = section.children.some(child => isRouteActive(pathname, child.to))
-      if (isActive) setOpenSection(section.trigger.label)
-    });
-  }, [pathname])
-
-  const toggleSection = (label) => {
-    setOpenSection(openSection === label ? null : label)
+  const isRouteActive = (to) => {
+    if (to === '/dashboard' && pathname === '/') return true
+    return pathname === to || pathname.startsWith(to + '/')
   }
 
   const content = (
-    <div className="flex flex-col h-full bg-white select-none">
-      {isMobile && (
-        <div className="px-5 py-4 flex justify-between items-center">
-          <span className="font-bold text-teal-700">MENU</span>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
-      
-      <nav className={`flex-1 overflow-y-auto px-3 ${isMobile ? 'py-4' : 'pt-7 pb-4'} space-y-3 custom-scrollbar`}>
+    <div className="flex flex-col h-full bg-white select-none overflow-hidden font-sans">
+      <nav className={`flex-1 px-3 ${isMobile ? 'py-6' : 'py-3'} space-y-1 
+        overflow-y-auto overflow-x-hidden 
+        [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}>
         
-        {/* Dashboard & Notifications */}
-        {flatItems.map((item) => {
-          const active = isRouteActive(pathname, item.to)
+        {menuItems.map((item) => {
+          const active = isRouteActive(item.to)
+          
           return (
-            <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
-              <div className={`relative flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95
-                ${active ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
-                ${!showLabels ? 'justify-center' : 'gap-3'}`}>
-                <item.icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                {showLabels && <span className="text-sm font-semibold">{item.label}</span>}
+            <NavLink 
+              key={item.to} 
+              to={item.to} 
+              onClick={isMobile ? onClose : undefined} 
+              className="block group"
+            >
+              <div className={`relative flex items-center px-4 py-[10px] rounded-xl transition-all duration-200
+                ${active ? 'bg-teal-50/60' : 'hover:bg-emerald-50/50'}
+                ${!showLabels ? 'justify-center' : 'gap-3.5'}`}>
+                
+                {/* ICON with Gradient on Active */}
+                <div className={`transition-all duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                    <item.icon 
+                      className={`w-[19px] h-[19px] shrink-0 transition-all duration-300
+                        ${active 
+                          ? 'stroke-teal-600' 
+                          : 'text-slate-400 group-hover:text-emerald-600'}`}
+                      {...(active && { stroke: "url(#teal-gradient)" })}
+                    />
+                    <svg width="0" height="0" className="absolute">
+                      <linearGradient id="teal-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#0d9488" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </svg>
+                </div>
+                
+                {showLabels && (
+                  <span className={`text-[14.5px] whitespace-nowrap overflow-hidden tracking-wide transition-all duration-300
+                    ${active 
+                      ? 'font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent' 
+                      : 'font-semibold text-slate-500 group-hover:text-emerald-700'}`}>
+                    {item.label}
+                  </span>
+                )}
               </div>
             </NavLink>
-          )
-        })}
-
-        {/* Dropdown Menu Items */}
-        {dropdownSections.map((section) => {
-          const isSectionActive = section.children.some(child => isRouteActive(pathname, child.to))
-          const isOpen = openSection === section.trigger.label
-
-          return (
-            <div key={section.trigger.label} className="space-y-1">
-              <button
-                onClick={() => showLabels ? toggleSection(section.trigger.label) : null}
-                className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
-                  ${isSectionActive || isOpen ? 'bg-slate-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
-                  ${!showLabels ? 'justify-center' : 'gap-3'}`}
-              >
-                <section.trigger.icon className={`w-5 h-5 shrink-0 transition-colors ${isSectionActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                {showLabels && (
-                  <>
-                    <span className="flex-1 text-left text-sm font-semibold">{section.trigger.label}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                  </>
-                )}
-              </button>
-
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showLabels && isOpen ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
-                <div className="ml-4 space-y-1">
-                  {section.children.map((child) => {
-                    const active = isRouteActive(pathname, child.to)
-                    return (
-                      <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
-                        <div className={`flex items-center gap-3 px-4 py-2 rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
-                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}`}>
-                          <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                          {child.label}
-                        </div>
-                      </NavLink>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
           )
         })}
       </nav>
@@ -188,7 +89,11 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
     return (
       <>
         {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" onClick={onClose} />}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-white shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-out bg-white ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-50">
+             <span className="text-lg font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent uppercase tracking-wider font-sans">Jain Sangh</span>
+             <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 rounded-full transition-colors"><X className="w-6 h-6"/></button>
+          </div>
           {content}
         </div>
       </>
@@ -196,7 +101,8 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   }
 
   return (
-    <aside className={`hidden lg:flex flex-col fixed top-[64px] bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+    <aside className={`fixed top-16 bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white border-r border-slate-100 
+      ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       {content}
     </aside>
   )
