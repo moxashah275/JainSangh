@@ -92,7 +92,7 @@ const flatItems = [
 ]
 
 function isRouteActive(pathname, to) {
-  if (to === '/') return pathname === '/'
+  if (to === '/' || to === '/sangh-admin') return pathname === to || pathname === to + '/'
   return pathname === to || pathname.startsWith(to + '/')
 }
 
@@ -108,10 +108,17 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const topFlatItems = isSanghAdmin ? sanghAdminTopFlatItems : flatItems
 
   useEffect(() => {
+    let hasActive = false;
     currentDropdownSections.forEach(section => {
       const isActive = section.children.some(child => isRouteActive(pathname, child.to))
-      if (isActive) setOpenSection(section.trigger.label)
+      if (isActive) {
+        setOpenSection(section.trigger.label)
+        hasActive = true;
+      }
     });
+    if (!hasActive) {
+      setOpenSection(null);
+    }
   }, [pathname, currentDropdownSections])
 
   const handleSectionClick = (section) => {
@@ -161,7 +168,7 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
               <button
                 onClick={() => handleSectionClick(section)}
                 className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
-                  ${isSectionActive || isOpen ? 'bg-slate-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
+                  ${isSectionActive ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
                   ${!showLabels ? 'justify-center' : 'gap-3'}`}
               >
                 <section.trigger.icon className={`w-5 h-5 shrink-0 transition-colors ${isSectionActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
@@ -173,7 +180,7 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
                 )}
               </button>
 
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${(isOpen && showLabels) ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                 <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
                   {section.children.map((child) => {
                     const active = isRouteActive(pathname, child.to)
