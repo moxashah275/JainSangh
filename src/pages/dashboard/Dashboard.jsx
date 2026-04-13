@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import {
   HandHeart, Users, Landmark, MapPin, 
-  Building2, UserPlus, Receipt, FileText, 
-  Settings, BarChart3, CalendarDays, TrendingUp, 
-  ArrowDownRight, Wallet, ArrowUpRight, PlusCircle, Sparkles
+  Building2, UserPlus, FileText, Settings, 
+  TrendingUp, ArrowDownRight, Wallet, ArrowUpRight, PlusCircle
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -28,7 +27,7 @@ const DONATION_DISTRIBUTION = [
   { name: 'Pathshala', value: 100000 }
 ]
 
-const COLORS = ['#0d9488', '#059669', '#0891b2', '#4f46e5']
+const COLORS = ['#0d9488', '#10b981', '#0891b2', '#4f46e5']
 
 const RECENT_ACTIVITIES = [
   { donor: 'Rajesh Shah', type: 'Devdravya', amount: 51000, date: '10 Apr', status: 'Verified', initial: 'RS' },
@@ -37,12 +36,12 @@ const RECENT_ACTIVITIES = [
 ]
 
 const QUICK_LINKS = [
-  { icon: Building2, label: 'Organizations', to: '/organizations', bg: 'bg-blue-50', tx: 'text-blue-600' },
-  { icon: MapPin, label: 'Locations', to: '/locations/states', bg: 'bg-teal-50', tx: 'text-teal-600' },
-  { icon: UserPlus, label: 'Add Member', to: '/members/add', bg: 'bg-indigo-50', tx: 'text-indigo-600' },
-  { icon: HandHeart, label: 'Donations', to: '/finance/donations', bg: 'bg-emerald-50', tx: 'text-emerald-600' },
-  { icon: FileText, label: 'Reports', to: '/reports', bg: 'bg-rose-50', tx: 'text-rose-600' },
-  { icon: Settings, label: 'Settings', to: '/settings', bg: 'bg-slate-100', tx: 'text-slate-600' }
+  { icon: Building2, label: 'Organizations', to: '/organizations', color: 'from-blue-500/10 to-blue-600/5', iconCol: 'text-blue-600' },
+  { icon: MapPin, label: 'Locations', to: '/locations/states', color: 'from-teal-500/10 to-teal-600/5', iconCol: 'text-teal-600' },
+  { icon: UserPlus, label: 'Add Member', to: '/members/add', color: 'from-indigo-500/10 to-indigo-600/5', iconCol: 'text-indigo-600' },
+  { icon: HandHeart, label: 'Donations', to: '/finance/donations', color: 'from-emerald-500/10 to-emerald-600/5', iconCol: 'text-emerald-600' },
+  { icon: FileText, label: 'Reports', to: '/reports', color: 'from-rose-500/10 to-rose-600/5', iconCol: 'text-rose-600' },
+  { icon: Settings, label: 'Settings', to: '/settings', color: 'from-slate-500/10 to-slate-600/5', iconCol: 'text-slate-600' }
 ]
 
 export default function Dashboard() {
@@ -51,113 +50,89 @@ export default function Dashboard() {
   const totalExp = MONTHLY_TRENDS.reduce((s, m) => s + m.expense, 0)
 
   return (
-    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 bg-white min-h-screen animate-in fade-in duration-700 pb-10">
+    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 bg-white min-h-screen font-sans pb-10">
       
       {/* ── TOP HEADER ── */}
       <div className="px-5 lg:px-7 pt-8 pb-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-teal-700 tracking-tight leading-none">Dashboard</h1>
-            <p className="text-[11px] font-black text-slate-500 mt-1.5 uppercase tracking-[0.15em] leading-none">
-              System Overview & Real-time Analytics
-            </p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent tracking-tight leading-tight">Dashboard</h1>
+            <p className="text-[12px] font-semibold text-slate-400 mt-0.5 uppercase tracking-[0.1em]">System Overview & Analytics</p>
           </div>
-
           <Button 
-            size="sm" 
-            icon={PlusCircle} 
-            className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold px-4 h-10 shadow-md transition-all active:scale-95 hover:-translate-y-1"
-            onClick={() => navigate('/organizations/add')}
+            size="sm" icon={PlusCircle} 
+            className="bg-gradient-to-r from-teal-600 to-emerald-500 text-white rounded-xl font-bold px-6 h-11 transition-all active:scale-95 shadow-sm"
+            onClick={() => navigate('/events/add')}
           >
-            Create New Sangh
+            New Event
           </Button>
         </div>
 
         {/* Quick Links Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {QUICK_LINKS.map((item, i) => (
-            <button 
-              key={i} 
-              onClick={() => navigate(item.to)} 
-              className="group flex flex-col items-center justify-center p-4 rounded-[1.5rem] border border-slate-100 bg-white hover:border-teal-100 hover:shadow-xl hover:shadow-teal-900/5 transition-all duration-500 hover:-translate-y-1"
+            <button key={i} onClick={() => navigate(item.to)} 
+              className="group flex flex-col items-center justify-center p-5 rounded-2xl border border-slate-100 bg-white hover:border-teal-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-2"
             >
-              <div className={`w-12 h-12 rounded-xl ${item.bg} ${item.tx} flex items-center justify-center mb-2 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm`}>
-                <item.icon size={22} strokeWidth={2.5} />
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500`}>
+                <item.icon className={`w-6 h-6 ${item.iconCol}`} strokeWidth={2.5} />
               </div>
-              <span className="text-[11px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-teal-600 transition-colors">{item.label}</span>
+              <span className="text-[13px] font-bold text-slate-500 group-hover:text-teal-600 transition-colors uppercase tracking-tight">{item.label}</span>
             </button>
           ))}
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-4 duration-1000">
-          <StatCard title="Total Sanghs" value="124" icon={Building2} color="teal" trend="up" trendValue="+5" />
-          <StatCard title="Total Members" value="12,450" icon={Users} color="indigo" trend="up" trendValue="+152" />
-          <StatCard title="Donations" value="₹24.8L" icon={HandHeart} color="emerald" />
-          <StatCard title="Total Trusts" value="86" icon={Landmark} color="sky" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard title="Total Sanghs" value="124" icon={Building2} color="teal" />
+          <StatCard title="Total Members" value="12,450" icon={Users} color="emerald" />
+          <StatCard title="Donations" value="₹24.8L" icon={HandHeart} color="teal" />
+          <StatCard title="Total Trusts" value="86" icon={Landmark} color="emerald" />
         </div>
 
-        {/* CHARTS  */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Main Financial Area Chart */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-wider">Financial Overview</h3>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500"/> <span className="text-[10px] font-black text-slate-400 uppercase">Income</span></div>
-                <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"/> <span className="text-[10px] font-black text-slate-400 uppercase">Expense</span></div>
-              </div>
-            </div>
-            <div className="h-[280px]">
+        {/* CHARTS Section */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="lg:w-[70%] bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+            <h3 className="text-[14.5px] font-bold text-slate-700 uppercase tracking-widest mb-8">Financial Overview</h3>
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={MONTHLY_TRENDS}>
                   <defs>
-                    <linearGradient id="colorInc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0d9488" stopOpacity={0.1}/><stop offset="95%" stopColor="#0d9488" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0d9488" stopOpacity={0.15}/><stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
+                    </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8', fontWeight: 'bold'}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} tickFormatter={(v) => `₹${v/1000}k`} />
-                  <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'}} />
-                  
-                  <Area type="monotone" dataKey="income" stroke="#0d9488" strokeWidth={4} fill="url(#colorInc)" isAnimationActive={true} animationDuration={2500} animationBegin={200} />
-                  <Area type="monotone" dataKey="expense" stroke="#e11d48" strokeWidth={2} fill="transparent" strokeDasharray="6 6" isAnimationActive={true} animationDuration={3000} animationBegin={400} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b', fontWeight: 600}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#94a3b8'}} tickFormatter={(v) => `₹${v/1000}k`} />
+                  <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.08)'}} />
+                  <Area type="monotone" dataKey="income" stroke="#0d9488" strokeWidth={4} fill="url(#chartGrad)" isAnimationActive={true} animationDuration={1200} />
+                  <Area type="monotone" dataKey="expense" stroke="#fb7185" strokeWidth={2} fill="transparent" strokeDasharray="6 6" isAnimationActive={true} animationDuration={1500} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Donation Pie Chart */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm flex flex-col hover:shadow-md transition-all">
-            <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-wider mb-2 text-center">Donation By Type</h3>
-            <div className="flex-1 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={200}>
+          <div className="lg:w-[30%] bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col items-center">
+            <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest mb-10">Donation Type</h3>
+            <div className="w-full flex justify-center flex-1">
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
-                  
-                  <Pie 
-                    data={DONATION_DISTRIBUTION} 
-                    innerRadius={60} 
-                    outerRadius={85} 
-                    paddingAngle={8} 
-                    dataKey="value" 
-                    strokeWidth={0} 
-                    isAnimationActive={true}
-                    animationBegin={500}
-                    animationDuration={2000}
-                  >
+                  <Pie data={DONATION_DISTRIBUTION} innerRadius={70} outerRadius={95} paddingAngle={8} dataKey="value" strokeWidth={0} isAnimationActive={true} animationDuration={1000}>
                     {DONATION_DISTRIBUTION.map((_, i) => (<Cell key={i} fill={COLORS[i % COLORS.length]} />))}
                   </Pie>
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 mt-8 w-full px-2">
               {DONATION_DISTRIBUTION.map((item, i) => (
-                <div key={i} className="bg-slate-50 p-2 rounded-xl flex flex-col items-start px-3 transition-colors hover:bg-slate-100 cursor-default">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">{item.name}</span>
+                <div key={i} className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i] }} />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.name}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-700">₹{(item.value / 1000)}k</span>
+                  <span className="text-[15px] font-bold text-slate-700">₹{(item.value / 1000)}k</span>
                 </div>
               ))}
             </div>
@@ -165,31 +140,38 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION ── */}
-      <div className="bg-slate-50/50 border-t border-slate-100 px-5 lg:px-7 py-8">
-        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-black text-slate-800">Recent Transactions</h3>
-              <button className="text-teal-600 hover:text-teal-700 flex items-center gap-1 text-[11px] font-black uppercase tracking-wider transition-all">
-                View All <ArrowUpRight size={14} strokeWidth={3} />
+      {/* ── BOTTOM SECTION - ALIGNED & SYMMETRICAL ── */}
+      <div className="px-5 lg:px-7 py-4">
+        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Recent Activity Box */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-7 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest">Recent Activity</h3>
+              <button className="text-teal-600 hover:text-emerald-600 flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest transition-colors">
+                View <ArrowUpRight size={14} strokeWidth={3} />
               </button>
             </div>
-            <div className="space-y-4">
+            <hr className="border-slate-200 mb-9" /> {/* Darker Horizontal Line */}
+            
+            <div className="space-y-8">
               {RECENT_ACTIVITIES.map((d, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-50 rounded-2xl hover:border-teal-100 hover:shadow-sm transition-all duration-300">
+                <div key={i} className="flex items-center justify-between h-[52px]">
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
+                    <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-[11px] shadow-lg shadow-emerald-100">
                       {d.initial}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-800 tracking-tight leading-none mb-1">{d.donor}</p>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{d.type} • {d.date}</p>
+                      <p className="text-[15px] font-bold text-slate-700 leading-none">{d.donor}</p>
+                      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-2">{d.type} • {d.date}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[15px] font-black text-slate-900 leading-none mb-1.5">₹{d.amount.toLocaleString()}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${d.status === 'Verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                    <p className="text-[16px] font-bold text-slate-800 mb-2 font-sans">₹{d.amount.toLocaleString()}</p>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      d.status === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${d.status === 'Verified' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                       {d.status}
                     </span>
                   </div>
@@ -198,31 +180,40 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">
-            <h3 className="text-lg font-black text-slate-800 mb-6">Consolidated Finance</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-emerald-50/50 rounded-2xl border border-emerald-50 h-[75px] group hover:scale-[1.01] transition-transform">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center group-hover:rotate-12 transition-transform"><TrendingUp size={20} /></div>
-                  <span className="text-[10px] font-black text-emerald-800 uppercase">Collection</span>
+          {/* Financial Summary Box - Matched with Left Side */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-7 shadow-sm">
+            <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest mb-4">Financial Summary</h3>
+            <hr className="border-slate-200 mb-9" /> {/* Darker Horizontal Line */}
+            
+            <div className="space-y-8">
+              {/* Total Income - Aligned with RS */}
+              <div className="flex items-center justify-between h-[52px] group">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center transition-transform group-hover:scale-105"><TrendingUp size={22} /></div>
+                  <span className="text-[14px] font-bold text-slate-500 uppercase tracking-wider">Total Income</span>
                 </div>
-                <span className="text-xl font-black text-emerald-700">₹{(totalInc / 100000).toFixed(2)}L</span>
+                <span className="text-[16px] font-bold text-emerald-600 font-sans tracking-tight">₹{(totalInc / 100000).toFixed(2)}L</span>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-2xl border border-rose-50 h-[75px] group hover:scale-[1.01] transition-transform">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center group-hover:-rotate-12 transition-transform"><ArrowDownRight size={20} /></div>
-                  <span className="text-[10px] font-black text-rose-800 uppercase">Expenses</span>
+              {/* Total Expense - Aligned with VM */}
+              <div className="flex items-center justify-between h-[52px] group">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center transition-transform group-hover:scale-105"><ArrowDownRight size={22} /></div>
+                  <span className="text-[14px] font-bold text-slate-500 uppercase tracking-wider">Total Expense</span>
                 </div>
-                <span className="text-xl font-black text-rose-700">₹{(totalExp / 100000).toFixed(2)}L</span>
+                <span className="text-[16px] font-bold text-rose-600 font-sans tracking-tight">₹{(totalExp / 100000).toFixed(2)}L</span>
               </div>
 
-              <div className="flex items-center justify-between p-5 bg-teal-600 rounded-2xl h-[85px] shadow-lg shadow-teal-900/10 mt-2 hover:shadow-teal-900/20 transition-all cursor-pointer group">
-                <div className="flex items-center gap-3 text-white">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"><Wallet size={20} /></div>
-                  <span className="text-[10px] font-black uppercase">Net Balance</span>
+              {/* Net Balance - Bottom Part */}
+              <div className="flex items-center justify-between h-[52px] pt-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-100"><Wallet size={22} /></div>
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block leading-none mb-1">Net Balance</span>
+                    <span className="text-[13px] font-bold text-teal-700 uppercase tracking-tighter">Consolidated</span>
+                  </div>
                 </div>
-                <span className="text-2xl font-black text-white">₹{((totalInc - totalExp) / 100000).toFixed(2)}L</span>
+                <span className="text-2xl font-bold text-teal-600 tracking-tighter font-sans">₹{((totalInc - totalExp) / 100000).toFixed(2)}L</span>
               </div>
             </div>
           </div>
