@@ -39,6 +39,7 @@ import Profile from '../pages/settings/Profile'
 import Permissions from '../pages/settings/Permissions'
 import SanghAdminDashboard from '../pages/sanghAdmin/SanghAdminDashboard'
 import SanghDetails from '../pages/sanghAdmin/mySangh/SanghDetails'
+import LinkedTrusts from '../pages/sanghAdmin/mySangh/LinkedTrusts'
 
 import { ROLES } from '../config/roles'
 import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
@@ -101,6 +102,7 @@ export default function AppRoutes() {
           <Route path="/sangh-admin" element={<Layout />}>
             <Route index element={<SanghAdminDashboard />} />
             <Route path="my-sangh/details" element={<SanghDetails />} />
+            <Route path="my-sangh/linked-trusts" element={<LinkedTrusts />} />
           </Route>
         </Route>
       </Route>
