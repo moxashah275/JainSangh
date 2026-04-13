@@ -115,8 +115,8 @@ export default function Navbar({ onMenuClick, sidebarOpen, onToggleSidebar }) {
                 <p className="text-[14px] font-bold text-slate-700 leading-tight">
                   Naman Doshi
                 </p>
-                <p className="text-[11px] text-emerald-500 font-semibold">
-                  Super Admin
+                <p className="text-[11px] text-emerald-500 font-semibold uppercase">
+                  {localStorage.getItem('userRole') === 'sanghAdmin' ? 'Sangh Admin' : 'Super Admin'}
                 </p>
               </div>
 
