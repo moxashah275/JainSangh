@@ -55,43 +55,61 @@ export default function AppRoutes() {
         <Route element={<RoleGuard allowedRoles={[ROLES.SUPER_ADMIN]} />}>
           <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
+        
+        {/* Organization Management */}
         <Route path="organization" element={<OrgOverview />} />
         <Route path="organization/trust" element={<Trust />} />
         <Route path="organization/sangh" element={<Sangh />} />
         <Route path="organization/departments" element={<Departments />} />
-        <Route path="organization/location" element={<Location />} />
-        <Route path="location" element={<Navigate to="/organization/location" replace />} />
+        
+        {/* Location Management - સાઇડબારની લિંક સાથે મેચ કરવા માટે અહિયાં ફેરફાર કર્યો છે */}
+        <Route path="locations" element={<Location />} />
+        
+        {/* Users & Roles */}
         <Route path="users" element={<UserList />} />
         <Route path="users/:id" element={<Navigate to="/users" replace />} />
         <Route path="users/:id/documents" element={<UserDocumentsPage />} />
         <Route path="roles" element={<RolesAndPermissionsPage />} />
+        
+        {/* Staff Management */}
         <Route path="staff/managers" element={<Managers />} />
         <Route path="staff/accountants" element={<Accountants />} />
         <Route path="staff/helpers" element={<Helpers />} />
         <Route path="staff/volunteers" element={<Volunteers />} />
+        
+        {/* Committee */}
         <Route path="committee" element={<CommitteeMembers />} />
+        
+        {/* Donations & Finance */}
         <Route path="donations" element={<DonationList />} />
         <Route path="donations/add" element={<AddDonation />} />
         <Route path="donations/edit/:id" element={<EditDonation />} />
         <Route path="donations/receipt/:id" element={<Receipt />} />
+        
+        {/* Institutions - Derasar */}
         <Route path="derasar" element={<DerasarList />} />
         <Route path="derasar/salgirah" element={<Salgirah />} />
         <Route path="derasar/poojari" element={<Poojari />} />
         <Route path="derasar/pratima" element={<Pratima />} />
+        
+        {/* Institutions - Pathshala */}
         <Route path="pathshala/students" element={<Students />} />
         <Route path="pathshala/teachers" element={<Teachers />} />
         <Route path="pathshala/exams" element={<Exams />} />
         <Route path="pathshala/results" element={<Results />} />
+        
+        {/* Accounts */}
         <Route path="accounts" element={<Accounts />} />
         <Route path="accounts/income" element={<Income />} />
         <Route path="accounts/expense" element={<Expense />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="settings/profile" element={<Profile />} />
-        <Route path="settings/permissions" element={<Permissions />} />
+        
+        {/* Reports */}
         <Route path="reports/analytics" element={<Analytics />} />
         <Route path="reports/donations" element={<DonationReport />} />
         <Route path="reports/expenses" element={<ExpenseReport />} />
         <Route path="reports/users" element={<UserReport />} />
+        
+        {/* General */}
         <Route path="notifications" element={<Notifications />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

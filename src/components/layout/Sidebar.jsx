@@ -8,86 +8,79 @@ import {
 import { ROLES } from '../../config/roles'
 import { sanghAdminDropdownSections, sanghAdminTopFlatItems, sanghAdminBottomFlatItems } from '../../config/sanghAdminnav'
 
-const dropdownSections = [
-  {
-    trigger: { icon: Building2, label: 'Organization' },
-    children: [
-      { to: '/organization', icon: LayoutDashboard, label: 'Overview' },
-      { to: '/organization/trust', icon: Landmark, label: 'Trust' },
-      { to: '/organization/sangh', icon: Users, label: 'Sangh' },
-      { to: '/organization/departments', icon: Building2, label: 'Departments' },
-      { to: '/organization/location', icon: MapPin, label: 'Location' },
-    ],
-  },
-  {
-    trigger: { icon: UserCog, label: 'Users' },
-    children: [
-      { to: '/users', icon: Users, label: 'All Users' },
-      { to: '/roles', icon: Shield, label: 'Roles & Permissions' },
-      { to: '/committee', icon: Users, label: 'Committee' },
-    ],
-  },
-  {
-    trigger: { icon: HardHat, label: 'Staff' },
-    children: [
-      { to: '/staff/managers', icon: UserCog, label: 'Managers' },
-      { to: '/staff/accountants', icon: UserCog, label: 'Accountants' },
-      { to: '/staff/helpers', icon: UserCog, label: 'Helpers' },
-      { to: '/staff/volunteers', icon: UserCog, label: 'Volunteers' },
-    ],
-  },
-  {
-    trigger: { icon: Receipt, label: 'Accounts' },
-    children: [
-      { to: '/accounts', icon: Receipt, label: 'Accounts List' },
-      { to: '/accounts/income', icon: BarChart3, label: 'Income' },
-      { to: '/accounts/expense', icon: ClipboardList, label: 'Expense' },
-    ],
-  },
-  {
-    trigger: { icon: HandHeart, label: 'Donations' },
-    children: [
-      { to: '/donations', icon: ClipboardList, label: 'Donation List' },
-      { to: '/donations/add', icon: PlusCircle, label: 'Add Donation' },
-    ],
-  },
-  {
-    trigger: { icon: Building2, label: 'Derasar' },
-    children: [
-      { to: '/derasar', icon: Landmark, label: 'Derasar List' },
-      { to: '/derasar/salgirah', icon: ClipboardList, label: 'Salgirah' },
-      { to: '/derasar/poojari', icon: Users, label: 'Poojari' },
-      { to: '/derasar/pratima', icon: Landmark, label: 'Pratima' },
-    ],
-  },
-  {
-    trigger: { icon: BookOpen, label: 'Pathshala' },
-    children: [
-      { to: '/pathshala/students', icon: Users, label: 'Students' },
-      { to: '/pathshala/teachers', icon: UserCog, label: 'Teachers' },
-      { to: '/pathshala/exams', icon: ClipboardList, label: 'Exams' },
-      { to: '/pathshala/results', icon: BarChart3, label: 'Results' },
-    ],
-  },
-  {
-    trigger: { icon: BarChart3, label: 'Reports' },
-    children: [
-      { to: '/reports/analytics', icon: BarChart3, label: 'Analytics' },
-      { to: '/reports/donations', icon: ClipboardList, label: 'Donation Reports' },
-      { to: '/reports/expenses', icon: ClipboardList, label: 'Expense Reports' },
-    ],
-  },
-  {
-    trigger: { icon: Settings, label: 'Settings' },
-    children: [
-      { to: '/settings', icon: Settings, label: 'General Settings' },
-      { to: '/settings/profile', icon: UserCog, label: 'Profile' },
-    ],
-  },
-]
+const menuItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  
+  // Location Management - હવે આ સીધી લિંક છે, ડ્રોપડાઉન નથી
+  { to: '/locations', icon: MapPin, label: 'Location Management' },
 
-const flatItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  {
+    label: 'Organization',
+    icon: Building2,
+    children: [
+      { to: '/organizations/all', label: 'All Organizations' },
+      { to: '/organizations/sanghs', label: 'All Sanghs' },
+      { to: '/organizations/trusts', label: 'All Trusts' },
+      { to: '/organizations/linked', label: 'Linked Sangh & Trust' },
+    ]
+  },
+  {
+    label: 'User Management',
+    icon: UserCog,
+    children: [
+      { to: '/users/all', label: 'All Users' },
+      { to: '/users/roles', label: 'Roles & Permissions' },
+    ]
+  },
+  {
+    label: 'Members',
+    icon: Users2,
+    children: [
+      { to: '/members/families', label: 'Families' },
+      { to: '/members/individual', label: 'Individual' },
+      { to: '/members/committee', label: 'Committee Members' },
+    ]
+  },
+  {
+    label: 'Institutions',
+    icon: Hotel,
+    children: [
+      { to: '/institutions/derasar', label: 'Derasar' },
+      { to: '/institutions/pathshala', label: 'Pathshala' },
+      { to: '/institutions/aayambil', label: 'Aayambil Shala' },
+      { to: '/institutions/upasray', label: 'Upasray' },
+    ]
+  },
+  {
+    label: 'Activities',
+    icon: CalendarDays,
+    children: [
+      { to: '/activities/events', label: 'Events' },
+      { to: '/activities/meetings', label: 'Meetings' },
+      { to: '/activities/attendance', label: 'Attendance' },
+      { to: '/activities/leave', label: 'Leave' },
+      { to: '/activities/work', label: 'Daily Work' },
+    ]
+  },
+  {
+    label: 'Finance',
+    icon: Receipt,
+    children: [
+      { to: '/finance/donations', label: 'Donations' },
+      { to: '/finance/expenses', label: 'Expenses & Bills' },
+      { to: '/finance/receipts', label: 'Donation Receipts' },
+    ]
+  },
+  {
+    label: 'Departments & Staff',
+    icon: Users,
+    children: [
+      { to: '/staff/dept', label: 'Departments' },
+      { to: '/staff/members', label: 'Staff Members' },
+    ]
+  },
+  { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
 ]
 
@@ -233,22 +226,28 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
         )}
       </nav>
     </div>
-  )
+  );
 
+  // Mobile & Desktop render logic stays the same...
   if (isMobile) {
     return (
       <>
-        {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" onClick={onClose} />}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-white shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40" onClick={onClose} />}
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 bg-white shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <span className="text-xl font-black bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">JAIN SANGH</span>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><X className="w-6 h-6"/></button>
+          </div>
           {content}
         </div>
       </>
-    )
+    );
   }
 
   return (
-    <aside className={`hidden lg:flex flex-col fixed top-[64px] bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+    <aside className={`fixed top-16 bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white border-r border-slate-100 
+      ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       {content}
     </aside>
-  )
+  );
 }
