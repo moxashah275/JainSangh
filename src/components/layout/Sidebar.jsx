@@ -110,7 +110,7 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   useEffect(() => {
     let hasActive = false;
     currentDropdownSections.forEach(section => {
-      const isActive = section.children.some(child => isRouteActive(pathname, child.to))
+      const isActive = section.children?.some(child => isRouteActive(pathname, child.to))
       if (isActive) {
         setOpenSection(section.trigger.label)
         hasActive = true;
@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   }, [pathname, currentDropdownSections])
 
   const handleSectionClick = (section) => {
-    if (!isSidebarOpen && section.children && section.children.length > 0) {
+    if (!isSidebarOpen && section.children?.length > 0) {
       navigate(section.children[0].to);
       return;
     }
@@ -160,13 +160,26 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
 
         {/* Dropdown Menu Items */}
         {currentDropdownSections.map((section) => {
-          const isSectionActive = section.children.some(child => isRouteActive(pathname, child.to))
-          const isOpen = openSection === section.trigger.label
+          const hasChildren = section.children && section.children.length > 0;
+          const isDirectLink = section.to && !hasChildren;
+          const isSectionActive = hasChildren 
+            ? section.children.some(child => isRouteActive(pathname, child.to))
+            : (section.to ? isRouteActive(pathname, section.to) : false);
+          const isOpen = openSection === section.trigger.label;
+
+          const handleClick = () => {
+            if (isDirectLink) {
+              navigate(section.to);
+              if (isMobile) onClose();
+              return;
+            }
+            handleSectionClick(section);
+          };
 
           return (
             <div key={section.trigger.label} className="space-y-1">
               <button
-                onClick={() => handleSectionClick(section)}
+                onClick={handleClick}
                 className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
                   ${isSectionActive ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
                   ${!showLabels ? 'justify-center' : 'gap-3'}`}
@@ -175,28 +188,30 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
                 {showLabels && (
                   <>
                     <span className="flex-1 text-left text-sm font-semibold">{section.trigger.label}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    {hasChildren && <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />}
                   </>
                 )}
               </button>
 
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${(isOpen && showLabels) ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
-                <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
-                  {section.children.map((child) => {
-                    const active = isRouteActive(pathname, child.to)
-                    return (
-                      <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
-                        <div className={`flex items-center rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
-                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}
-                          ${!showLabels ? 'justify-center py-2' : 'gap-3 px-4 py-2'}`}>
-                          <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                          {showLabels && child.label}
-                        </div>
-                      </NavLink>
-                    )
-                  })}
+              {hasChildren && (
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${(isOpen && showLabels) ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                  <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
+                    {section.children.map((child) => {
+                      const active = isRouteActive(pathname, child.to)
+                      return (
+                        <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
+                          <div className={`flex items-center rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
+                            ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}
+                            ${!showLabels ? 'justify-center py-2' : 'gap-3 px-4 py-2'}`}>
+                            <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                            {showLabels && child.label}
+                          </div>
+                        </NavLink>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )
         })}

@@ -24,19 +24,8 @@ export const sanghAdminDropdownSections = [
   },
   {
     trigger: { icon: Users, label: "Members" },
-    children: [
-      { to: "/sangh-admin/members/families", icon: Users, label: "Families" },
-      {
-        to: "/sangh-admin/members/individuals",
-        icon: User,
-        label: "Individual Members",
-      },
-      {
-        to: "/sangh-admin/members/volunteers",
-        icon: HandHeart,
-        label: "Volunteers",
-      },
-    ],
+    to: "/sangh-admin/members",
+    children: [],
   },
   {
     trigger: { icon: Landmark, label: "Institutions" },
