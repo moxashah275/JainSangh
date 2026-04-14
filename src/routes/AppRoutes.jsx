@@ -37,12 +37,22 @@ import Expense from '../pages/accounts/Expense'
 import Settings from '../pages/settings/Settings'
 import Profile from '../pages/settings/Profile'
 import Permissions from '../pages/settings/Permissions'
+import SanghAdminDashboard from '../pages/sanghAdmin/SanghAdminDashboard'
+import SanghDetails from '../pages/sanghAdmin/mySangh/SanghDetails'
+import LinkedTrusts from '../pages/sanghAdmin/mySangh/LinkedTrusts'
+import SanghCommitteeMembers from '../pages/sanghAdmin/mySangh/CommitteeMembers'
+
+import { ROLES } from '../config/roles'
+import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        {/* Dashboard */}
+      <Route element={<ProtectedRoute />}>
+        
+        {/* SUPER ADMIN PROTECTED ROUTES */}
+        <Route element={<RoleGuard allowedRoles={[ROLES.SUPER_ADMIN]} />}>
+          <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         
         {/* Organization Management */}
@@ -100,13 +110,23 @@ export default function AppRoutes() {
         
         {/* General */}
         <Route path="notifications" element={<Notifications />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="settings/profile" element={<Profile />} />
-        <Route path="settings/permissions" element={<Permissions />} />
-        
-        {/* Catch-all Redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Route>
+    </Route>
+
+      {/* SANGH ADMIN PROTECTED ROUTES */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleGuard allowedRoles={[ROLES.SANGH_ADMIN]} />}>
+          <Route path="/sangh-admin" element={<Layout />}>
+            <Route index element={<SanghAdminDashboard />} />
+            <Route path="my-sangh/details" element={<SanghDetails />} />
+            <Route path="my-sangh/linked-trusts" element={<LinkedTrusts />} />
+            <Route path="my-sangh/committee" element={<SanghCommitteeMembers />} />
+          </Route>
+        </Route>
+      </Route>
+      
     </Routes>
   )
 }

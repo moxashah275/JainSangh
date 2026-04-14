@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, MapPin, Building2, UserCog, Users2, Hotel,
-  CalendarDays, Receipt, Users, BarChart3, Bell, Settings, X, ChevronDown, FileText
-} from 'lucide-react';
+  LayoutDashboard, Users, Landmark, ChevronDown, X, PlusCircle, Shield,
+  UserCog, Building2, HardHat, HandHeart, BookOpen, BarChart3, Bell,
+  ClipboardList, MapPin, Receipt,Settings, dropdownSections,flatItems,
+  Users2, Hotel, CalendarDays, FileText 
+} from 'lucide-react'
+import { ROLES } from '../../config/roles'
+import { sanghAdminDropdownSections, sanghAdminTopFlatItems, sanghAdminBottomFlatItems } from '../../config/sanghAdminnav'
 
-const menuItems = [
+
+const menuItems  = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   
-  // Location Management - હવે આ સીધી લિંક છે, ડ્રોપડાઉન નથી
+  
   { to: '/locations', icon: MapPin, label: 'Location Management' },
 
   {
@@ -79,95 +84,133 @@ const menuItems = [
   { to: '/reports', icon: BarChart3, label: 'Reports' },
   { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/settings', icon: Settings, label: 'System Settings' },
-];
+]
+
+function isRouteActive(pathname, to) {
+  if (to === '/' || to === '/sangh-admin') return pathname === to || pathname === to + '/'
+  return pathname === to || pathname.startsWith(to + '/')
+}
 
 export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
-  const { pathname } = useLocation();
-  const [openMenus, setOpenMenus] = useState({});
-  const showLabels = isMobile || isSidebarOpen;
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const [openSection, setOpenSection] = useState(null)
+  const showLabels = isMobile || isSidebarOpen
+  const userRole = localStorage.getItem('userRole') || ROLES.SUPER_ADMIN
+  const isSanghAdmin = userRole === ROLES.SANGH_ADMIN
 
-  const toggleMenu = (label) => {
-    setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
-  };
+  const currentDropdownSections = isSanghAdmin ? sanghAdminDropdownSections :  dropdownSections
+  const topFlatItems = isSanghAdmin ? sanghAdminTopFlatItems :  flatItems
 
-  const isRouteActive = (to) => {
-    if (!to) return false;
-    if (to === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) return true;
-    return pathname === to || pathname.startsWith(to + '/');
-  };
-
-  const isParentActive = (children) => {
-    return children?.some(child => isRouteActive(child.to));
-  };
-
-  const NavItem = ({ item }) => {
-    const hasChildren = !!item.children;
-    const parentActive = hasChildren && isParentActive(item.children);
-    const active = isRouteActive(item.to) || parentActive;
-    const isOpen = openMenus[item.label];
-
-    const itemStyle = `relative flex items-center px-4 py-[11px] rounded-xl transition-all duration-300 group cursor-pointer
-      hover:bg-emerald-50/60 
-      ${!showLabels ? 'justify-center' : 'gap-3.5'}`;
-
-    const labelStyle = `text-[14.5px] flex-1 whitespace-nowrap font-sans transition-all duration-300
-      ${active 
-        ? 'font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent' 
-        : 'font-semibold text-slate-500 group-hover:text-emerald-600'}`;
-
-    const iconStyle = `w-[20px] h-[20px] shrink-0 transition-all duration-300 
-      ${active ? 'text-teal-600 scale-110' : 'text-slate-400 group-hover:text-emerald-500'}`;
-
-    // Dropdown logic only for items with children
-    if (hasChildren && showLabels) {
-      return (
-        <div className="mb-1">
-          <div onClick={() => toggleMenu(item.label)} className={itemStyle}>
-            <item.icon className={iconStyle} />
-            <span className={labelStyle}>{item.label}</span>
-            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} ${active ? 'text-teal-600' : 'text-slate-300'}`} />
-          </div>
-          
-          {isOpen && (
-            <div className="mt-1 ml-6 space-y-0.5">
-              {item.children.map(child => (
-                <NavLink 
-                  key={child.to} 
-                  to={child.to} 
-                  onClick={isMobile ? onClose : undefined}
-                  className={({ isActive }) => `block py-2 px-4 text-[13.5px] rounded-lg transition-all
-                    hover:bg-emerald-50/60
-                    ${isActive 
-                      ? 'text-teal-600 font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent' 
-                      : 'text-slate-500 font-medium hover:text-emerald-600'}`}
-                >
-                  {child.label}
-                </NavLink>
-                
-              ))}
-            </div>
-          )}
-        </div>
-      );
+  useEffect(() => {
+    let hasActive = false;
+    currentDropdownSections.forEach(section => {
+      const isActive = section.children.some(child => isRouteActive(pathname, child.to))
+      if (isActive) {
+        setOpenSection(section.trigger.label)
+        hasActive = true;
+      }
+    });
+    if (!hasActive) {
+      setOpenSection(null);
     }
+  }, [pathname, currentDropdownSections])
 
-    // Standard NavLink for single items (like Dashboard and now Location Management)
-    return (
-      <NavLink to={item.to} onClick={isMobile ? onClose : undefined} className={`mb-1 ${itemStyle}`}>
-        <item.icon className={iconStyle} />
-        {showLabels && <span className={labelStyle}>{item.label}</span>}
-      </NavLink>
-    );
-  };
+  const handleSectionClick = (section) => {
+    if (!isSidebarOpen && section.children && section.children.length > 0) {
+      navigate(section.children[0].to);
+      return;
+    }
+    setOpenSection(openSection === section.trigger.label ? null : section.trigger.label)
+  }
 
   const content = (
     <div className="flex flex-col h-full bg-white select-none">
-      <nav className={`flex-1 px-3 ${isMobile ? 'py-6' : 'py-4'} space-y-1 overflow-y-auto 
-        scrollbar-hide [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
-        {menuItems.map((item, idx) => (
-          <NavItem key={item.label || idx} item={item} />
-        ))}
+      {isMobile && (
+        <div className="px-5 py-4 flex justify-between items-center">
+          <span className="font-bold text-teal-700">MENU</span>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      
+      <nav className={`flex-1 overflow-y-auto px-3 ${isMobile ? 'py-4' : 'pt-7 pb-4'} space-y-3 custom-scrollbar`}>
+        
+        {/* Dashboard & Notifications (or Top Flat Items) */}
+        {topFlatItems.map((item) => {
+          const active = isRouteActive(pathname, item.to)
+          return (
+            <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
+              <div className={`relative flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95
+                ${active ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
+                ${!showLabels ? 'justify-center' : 'gap-3'}`}>
+                <item.icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                {showLabels && <span className="text-sm font-semibold">{item.label}</span>}
+              </div>
+            </NavLink>
+          )
+        })}
+
+        {/* Dropdown Menu Items */}
+        {currentDropdownSections.map((section) => {
+          const isSectionActive = section.children.some(child => isRouteActive(pathname, child.to))
+          const isOpen = openSection === section.trigger.label
+
+          return (
+            <div key={section.trigger.label} className="space-y-1">
+              <button
+                onClick={() => handleSectionClick(section)}
+                className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
+                  ${isSectionActive ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
+                  ${!showLabels ? 'justify-center' : 'gap-3'}`}
+              >
+                <section.trigger.icon className={`w-5 h-5 shrink-0 transition-colors ${isSectionActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                {showLabels && (
+                  <>
+                    <span className="flex-1 text-left text-sm font-semibold">{section.trigger.label}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </>
+                )}
+              </button>
+
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${(isOpen && showLabels) ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
+                  {section.children.map((child) => {
+                    const active = isRouteActive(pathname, child.to)
+                    return (
+                      <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
+                        <div className={`flex items-center rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
+                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}
+                          ${!showLabels ? 'justify-center py-2' : 'gap-3 px-4 py-2'}`}>
+                          <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                          {showLabels && child.label}
+                        </div>
+                      </NavLink>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+
+        {isSanghAdmin && sanghAdminBottomFlatItems.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
+            {sanghAdminBottomFlatItems.map((item) => {
+               const active = isRouteActive(pathname, item.to)
+               return (
+                 <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
+                   <div className={`relative flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-all duration-200 transform active:scale-95 ${active ? 'bg-teal-50 text-teal-700' : 'text-slate-600'} ${!showLabels ? 'justify-center' : 'gap-3'}`}>
+                     <item.icon className={`w-5 h-5 shrink-0 ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                     {showLabels && <span className="text-sm font-semibold">{item.label}</span>}
+                   </div>
+                 </NavLink>
+               )
+            })}
+          </div>
+        )}
       </nav>
     </div>
   );
