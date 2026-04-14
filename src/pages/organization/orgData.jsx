@@ -1,279 +1,50 @@
+// 1. Define Constants here so they can be exported directly for other components (like UserList)
 export const INITIAL_TRUSTS = [
-  {
-    id: 1,
-    name: 'Sathandji Kalyanji Trust',
-    code: 'SKT-001',
-    address: 'Sathandji Area, Palitana',
-    established: '1986',
-    phone: '+91 98765 21001',
-    admin: 'Rajesh Shah',
-    sanghCount: 3,
-    managerCount: 8,
-    accountCount: 3,
-    committeeCount: 12,
-    derasarCount: 2,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    name: 'Palitana Jain Welfare Trust',
-    code: 'PJT-014',
-    address: 'Main Bazaar, Palitana',
-    established: '1994',
-    phone: '+91 98765 21014',
-    admin: 'Prakash Mehta',
-    sanghCount: 2,
-    managerCount: 4,
-    accountCount: 2,
-    committeeCount: 8,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    name: 'Shatrunjay Seva Trust',
-    code: 'SST-021',
-    address: 'Taleti Road, Palitana',
-    established: '2002',
-    phone: '+91 98765 21021',
-    admin: 'Bhavesh Jain',
-    sanghCount: 1,
-    managerCount: 3,
-    accountCount: 1,
-    committeeCount: 5,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Inactive',
-  },
-]
+  { id: 1, name: 'Sheth Anandji Kalyanji Trust', code: 'SAKT01', admin: 'Rajesh Shah', phone: '9876500000', address: 'Main Road, Palitana', city: 'Palitana', status: true },
+  { id: 2, name: 'Shree Palitana Jain Vitrag Trust', code: 'SPJVT', admin: 'Mahendra Mehta', phone: '9876500001', address: 'Taleti Area', city: 'Palitana', status: true }
+];
 
 export const INITIAL_SANGHS = [
-  {
-    id: 1,
-    trustId: 1,
-    name: 'Sathandji Kalyanji Sangh',
-    type: 'Main Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Sathandji Area',
-    memberCount: 840,
-    managersCount: 8,
-    accountsCount: 3,
-    committeeCount: 12,
-    derasarCount: 2,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    trustId: 1,
-    name: 'Taleti Jain Sangh',
-    type: 'Regional Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Taleti',
-    memberCount: 420,
-    managersCount: 4,
-    accountsCount: 2,
-    committeeCount: 8,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    trustId: 2,
-    name: 'Bhavnagar Upashray Sangh',
-    type: 'City Sangh',
-    city: 'Bhavnagar',
-    state: 'Gujarat',
-    area: 'Ghoghagate',
-    memberCount: 310,
-    managersCount: 3,
-    accountsCount: 2,
-    committeeCount: 6,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 4,
-    trustId: 2,
-    name: 'Shatrunjay Yatri Sangh',
-    type: 'Yatri Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Yatrik Bhavan',
-    memberCount: 165,
-    managersCount: 2,
-    accountsCount: 1,
-    committeeCount: 4,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Inactive',
-  },
-  {
-    id: 5,
-    trustId: 3,
-    name: 'Seva Marg Sangh',
-    type: 'Support Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Taleti Road',
-    memberCount: 120,
-    managersCount: 2,
-    accountsCount: 1,
-    committeeCount: 3,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Active',
-  },
-]
+  { id: 101, name: 'Sathandji Kalyanji Sangh', city: 'Palitana', members: 1200, address: 'Near Derasar', type: 'Main', status: true },
+  { id: 102, name: 'Taleti Road Sangh', city: 'Palitana', members: 450, address: 'Taleti', type: 'Regional', status: true }
+];
+
+const INITIAL_LINKS = [
+  { id: 1, trustId: 1, sanghId: 101, status: true },
+  { id: 2, trustId: 1, sanghId: 102, status: true }
+];
 
 export const INITIAL_DEPARTMENTS = [
-  {
-    id: 1,
-    name: 'Managers',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Mahavirbhai Shah',
-    memberCount: 8,
-    description: 'Daily operations, events, permissions follow-up, and family coordination.',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    name: 'Accounts',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Anil Shah',
-    memberCount: 3,
-    description: 'Income, expense, receipt management, bank reconciliation, and yearly reports.',
-    status: 'Active',
-  },
-  {
-    id: 3,
-    name: 'Committee',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Vipul Shah',
-    memberCount: 12,
-    description: 'Strategy, sangh governance, approvals, and trust-level decision making.',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    name: 'Derasar',
-    trustId: 2,
-    sanghId: 3,
-    head: 'Pravinbhai Shah',
-    memberCount: 5,
-    description: 'Daily pooja schedule, seva assignments, temple maintenance, and utsav support.',
-    status: 'Active',
-  },
-  {
-    id: 5,
-    name: 'Pathshala',
-    trustId: 2,
-    sanghId: 3,
-    head: 'Hemant Joshi',
-    memberCount: 6,
-    description: 'Student batches, teacher planning, exams, results, and attendance follow-up.',
-    status: 'Active',
-  },
-  {
-    id: 6,
-    name: 'Accounts',
-    trustId: 2,
-    sanghId: 4,
-    head: 'Dinesh Jain',
-    memberCount: 2,
-    description: 'Travel income, pilgrim expenses, donor acknowledgements, and expense summaries.',
-    status: 'Inactive',
-  },
-]
+  { id: 201, name: 'Accounts & Finance', head: 'Nirav Shah', members: 5, status: true },
+  { id: 202, name: 'Donation Management', head: 'Mehul Mehta', members: 8, status: true },
+];
 
-export const INITIAL_LOCATIONS = [
-  {
-    id: 1,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Palitana',
-    locality: 'Sathandji Area',
-    pincode: '364270',
-    sanghCount: 2,
-    trustCount: 1,
-    managerCount: 8,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Palitana',
-    locality: 'Taleti',
-    pincode: '364270',
-    sanghCount: 2,
-    trustCount: 2,
-    managerCount: 5,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Bhavnagar City',
-    locality: 'Ghoghagate',
-    pincode: '364001',
-    sanghCount: 1,
-    trustCount: 1,
-    managerCount: 3,
-    status: 'Active',
-  },
-  {
-    id: 4,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Ahmedabad',
-    area: 'Satellite',
-    locality: 'Jodhpur',
-    pincode: '380015',
-    sanghCount: 1,
-    trustCount: 1,
-    managerCount: 2,
-    status: 'Inactive',
-  },
-]
+// 2. Local Storage Helpers
+const STORAGE_KEY = 'org_management_v2';
 
-export const LOCATION_LEVELS = [
-  { label: 'Country', value: 'India' },
-  { label: 'State', value: 'Gujarat' },
-  { label: 'City', value: 'Bhavnagar' },
-  { label: 'Area', value: 'Palitana' },
-  { label: 'Locality', value: 'Sathandji Area' },
-  { label: 'Pincode', value: '364270' },
-]
+const generateInitialData = () => ({
+  trusts: INITIAL_TRUSTS,
+  sanghs: INITIAL_SANGHS,
+  links: INITIAL_LINKS
+});
 
-export function getTrustName(trustId, trusts = INITIAL_TRUSTS) {
-  const trust = (trusts || []).find((item) => item.id === Number(trustId))
-  return trust ? trust.name : '-'
-}
+export const getOrgData = () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) return JSON.parse(saved);
+  return generateInitialData();
+};
 
-export function getSanghName(sanghId, sanghs = INITIAL_SANGHS) {
-  const sangh = (sanghs || []).find((item) => item.id === Number(sanghId))
-  return sangh ? sangh.name : '-'
-}
+export const saveOrgData = (data) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
 
-export function getDeptName(deptId, departments = INITIAL_DEPARTMENTS) {
-  const department = (departments || []).find((item) => item.id === Number(deptId))
-  return department ? department.name : '-'
-}
+// 3. Getter Helpers
+export const getTrustName = (trustId, trusts) => {
+  const trust = trusts.find(t => t.id === Number(trustId));
+  return trust ? trust.name : 'Unknown Trust';
+};
 
-export default function orgData() {
-  return null
-}
+export const getSanghName = (sanghId, sanghs) => {
+  const sangh = sanghs.find(s => s.id === Number(sanghId));
+  return sangh ? sangh.name : 'Unknown Sangh';
+};
