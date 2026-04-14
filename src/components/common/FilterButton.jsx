@@ -3,6 +3,7 @@ import { SlidersHorizontal, ChevronDown } from "lucide-react";
 
 export default function FilterButton({ filters, options, onChange, onClear }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const [localFilters, setLocalFilters] = useState({ ...filters });
   const dropdownRef = useRef(null);
 
@@ -38,7 +39,13 @@ export default function FilterButton({ filters, options, onChange, onClear }) {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen && dropdownRef.current) {
+            const rect = dropdownRef.current.getBoundingClientRect();
+            setOpenUp(window.innerHeight - rect.bottom < 300);
+          }
+          setIsOpen(!isOpen);
+        }}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 text-[13px] font-bold shadow-sm
           ${
             hasActive
@@ -56,7 +63,7 @@ export default function FilterButton({ filters, options, onChange, onClear }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-64 bg-white rounded-xl border border-slate-100 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 p-3.5">
+        <div className={`absolute right-0 w-64 bg-white rounded-xl border border-slate-100 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 p-3.5 ${openUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}>
           <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-50">
             <h3 className="text-[13px] font-bold text-slate-800">Filter By</h3>
             {hasActive && (
@@ -119,6 +126,7 @@ export default function FilterButton({ filters, options, onChange, onClear }) {
 
 function CustomSelect({ value, options, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const selectRef = useRef(null);
 
   const selectedOption = options.find(
@@ -140,7 +148,13 @@ function CustomSelect({ value, options, onChange }) {
   return (
     <div className="relative" ref={selectRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen && selectRef.current) {
+            const rect = selectRef.current.getBoundingClientRect();
+            setOpenUp(window.innerHeight - rect.bottom < 200);
+          }
+          setIsOpen(!isOpen);
+        }}
         className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/50 border border-slate-100 rounded-lg text-[13px] text-slate-700 font-medium hover:bg-slate-50 transition-all text-left"
       >
         <span className="truncate">{selectedLabel}</span>
@@ -150,7 +164,7 @@ function CustomSelect({ value, options, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-100 rounded-lg shadow-xl z-[60] py-1 max-h-48 overflow-y-auto custom-scrollbar">
+        <div className={`absolute left-0 right-0 bg-white border border-slate-100 rounded-lg shadow-xl z-[60] py-1 max-h-48 overflow-y-auto custom-scrollbar ${openUp ? "bottom-full mb-1" : "top-full mt-1"}`}>
           {options.map((opt, i) => {
             const val = typeof opt === "string" ? opt : opt.value;
             const label = typeof opt === "string" ? opt : opt.label;

@@ -3,6 +3,7 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DatePicker({ label, value, onChange, icon: Icon = Calendar, placeholder = "Select date" }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const containerRef = useRef(null);
 
   // Close when clicking outside
@@ -15,6 +16,14 @@ export default function DatePicker({ label, value, onChange, icon: Icon = Calend
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleToggle = () => {
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setOpenUp(window.innerHeight - rect.bottom < 320); // 320px is calendar height approx
+    }
+    setIsOpen(!isOpen);
+  };
 
   const handleSelect = (day, monthIndex, year) => {
     const monthDigit = String(monthIndex + 1).padStart(2, '0');
@@ -29,7 +38,7 @@ export default function DatePicker({ label, value, onChange, icon: Icon = Calend
       {label && <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">{label}</label>}
       <button 
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="w-full h-[46px] bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-left flex items-center justify-between group hover:border-teal-500 hover:bg-white transition-all outline-none focus:ring-4 focus:ring-teal-50"
       >
         <span className={value ? "text-slate-700 font-medium" : "text-slate-400"}>
@@ -39,7 +48,7 @@ export default function DatePicker({ label, value, onChange, icon: Icon = Calend
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-[60] w-72 bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-100 p-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className={`absolute left-0 z-[60] w-72 bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-100 p-4 animate-in fade-in zoom-in-95 duration-200 ${openUp ? "bottom-full mb-2" : "top-full mt-2"}`}>
            <CalendarGrid onSelect={handleSelect} initialValue={value} />
         </div>
       )}

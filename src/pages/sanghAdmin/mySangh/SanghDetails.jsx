@@ -5,49 +5,52 @@ import {
   Clock, Edit, Landmark, BookOpen 
 } from "lucide-react";
 import Button from "../../../components/common/Button";
-import Loader from "../../../components/common/Loader";
+import Skeleton from "../../../components/common/Skeleton";
 import Modal from "../../../components/common/Modal";
 import Input from "../../../components/common/Input";
 import DatePicker from "../../../components/common/DatePicker";
 
 export default function SanghDetails() {
-  const [sangh, setSangh] = useState(null);
+  const defaultData = {
+    id: 1,
+    name: "Sathandji Kalyanji Sangh",
+    date: "26 January 1992",
+    type: "Main Sangh",
+    address: "123, Jain Layout, Near Mahaveer Temple, Palitana, Bhavnagar, Gujarat - 364270",
+    totalFamilies: "1,240",
+    totalMembers: "4,850",
+    head: "Arvindbhai Mehta",
+    totalTrusts: "05",
+    contactPhone: "9825012345",
+    email: "sathandjikalyanji@gmail.com",
+    website: "www.sathandjisangh.org",
+    status: "Active",
+    city: "Palitana",
+    state: "Gujarat",
+    area: "Sathandji Area",
+    code: "SKS-001"
+  };
+
+  const [sangh, setSangh] = useState(defaultData);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Overview");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(defaultData);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchSanghDetails = async () => {
       try {
         setLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 150)); // Ultra-fast shimmer
         const stored = localStorage.getItem("sangh_data");
-        const defaultData = {
-          id: 1,
-          name: "Sathandji Kalyanji Sangh",
-          date: "26 January 1992",
-          type: "Main Sangh",
-          address: "123, Jain Layout, Near Mahaveer Temple, Palitana, Bhavnagar, Gujarat - 364270",
-          totalFamilies: "1,240",
-          totalMembers: "4,850",
-          head: "Arvindbhai Mehta",
-          totalTrusts: "05",
-          contactPhone: "9825012345",
-          email: "sathandjikalyanji@gmail.com",
-          website: "www.sathandjisangh.org",
-          status: "Active",
-          city: "Palitana",
-          state: "Gujarat",
-          area: "Sathandji Area",
-          code: "SKS-001"
-        };
-        
-        const data = stored ? JSON.parse(stored) : defaultData;
-        setSangh(data);
-        setFormData(data);
+        if (stored) {
+          const data = JSON.parse(stored);
+          setSangh(data);
+          setFormData(data);
+        }
       } catch (error) {
         console.error("Failed to fetch sangh details", error);
       } finally {
@@ -110,7 +113,7 @@ export default function SanghDetails() {
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
-  if (loading) return <Loader fullPage />;
+
 
   return (
     <div className="space-y-3 w-full">
@@ -197,7 +200,16 @@ export default function SanghDetails() {
 
         {/* Detail Content - Premium Cards */}
         <div className="px-4 pt-2 pb-4">
-          {activeTab === "Overview" && (
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton variant="text" width="60px" height="10px" />
+                  <Skeleton variant="text" width="150px" height="16px" />
+                </div>
+              ))}
+            </div>
+          ) : activeTab === "Overview" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <DetailBox label="OFFICIAL EMAIL" value={sangh.email} icon={Mail} />
               <DetailBox label="CONTACT PHONE" value={sangh.contactPhone} icon={Phone} />
@@ -210,7 +222,7 @@ export default function SanghDetails() {
               </div>
             </div>
           )}
-          {activeTab === "Finance" && (
+          {!loading && activeTab === "Finance" && (
             <div className="h-48 flex flex-col items-center justify-center bg-slate-50/50 border border-dashed border-slate-200 rounded-[32px] animate-in zoom-in-95 duration-300">
                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-3">
                  <Clock className="w-6 h-6 text-slate-300" />

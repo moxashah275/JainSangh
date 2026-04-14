@@ -1,16 +1,21 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Landmark, Eye, Trash2, CheckCircle2 } from 'lucide-react'
+import { Landmark, Eye, Trash2, CheckCircle2, Search } from 'lucide-react'
 import CommonPageLayout from '../../../components/common/CommonPageLayout'
 import Table from '../../../components/common/Table'
 import ConfirmModal from '../../../components/common/ConfirmModal'
 import FilterButton from '../../../components/common/FilterButton'
 import Modal from '../../../components/common/Modal'
+import Pagination from '../../../components/common/Pagination'
 
 export default function LinkedTrusts() {
   const [trusts, setTrusts] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({ status: '', category: '' })
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const [recordsPerPage, setRecordsPerPage] = useState(10)
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null })
   const [viewModal, setViewModal] = useState({ open: false, data: null })
 
@@ -18,7 +23,7 @@ export default function LinkedTrusts() {
     const fetchLinkedTrusts = async () => {
       try {
         setLoading(true)
-        await new Promise(resolve => setTimeout(resolve, 600)) 
+        await new Promise(resolve => setTimeout(resolve, 150)) // Ultra-fast shimmer
         const stored = localStorage.getItem('linked_trusts_data')
         const defaultData = [
           { id: 1, name: 'Anandji Kalyanji Trust', category: 'General', phone: '9876543210', status: 'Active' },
@@ -42,13 +47,22 @@ export default function LinkedTrusts() {
   const filteredTrusts = useMemo(() => {
     return trusts.filter(t => {
       const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
       const matchesStatus = !filters.status || t.status === filters.status;
       const matchesCategory = !filters.category || t.category === filters.category;
-      
       return matchesSearch && matchesStatus && matchesCategory;
     })
   }, [trusts, searchQuery, filters])
+
+  // Paginated Data
+  const paginatedTrusts = useMemo(() => {
+    const start = (currentPage - 1) * recordsPerPage;
+    return filteredTrusts.slice(start, start + recordsPerPage);
+  }, [filteredTrusts, currentPage, recordsPerPage]);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filters, recordsPerPage]);
 
   const stats = [
     { title: 'Total Trust', value: trusts.length, icon: Landmark, color: 'teal' },
@@ -72,7 +86,7 @@ export default function LinkedTrusts() {
     { 
       key: 'sr_no', 
       label: 'Sr. No', 
-      render: (_, __, i) => <span className="text-slate-400 font-semibold">{i + 1}</span> 
+      render: (_, __, i) => <span className="text-slate-500 font-semibold">{i + 1}</span> 
     },
     { 
       key: 'name', 
@@ -149,27 +163,46 @@ export default function LinkedTrusts() {
     <CommonPageLayout
       title="Linked Trusts"
       stats={stats}
-      searchValue={searchQuery}
-      onSearchChange={(value) => setSearchQuery(value)}
-      searchPlaceholder="Search by trust name..."
-      toolbar={
-        <div className="flex items-center justify-end gap-3 flex-1">
-          <FilterButton 
-            filters={filters} 
-            options={filterOptions} 
-            onChange={handleFilterChange} 
-            onClear={clearFilters} 
-          />
-        </div>
-      }
     >
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="p-4 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="w-full sm:max-w-sm">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by trust name..."
+                className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] font-medium text-slate-700 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-50 outline-none transition-all duration-200"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FilterButton 
+              filters={filters} 
+              options={filterOptions} 
+              onChange={handleFilterChange} 
+              onClear={clearFilters} 
+            />
+          </div>
+        </div>
+
         <Table 
           columns={columns} 
-          data={filteredTrusts} 
+          data={paginatedTrusts} 
           loading={loading}
+          skipCard
           emptyMessage="No linked trusts found"
           emptyDescription="Try adjusting your search or add new trusts."
+        />
+
+        <Pagination 
+          currentPage={currentPage}
+          totalRecords={filteredTrusts.length}
+          recordsPerPage={recordsPerPage}
+          onPageChange={setCurrentPage}
+          onRecordsPerPageChange={setRecordsPerPage}
         />
       </div>
 
