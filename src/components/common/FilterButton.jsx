@@ -42,11 +42,11 @@ export default function FilterButton({ filters, options, onChange, onClear }) {
         onClick={() => {
           if (!isOpen && dropdownRef.current) {
             const rect = dropdownRef.current.getBoundingClientRect();
-            setOpenUp(window.innerHeight - rect.bottom < 300);
+            setOpenUp(window.innerHeight - rect.bottom < 200);
           }
           setIsOpen(!isOpen);
         }}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 text-[13px] font-bold shadow-sm
+        className={`flex items-center gap-1.5 px-3 h-[36px] rounded-xl border transition-all duration-200 text-[13px] font-bold shadow-sm
           ${
             hasActive
               ? "bg-teal-50 border-teal-200 text-teal-700"

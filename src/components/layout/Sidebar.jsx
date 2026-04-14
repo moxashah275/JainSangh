@@ -3,84 +3,91 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Landmark, ChevronDown, X, PlusCircle, Shield,
   UserCog, Building2, HardHat, HandHeart, BookOpen, BarChart3, Bell,
-  ClipboardList, MapPin, Receipt, Settings
+  ClipboardList, MapPin, Receipt, Settings, Users2, Hotel, CalendarDays, FileText
 } from 'lucide-react'
 import { ROLES } from '../../config/roles'
 import { sanghAdminDropdownSections, sanghAdminTopFlatItems, sanghAdminBottomFlatItems } from '../../config/sanghAdminnav'
 
-const menuItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  
-  // Location Management - હવે આ સીધી લિંક છે, ડ્રોપડાઉન નથી
-  { to: '/locations', icon: MapPin, label: 'Location Management' },
+const dropdownSections = [
+  {
+    trigger: { icon: Building2, label: 'Organization' },
+    children: [
+      { to: '/organization', icon: LayoutDashboard, label: 'Overview' },
+      { to: '/organization/trust', icon: Landmark, label: 'Trust' },
+      { to: '/organization/sangh', icon: Users, label: 'Sangh' },
+      { to: '/organization/departments', icon: Building2, label: 'Departments' },
+      { to: '/locations', icon: MapPin, label: 'Location' },
+    ],
+  },
+  {
+    trigger: { icon: UserCog, label: 'Users' },
+    children: [
+      { to: '/users', icon: Users, label: 'All Users' },
+      { to: '/roles', icon: Shield, label: 'Roles & Permissions' },
+      { to: '/committee', icon: Users, label: 'Committee' },
+    ],
+  },
+  {
+    trigger: { icon: HardHat, label: 'Staff' },
+    children: [
+      { to: '/staff/managers', icon: UserCog, label: 'Managers' },
+      { to: '/staff/accountants', icon: UserCog, label: 'Accountants' },
+      { to: '/staff/helpers', icon: UserCog, label: 'Helpers' },
+      { to: '/staff/volunteers', icon: UserCog, label: 'Volunteers' },
+    ],
+  },
+  {
+    trigger: { icon: Receipt, label: 'Accounts' },
+    children: [
+      { to: '/accounts', icon: Receipt, label: 'Accounts List' },
+      { to: '/accounts/income', icon: BarChart3, label: 'Income' },
+      { to: '/accounts/expense', icon: ClipboardList, label: 'Expense' },
+    ],
+  },
+  {
+    trigger: { icon: HandHeart, label: 'Donations' },
+    children: [
+      { to: '/donations', icon: ClipboardList, label: 'Donation List' },
+      { to: '/donations/add', icon: PlusCircle, label: 'Add Donation' },
+    ],
+  },
+  {
+    trigger: { icon: Building2, label: 'Derasar' },
+    children: [
+      { to: '/derasar', icon: Landmark, label: 'Derasar List' },
+      { to: '/derasar/salgirah', icon: ClipboardList, label: 'Salgirah' },
+      { to: '/derasar/poojari', icon: Users, label: 'Poojari' },
+      { to: '/derasar/pratima', icon: Landmark, label: 'Pratima' },
+    ],
+  },
+  {
+    trigger: { icon: BookOpen, label: 'Pathshala' },
+    children: [
+      { to: '/pathshala/students', icon: Users, label: 'Students' },
+      { to: '/pathshala/teachers', icon: UserCog, label: 'Teachers' },
+      { to: '/pathshala/exams', icon: ClipboardList, label: 'Exams' },
+      { to: '/pathshala/results', icon: BarChart3, label: 'Results' },
+    ],
+  },
+  {
+    trigger: { icon: BarChart3, label: 'Reports' },
+    children: [
+      { to: '/reports/analytics', icon: BarChart3, label: 'Analytics' },
+      { to: '/reports/donations', icon: ClipboardList, label: 'Donation Reports' },
+      { to: '/reports/expenses', icon: ClipboardList, label: 'Expense Reports' },
+    ],
+  },
+  {
+    trigger: { icon: Settings, label: 'Settings' },
+    children: [
+      { to: '/settings', icon: Settings, label: 'General Settings' },
+      { to: '/settings/profile', icon: UserCog, label: 'Profile' },
+    ],
+  },
+]
 
-  {
-    label: 'Organization',
-    icon: Building2,
-    children: [
-      { to: '/organizations/all', label: 'All Organizations' },
-      { to: '/organizations/sanghs', label: 'All Sanghs' },
-      { to: '/organizations/trusts', label: 'All Trusts' },
-      { to: '/organizations/linked', label: 'Linked Sangh & Trust' },
-    ]
-  },
-  {
-    label: 'User Management',
-    icon: UserCog,
-    children: [
-      { to: '/users/all', label: 'All Users' },
-      { to: '/users/roles', label: 'Roles & Permissions' },
-    ]
-  },
-  {
-    label: 'Members',
-    icon: Users2,
-    children: [
-      { to: '/members/families', label: 'Families' },
-      { to: '/members/individual', label: 'Individual' },
-      { to: '/members/committee', label: 'Committee Members' },
-    ]
-  },
-  {
-    label: 'Institutions',
-    icon: Hotel,
-    children: [
-      { to: '/institutions/derasar', label: 'Derasar' },
-      { to: '/institutions/pathshala', label: 'Pathshala' },
-      { to: '/institutions/aayambil', label: 'Aayambil Shala' },
-      { to: '/institutions/upasray', label: 'Upasray' },
-    ]
-  },
-  {
-    label: 'Activities',
-    icon: CalendarDays,
-    children: [
-      { to: '/activities/events', label: 'Events' },
-      { to: '/activities/meetings', label: 'Meetings' },
-      { to: '/activities/attendance', label: 'Attendance' },
-      { to: '/activities/leave', label: 'Leave' },
-      { to: '/activities/work', label: 'Daily Work' },
-    ]
-  },
-  {
-    label: 'Finance',
-    icon: Receipt,
-    children: [
-      { to: '/finance/donations', label: 'Donations' },
-      { to: '/finance/expenses', label: 'Expenses & Bills' },
-      { to: '/finance/receipts', label: 'Donation Receipts' },
-    ]
-  },
-  {
-    label: 'Departments & Staff',
-    icon: Users,
-    children: [
-      { to: '/staff/dept', label: 'Departments' },
-      { to: '/staff/members', label: 'Staff Members' },
-    ]
-  },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/documents', icon: FileText, label: 'Documents' },
+const flatItems = [
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
 ]
 
