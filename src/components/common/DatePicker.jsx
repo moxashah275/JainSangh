@@ -39,7 +39,7 @@ export default function DatePicker({ label, value, onChange, icon: Icon = Calend
       <button 
         type="button"
         onClick={handleToggle}
-        className="w-full h-[46px] bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-left flex items-center justify-between group hover:border-teal-500 hover:bg-white transition-all outline-none focus:ring-4 focus:ring-teal-50"
+        className="w-full h-[36px] bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-left flex items-center justify-between group hover:border-teal-500 hover:bg-white transition-all outline-none focus:ring-4 focus:ring-teal-50"
       >
         <span className={value ? "text-slate-700 font-medium" : "text-slate-400"}>
           {value || placeholder}

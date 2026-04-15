@@ -31,6 +31,7 @@ import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import Pagination from "../../../components/common/Pagination";
 import DatePicker from "../../../components/common/DatePicker";
+import { useToast } from "../../../components/common/Toast";
 
 const INITIAL_FORM = {
   name: "",
@@ -56,6 +57,7 @@ export default function CommitteeMembers() {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const showToast = useToast();
 
   useEffect(() => {
     const stored = localStorage.getItem("sangh_committee_members");
@@ -171,6 +173,7 @@ export default function CommitteeMembers() {
   const handleDelete = () => {
     updateMembers(members.filter((m) => m.id !== modal.data.id));
     setModal({ type: null, data: null });
+    showToast("Member deleted successfully!", "delete");
   };
 
   const openModal = (type, data = null) => {
@@ -205,6 +208,7 @@ export default function CommitteeMembers() {
     setModal({ type: null, data: null });
     setSaving(false);
     setFormData(INITIAL_FORM);
+    showToast(isEdit ? "Member updated successfully!" : "Member added successfully!", "success");
   };
 
   const columns = [
@@ -230,15 +234,15 @@ export default function CommitteeMembers() {
       align: "center",
       render: (s, row) => (
         <button
-          onClick={() =>
+          onClick={() => {
+            const nextStatus = s === "Active" ? "Inactive" : "Active";
             updateMembers(
               members.map((m) =>
-                m.id === row.id
-                  ? { ...m, status: s === "Active" ? "Inactive" : "Active" }
-                  : m,
+                m.id === row.id ? { ...m, status: nextStatus } : m,
               ),
-            )
-          }
+            );
+            showToast(`Status set to ${nextStatus} successfully!`, "success");
+          }}
           className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
         >
           <span
@@ -296,6 +300,7 @@ export default function CommitteeMembers() {
           </div>
           <div className="flex gap-2">
             <FilterButton
+              dataCount={filteredMembers.length}
               filters={filters}
               options={[
                 {
