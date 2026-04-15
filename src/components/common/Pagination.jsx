@@ -40,10 +40,12 @@ export default function Pagination({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsLimitOpen(!isLimitOpen)}
-            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-[13px] font-bold text-slate-500 hover:bg-white hover:border-teal-500 hover:text-teal-600 transition-all cursor-pointer min-w-[55px] justify-between shadow-sm"
+            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[36px] text-[13px] font-bold text-slate-500 hover:bg-white hover:border-teal-500 hover:text-teal-600 transition-all cursor-pointer min-w-[55px] justify-between shadow-sm"
           >
             <span>{recordsPerPage}</span>
-            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isLimitOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`w-3 h-3 text-slate-400 transition-transform ${isLimitOpen ? "rotate-180" : ""}`}
+            />
           </button>
 
           {isLimitOpen && (
@@ -56,9 +58,9 @@ export default function Pagination({
                     setIsLimitOpen(false);
                   }}
                   className={`w-full text-center py-2 text-[13px] font-bold transition-all ${
-                    recordsPerPage === opt 
-                    ? 'bg-teal-50 text-teal-600 border-l-2 border-teal-600' 
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-teal-600'
+                    recordsPerPage === opt
+                      ? "bg-teal-50 text-teal-600 border-l-2 border-teal-600"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-teal-600"
                   }`}
                 >
                   {opt}
@@ -72,7 +74,9 @@ export default function Pagination({
       {/* Center: Record Range Info */}
       <div className="text-[13px] text-slate-400 font-medium order-3 sm:order-2">
         {totalRecords > 0 ? (
-          <>Showing {startRecord} to {endRecord} out of {totalRecords} records</>
+          <>
+            Showing {startRecord} to {endRecord} out of {totalRecords} records
+          </>
         ) : (
           "No records found"
         )}
@@ -83,7 +87,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-full text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -92,7 +96,7 @@ export default function Pagination({
           <button
             key={num}
             onClick={() => onPageChange(num)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full text-[13px] font-bold transition-all ${
+            className={`w-[36px] h-[36px] flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${
               currentPage === num
                 ? "bg-teal-50 text-teal-600 border border-teal-200 shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
@@ -105,7 +109,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-full text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
         >
           <ChevronRight className="w-4 h-4" />
         </button>

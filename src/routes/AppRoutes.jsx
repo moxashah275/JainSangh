@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
 import Dashboard from '../pages/dashboard/Dashboard'
 
-// Organization Imports - (Badha ma OrgIndex use thase jo tame Tabs logic vapro cho)
+
 import OrgIndex from '../pages/organization/OrgIndex' 
 import Departments from '../pages/organization/Departments'
 import Location from '../pages/organization/Location'
@@ -38,6 +38,7 @@ import SanghAdminDashboard from '../pages/sanghAdmin/SanghAdminDashboard'
 import SanghDetails from '../pages/sanghAdmin/mySangh/SanghDetails'
 import LinkedTrusts from '../pages/sanghAdmin/mySangh/LinkedTrusts'
 import SanghCommitteeMembers from '../pages/sanghAdmin/mySangh/CommitteeMembers'
+import Members from '../pages/sanghAdmin/members/Members'
 
 import { ROLES } from '../config/roles'
 import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
@@ -106,6 +107,7 @@ export default function AppRoutes() {
             <Route path="my-sangh/details" element={<SanghDetails />} />
             <Route path="my-sangh/linked-trusts" element={<LinkedTrusts />} />
             <Route path="my-sangh/committee" element={<SanghCommitteeMembers />} />
+            <Route path="members" element={<Members />} />
           </Route>
         </Route>
 

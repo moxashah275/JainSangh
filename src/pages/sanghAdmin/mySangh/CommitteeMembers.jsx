@@ -1,5 +1,27 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import {Users,UserCheck,UserMinus,UserPlus,Eye,Edit,Trash2,Search,Plus,Phone,Mail,Shield,MapPin,Cake,Droplets,Dna,Map,Calendar,ChevronDown,Contact,} from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  Users,
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  Eye,
+  Edit,
+  Trash2,
+  Search,
+  Plus,
+  Phone,
+  Mail,
+  Shield,
+  MapPin,
+  Cake,
+  Droplets,
+  Dna,
+  Map,
+  Calendar,
+  ChevronDown,
+  Contact,
+} from "lucide-react";
 import CommonPageLayout from "../../../components/common/CommonPageLayout";
 import Table from "../../../components/common/Table";
 import ConfirmModal from "../../../components/common/ConfirmModal";
@@ -217,10 +239,10 @@ export default function CommitteeMembers() {
               ),
             )
           }
-          className={`relative inline-flex h-5 w-9 items-center rounded-full px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
+          className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
         >
           <span
-            className={`h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`}
+            className={`h-3.5 w-3.5 rounded-xl bg-white shadow-sm transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`}
           />
         </button>
       ),
@@ -233,9 +255,9 @@ export default function CommitteeMembers() {
         const btnStyles = {
           teal: "bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white",
           sky: "bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white",
-          rose: "bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white"
+          rose: "bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white",
         };
-        
+
         return (
           <div className="flex gap-2 justify-center">
             {[
@@ -246,7 +268,7 @@ export default function CommitteeMembers() {
               <button
                 key={a.t}
                 onClick={() => openModal(a.t, r)}
-                className={`p-1.5 rounded-lg transition-all duration-200 ${btnStyles[a.color]}`}
+                className={`p-1.5 rounded-xl transition-all duration-200 ${btnStyles[a.color]}`}
                 title={a.t.charAt(0).toUpperCase() + a.t.slice(1)}
               >
                 <a.icon className="w-4 h-4" />
@@ -269,7 +291,7 @@ export default function CommitteeMembers() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all"
+              className="w-full h-[36px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium"
             />
           </div>
           <div className="flex gap-2">
@@ -298,7 +320,7 @@ export default function CommitteeMembers() {
             />
             <button
               onClick={() => setModal({ type: "add", data: null })}
-              className="flex items-center gap-2 bg-teal-600 text-white px-4 py-1.5 rounded-lg text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"
+              className="h-[36px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"
             >
               <Plus className="w-4 h-4" />
               <span>Add Member</span>
@@ -342,7 +364,7 @@ export default function CommitteeMembers() {
           </div>
         }
       >
-        <div className="space-y-8 px-1 pb-10">
+        <div className="space-y-8 px-1 pb-2">
           <Section title="Basic Info" icon={Users} color="teal">
             <div className="grid md:grid-cols-3 gap-6">
               <Input
@@ -354,7 +376,7 @@ export default function CommitteeMembers() {
                 icon={Users}
                 placeholder="Enter Your Full Name"
                 containerClass="md:col-span-2"
-                className="h-[46px]"
+                className="h-[36px]"
                 required
               />
               <Input
@@ -365,7 +387,7 @@ export default function CommitteeMembers() {
                 }
                 icon={Shield}
                 placeholder="Enter Your Position"
-                className="h-[46px]"
+                className="h-[36px]"
                 required
               />
             </div>
@@ -381,7 +403,7 @@ export default function CommitteeMembers() {
                 }}
                 icon={Phone}
                 placeholder="Enter Your Phone Number"
-                className="h-[46px]"
+                className="h-[36px]"
                 error={errors.phone}
                 required
               />
@@ -395,7 +417,7 @@ export default function CommitteeMembers() {
                 icon={Mail}
                 placeholder="Enter Your Email Address"
                 containerClass="md:col-span-2"
-                className="h-[46px]"
+                className="h-[36px]"
                 error={errors.email}
               />
               <DatePicker
@@ -435,23 +457,21 @@ export default function CommitteeMembers() {
                 }
                 icon={Map}
                 placeholder="Enter City"
-                className="h-[46px]"
+                className="h-[36px]"
               />
-              <div className="md:col-span-2 space-y-1.5">
-                <label className="text-[13px] font-medium text-slate-700 ml-1">
+              <div className="md:col-span-2">
+                <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
                   Full Address
                 </label>
-                <div className="relative group">
-                  <MapPin className="absolute left-4 top-3.5 w-4.5 h-4.5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
-                  <textarea
-                    className="w-full h-[90px] pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all resize-none shadow-sm"
-                    placeholder="Enter complete address details..."
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                  />
-                </div>
+                <input
+                  type="text"
+                  className="w-full h-[36px] px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all shadow-sm"
+                  placeholder="Enter complete address details..."
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                />
               </div>
             </div>
           </Section>
@@ -518,7 +538,7 @@ export default function CommitteeMembers() {
                     Status
                   </p>
                   <span
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold ${modal.data.status === "Active" ? "bg-emerald-100/50 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
+                    className={`px-3 py-1 rounded-xl text-[11px] font-bold ${modal.data.status === "Active" ? "bg-emerald-100/50 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
                   >
                     {modal.data.status}
                   </span>
@@ -560,7 +580,7 @@ const Section = ({ title, icon: Icon, color, children }) => (
   <div className="space-y-4">
     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
       <div
-        className={`p-1.5 rounded-lg ${color === "teal" ? "bg-teal-50 text-teal-600" : color === "sky" ? "bg-sky-50 text-sky-600" : "bg-amber-50 text-amber-600"}`}
+        className={`p-1.5 rounded-xl ${color === "teal" ? "bg-teal-50 text-teal-600" : color === "sky" ? "bg-sky-50 text-sky-600" : "bg-amber-50 text-amber-600"}`}
       >
         <Icon className="w-4 h-4" />
       </div>
@@ -597,22 +617,41 @@ function CustomSelect({
   placeholder = "Select option",
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [openUp, setOpenUp] = useState(false);
+  const [coords, setCoords] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    openUp: false,
+  });
   const ref = useRef(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handle = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
+      if (
+        ref.current &&
+        !ref.current.contains(e.target) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(e.target))
+      ) {
+        setIsOpen(false);
+      }
     };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, []);
 
   const toggle = () => {
-    if (!isOpen && ref.current)
-      setOpenUp(
-        window.innerHeight - ref.current.getBoundingClientRect().bottom < 250,
-      );
+    if (!isOpen && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const shouldOpenUp = spaceBelow < 200 && rect.top > 200;
+      setCoords({
+        top: shouldOpenUp ? rect.top : rect.bottom,
+        left: rect.left,
+        width: rect.width,
+        openUp: shouldOpenUp,
+      });
+    }
     setIsOpen(!isOpen);
   };
 
@@ -627,7 +666,7 @@ function CustomSelect({
         <button
           type="button"
           onClick={toggle}
-          className="w-full h-[46px] flex items-center justify-between px-4 bg-slate-50/50 border border-slate-200 rounded-xl transition-all outline-none group hover:border-teal-500 hover:bg-white focus:ring-4 focus:ring-teal-50"
+          className="w-full h-[36px] flex items-center justify-between px-4 bg-slate-50/50 border border-slate-200 rounded-xl transition-all outline-none group hover:border-teal-500 hover:bg-white focus:ring-4 focus:ring-teal-50"
         >
           <span
             className={`text-sm truncate ${value ? "text-slate-700 font-medium" : "text-slate-400"}`}
@@ -636,32 +675,49 @@ function CustomSelect({
           </span>
           <div className="flex items-center gap-1.5">
             {Icon && (
-              <Icon className="w-4.5 h-4.5 text-slate-400 group-hover:text-teal-500 transition-colors" />
+              <Icon className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
             )}
             <ChevronDown
               className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isOpen ? "rotate-180" : ""}`}
             />
           </div>
         </button>
-        {isOpen && (
-          <div
-            className={`absolute left-0 right-0 z-[100] bg-white border border-slate-100 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${openUp ? "bottom-full mb-2" : "top-full mt-2"}`}
-          >
-            {options.map((opt, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => {
-                  onChange(opt);
-                  setIsOpen(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-[13px] hover:bg-slate-50 hover:text-teal-600 ${opt === value ? "bg-teal-50 text-teal-700 font-bold border-l-4 border-teal-500" : "text-slate-600"}`}
+
+        {isOpen &&
+          createPortal(
+            <div
+              ref={dropdownRef}
+              className={`fixed z-[9999] bg-white border border-slate-100 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] py-1 animate-in fade-in zoom-in-95 duration-200 ${coords.openUp ? "mb-2" : "mt-2"}`}
+              style={{
+                top: coords.openUp ? "auto" : coords.top,
+                bottom: coords.openUp
+                  ? window.innerHeight - coords.top
+                  : "auto",
+                left: coords.left,
+                width: coords.width,
+              }}
+            >
+              <div
+                className="overflow-y-auto"
+                style={{ maxHeight: `${Math.min(options.length, 6) * 40}px` }}
               >
-                {opt}
-              </button>
-            ))}
-          </div>
-        )}
+                {options.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-slate-50 hover:text-teal-600 transition-colors ${opt === value ? "bg-teal-50 text-teal-700 font-bold border-l-4 border-teal-500" : "text-slate-600"}`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.body,
+          )}
       </div>
     </div>
   );
