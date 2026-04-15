@@ -1,80 +1,43 @@
-import { useMemo, useState } from 'react'
-import { Building2, Users, Landmark, Plus } from 'lucide-react'
-import Button from '../../components/common/Button'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
-import DepartmentCard from '../../components/organization/DepartmentCard'
-import { INITIAL_DEPARTMENTS, INITIAL_TRUSTS, INITIAL_SANGHS, getTrustName, getSanghName } from './orgData'
+import React from 'react';
+import { Briefcase, UserCircle2, Users } from 'lucide-react';
+import { INITIAL_DEPARTMENTS } from './orgData';
 
 export default function Departments() {
-  const [search, setSearch] = useState('')
-  const departments = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_departments')
-      return stored ? JSON.parse(stored) : INITIAL_DEPARTMENTS
-    } catch {
-      return INITIAL_DEPARTMENTS
-    }
-  }, [])
-
-  const trusts = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
-    }
-  }, [])
-
-  const sanghs = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
-    }
-  }, [])
-
-  const filteredDepartments = useMemo(function() {
-    return departments.filter(function(department) {
-      const query = search.toLowerCase()
-      return !query || [department.name, department.head, department.description, getTrustName(department.trustId, trusts), getSanghName(department.sanghId, sanghs)].some(function(value) {
-        return String(value || '').toLowerCase().includes(query)
-      })
-    })
-  }, [departments, sanghs, search, trusts])
-
-  const stats = useMemo(function() {
-    const active = departments.filter(function(department) { return department.status === 'Active' }).length
-    const members = departments.reduce(function(sum, department) { return sum + (department.memberCount || 0) }, 0)
-    const connectedSanghs = new Set(departments.map(function(department) { return department.sanghId })).size
-    return [
-      { title: 'Departments', value: departments.length, icon: Building2, color: 'teal' },
-      { title: 'Active Teams', value: active, icon: Users, color: 'emerald' },
-      { title: 'Department Members', value: members, icon: Users, color: 'sky' },
-      { title: 'Connected Sanghs', value: connectedSanghs, icon: Landmark, color: 'amber' },
-    ]
-  }, [departments])
-
   return (
-    <CommonPageLayout
-      title="Departments"
-      subtitle="Track managers, accounts, committee, derasar, and pathshala departments within sanghs."
-      breadcrumbs={[{ label: 'Organization' }, { label: 'Departments' }]}
-      action={<Button icon={Plus}>Add Department</Button>}
-      stats={stats}
-      searchValue={search}
-      onSearchChange={setSearch}
-      searchPlaceholder="Search department, head, trust, sangh, or description..."
-      isEmpty={!filteredDepartments.length}
-      emptyState={<EmptyState message="No departments found" description="Create a department to organize sangh operations cleanly." icon={Building2} action={<Button variant="secondary" size="sm" icon={Plus}>Add Department</Button>} />}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredDepartments.map(function(department, index) {
-          return <DepartmentCard key={department.id} dept={department} trustName={`${getTrustName(department.trustId, trusts)} - ${getSanghName(department.sanghId, sanghs)}`} memberCount={department.memberCount} index={index} />
-        })}
+    <div className="p-6 bg-slate-50 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight">Departments</h1>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Internal Unit Management</p>
       </div>
-    </CommonPageLayout>
-  )
-}
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {INITIAL_DEPARTMENTS.map((dept) => (
+          <div key={dept.id} className="bg-white rounded-[28px] border border-slate-100 p-6 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+            <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-50 rounded-bl-[80px] -mr-8 -mt-8 group-hover:bg-emerald-500 group-hover:opacity-10 transition-all duration-500" />
+            
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Briefcase size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">{dept.name}</h3>
+                <span className="text-[10px] font-black text-emerald-500 uppercase">System Active</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between p-3 bg-slate-50 rounded-xl">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Dept Head</span>
+                <span className="text-xs font-black text-slate-700">{dept.head}</span>
+              </div>
+              <div className="flex justify-between px-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Staff Count</span>
+                <span className="text-xs font-black text-slate-700">{dept.members} Members</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
