@@ -1,31 +1,28 @@
 import React from 'react';
-import { Building2, Users2, Link2 } from 'lucide-react';
-import { INITIAL_TRUSTS, INITIAL_SANGHS } from './orgData';
+import { Building2, Users, Link2 } from 'lucide-react';
+import StatCard from '../../components/common/StatCard';
 
-export default function OrgOverview() {
-  const stats = {
-    trusts: INITIAL_TRUSTS.length,
-    sanghs: INITIAL_SANGHS.length,
-    linked: INITIAL_SANGHS.filter(s => s.trustId).length
-  };
+export default function OrgOverview({ stats }) {
+  const items = [
+    { label: 'Total Trusts', value: stats.trusts || 0, icon: Building2, color: 'emerald' },
+    { label: 'Total Sanghs', value: stats.sanghs || 0, icon: Users, color: 'teal' },
+    { label: 'Total Linked', value: stats.links || 0, icon: Link2, color: 'emerald' },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <OverviewCard label="Total Trusts" val={stats.trusts} icon={Building2} color="emerald" />
-      <OverviewCard label="Total Sanghs" val={stats.sanghs} icon={Users2} color="teal" />
-      <OverviewCard label="Linked Units" val={stats.linked} icon={Link2} color="cyan" />
-    </div>
-  );
-}
-
-function OverviewCard({ label, val, icon: Icon, color }) {
-  return (
-    <div className="p-6 rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center justify-between">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-        <p className="text-3xl font-black text-slate-800 mt-1">{val}</p>
-      </div>
-      <div className={`p-4 rounded-2xl bg-white text-emerald-500 shadow-sm`}><Icon size={24} /></div>
+    <div className="flex flex-nowrap gap-4 overflow-x-auto pb-2 scrollbar-hide">
+      {items.map((s) => (
+        <div key={s.label} className="flex-1 min-w-[160px]">
+          <StatCard 
+            title={s.label} 
+            value={s.value.toString()} 
+            icon={s.icon} 
+            color={s.color} 
+            compact
+            className="hover:border-teal-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-1"
+          />
+        </div>
+      ))}
     </div>
   );
 }
