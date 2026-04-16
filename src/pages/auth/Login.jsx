@@ -126,8 +126,7 @@ export default function Login() {
               className="w-full h-12 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl font-bold text-[15px] shadow-lg shadow-teal-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
               loading={loading}
               icon={ChevronRight}
-            >
-              Log In Now
+            >Log
             </Button>
           </form>
 
