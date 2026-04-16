@@ -62,7 +62,7 @@ export default function CustomDropdown({
   return (
     <div className={`relative min-w-[160px] ${className}`} ref={triggerRef}>
       <div
-        className="px-3.5 py-3 h-[36px] bg-slate-50/70 border border-slate-200 rounded-2xl text-[12px] text-slate-600 font-medium focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-50 transition-all cursor-pointer flex items-center justify-between group hover:border-slate-300"
+        className={`px-3.5 py-2.5 min-h-[44px] bg-slate-50/70 border border-slate-200 rounded-2xl text-[13px] text-slate-800 transition-all duration-200 cursor-pointer flex items-center justify-between group hover:border-teal-500 focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-50 ${className}`}
         onClick={toggle}
       >
         <span className="truncate">

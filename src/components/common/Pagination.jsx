@@ -40,7 +40,7 @@ export default function Pagination({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsLimitOpen(!isLimitOpen)}
-            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[36px] text-[13px] font-bold text-slate-500 hover:bg-white hover:border-teal-500 hover:text-teal-600 transition-all cursor-pointer min-w-[55px] justify-between shadow-sm"
+            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[40px] text-[13px] font-bold text-slate-500 hover:bg-white hover:border-teal-500 hover:text-teal-600 transition-all cursor-pointer min-w-[55px] justify-between shadow-sm"
           >
             <span>{recordsPerPage}</span>
             <ChevronDown
@@ -87,7 +87,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[40px] h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -96,7 +96,7 @@ export default function Pagination({
           <button
             key={num}
             onClick={() => onPageChange(num)}
-            className={`w-[36px] h-[36px] flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${
+            className={`w-[40px] h-[40px] flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${
               currentPage === num
                 ? "bg-teal-50 text-teal-600 border border-teal-200 shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
@@ -109,7 +109,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[40px] h-[40px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
         >
           <ChevronRight className="w-4 h-4" />
         </button>

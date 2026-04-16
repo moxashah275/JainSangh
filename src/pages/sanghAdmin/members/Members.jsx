@@ -468,7 +468,7 @@ export default function Members() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search members...`}
-              className="w-full h-[36px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium"
+              className="w-full h-[40px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium"
             />
           </div>
           <div className="flex gap-2">
@@ -516,10 +516,10 @@ export default function Members() {
               }}
             />
             {activeTab === "Member" && (
-              <button onClick={() => openModal("addCategory")} className="h-[36px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Family Category</button>
+              <button onClick={() => openModal("addCategory")} className="h-[40px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Family Category</button>
             )}
             {activeTab === "Member" && (
-              <button onClick={() => openModal("add")} className="h-[36px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Add Member</button>
+              <button onClick={() => openModal("add")} className="h-[40px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Add Member</button>
             )}
           </div>
         </div>

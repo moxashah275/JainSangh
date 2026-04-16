@@ -54,9 +54,31 @@ export const memberService = {
 // Authentication Service
 export const authService = {
   login: async (credentials) => {
-    // Calling the exact endpoint provided by the user
-    const response = await api.post('v1/auth/login/', credentials);
-    return response.data;
+    try {
+      const response = await api.post('v1/auth/login/', credentials);
+      const data = response.data;
+
+      // Extract details from response
+      const token = data.tokens?.access || data.access || data.token;
+      const role = data.user?.role || data.user_role || data.role;
+      const userName = data.user?.full_name || data.user_name || 'User';
+      const userId = data.user_id || data.user?.id;
+      const scopeId = data.user?.scope_id;
+      const scopeType = data.user?.scope_type;
+
+      if (token) {
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('userRole', role || '');
+        sessionStorage.setItem('userName', userName);
+        sessionStorage.setItem('userId', userId || '');
+        if (scopeId) sessionStorage.setItem('scopeId', scopeId);
+        if (scopeType) sessionStorage.setItem('scopeType', scopeType);
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
   },
   getProfile: () => apiService.get('v1/accounts/users/me/'),
 };
@@ -98,3 +120,4 @@ export const sanghService = {
   updateTrust: (id, data) => apiService.put(`v1/trusts/${id}/`, data),
   removeTrust: (id) => apiService.delete(`v1/trusts/${id}/`),
 };
+

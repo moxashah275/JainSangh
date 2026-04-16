@@ -57,7 +57,7 @@ export default function FilterButton({ filters, options, onChange, onClear, data
           }
           setIsOpen(!isOpen);
         }}
-        className={`flex items-center gap-1.5 px-3 h-[36px] rounded-xl border transition-all duration-200 text-[13px] font-bold shadow-sm
+        className={`flex items-center gap-1.5 px-3 h-[40px] rounded-xl border transition-all duration-200 text-[13px] font-bold shadow-sm
           ${
             hasActive
               ? "bg-teal-50 border-teal-200 text-teal-700"

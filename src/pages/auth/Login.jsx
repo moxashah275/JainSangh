@@ -26,25 +26,9 @@ export default function Login() {
     try {
       const data = await authService.login({ email, password });
       
-      // Expected response structure: { access: '...', user_role: '...' }
-      // If your API returns different keys, adjust them here
-      const token = data.tokens?.access || data.access || data.token;
+      // The role is still needed for redirection
       const role = data.user?.role || data.user_role || data.role;
-      const userName = data.user?.full_name || data.user_name || 'User';
-      const scopeId = data.user?.scope_id;
-      const scopeType = data.user?.scope_type;
       
-      if (!token) {
-        throw new Error('No authentication token received');
-      }
-
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('userRole', role);
-      sessionStorage.setItem('userName', userName);
-      sessionStorage.setItem('userId', data.user_id || data.user?.id);
-      if (scopeId) sessionStorage.setItem('scopeId', scopeId);
-      if (scopeType) sessionStorage.setItem('scopeType', scopeType);
-
       showToast('Welcome back! Login successful.', 'success');
       
       // Redirect based on role
@@ -126,7 +110,7 @@ export default function Login() {
               className="w-full h-12 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl font-bold text-[15px] shadow-lg shadow-teal-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
               loading={loading}
               icon={ChevronRight}
-            >Log
+            >Login
             </Button>
           </form>
 
