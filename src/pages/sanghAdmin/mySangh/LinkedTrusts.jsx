@@ -235,6 +235,7 @@ export default function LinkedTrusts() {
           </div>
           <div className="flex items-center gap-2">
             <FilterButton
+              dataCount={filteredTrusts.length}
               filters={filters}
               options={filterOptions}
               onChange={handleFilterChange}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { SlidersHorizontal, ChevronDown } from "lucide-react";
 
-export default function FilterButton({ filters, options, onChange, onClear }) {
+export default function FilterButton({ filters, options, onChange, onClear, dataCount }) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const [localFilters, setLocalFilters] = useState({ ...filters });
@@ -42,7 +42,18 @@ export default function FilterButton({ filters, options, onChange, onClear }) {
         onClick={() => {
           if (!isOpen && dropdownRef.current) {
             const rect = dropdownRef.current.getBoundingClientRect();
-            setOpenUp(window.innerHeight - rect.bottom < 200);
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            
+            // Heuristic for "less data" as requested by user
+            // If dataCount is low (<= 3) or space below is tight (< 380px),
+            // we open UP if there's more space above than below.
+            const isLessData = dataCount !== undefined && dataCount <= 3;
+            if (isLessData || spaceBelow < 380) {
+              setOpenUp(spaceAbove > spaceBelow);
+            } else {
+              setOpenUp(false);
+            }
           }
           setIsOpen(!isOpen);
         }}

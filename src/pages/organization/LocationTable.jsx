@@ -1,6 +1,7 @@
 import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Edit2, Trash2, Eye, X, Check, AlertTriangle, ArrowLeft, ChevronDown } from 'lucide-react';
 import StatusToggle from '../../components/common/StatusToggle';
+import { useToast } from '../../components/common/Toast';
 
 const generateInitialData = () => {
   return {
@@ -37,7 +38,7 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
 
   const [modal, setModal] = useState({ isOpen: false, type: '', data: null });
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const showToast = useToast();
 
   const getDefaultFormData = () => {
     const firstCountry = data.Country[0]?.id || 1;
@@ -95,18 +96,20 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
     }
   }));
 
-  const showToast = (msg, type = 'success') => {
-    setToast({ show: true, message: msg, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
-  };
+
 
   const updateStatus = (id, currentStatus) => {
-    const updated = data[activeTab].map(i => i.id === id ? { ...i, status: !currentStatus } : i);
+    const nextStatus = !currentStatus;
+    const updated = data[activeTab].map(i => i.id === id ? { ...i, status: nextStatus } : i);
     setData({ ...data, [activeTab]: updated });
-    showToast("Status Changed Successfully");
+    
+    showToast(
+      `${activeTab} status set to ${nextStatus ? 'Active' : 'Inactive'} successfully!`,
+      "success"
+    );
 
     if (modal.isOpen && modal.data?.id === id) {
-      setModal(prev => ({ ...prev, data: { ...prev.data, status: !currentStatus } }));
+      setModal(prev => ({ ...prev, data: { ...prev.data, status: nextStatus } }));
     }
   };
 
@@ -114,11 +117,11 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
     if (modal.type === 'add') {
       const newEntry = { ...formData, id: Date.now() };
       setData(prev => ({ ...prev, [activeTab]: [...prev[activeTab], newEntry] }));
-      showToast(`${activeTab} Added Successfully!`);
+      showToast(`${activeTab} added successfully!`, "success");
     } else {
       const updatePayload = { ...formData, id: modal.data.id };
       setData(prev => ({ ...prev, [activeTab]: prev[activeTab].map(i => i.id === modal.data.id ? updatePayload : i) }));
-      showToast(`${activeTab} Updated!`);
+      showToast(`${activeTab} updated successfully!`, "success");
     }
     setModal({ isOpen: false });
   };
@@ -177,29 +180,8 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
   return (
     <div className="w-full font-sans antialiased text-slate-600">
       <style>{`
-        @keyframes toast-in-out {
-          0% { transform: translateX(120%); opacity: 0; }
-          10% { transform: translateX(0); opacity: 1; }
-          90% { transform: translateX(0); opacity: 1; }
-          100% { transform: translateX(-150%); opacity: 0; }
-        }
-       .animate-toast-custom { animation: toast-in-out 3s ease-in-out forwards; }
        .custom-select { appearance: none; -webkit-appearance: none; }
       `}</style>
-
-      {toast.show && (
-        <div className="fixed top-8 right-8 z-[999] animate-toast-custom">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border border-emerald-400 bg-emerald-500 text-white backdrop-blur-md">
-            <div className="p-1.5 rounded-lg bg-white/20">
-              {toast.type === 'error' ? <AlertTriangle size={18} className="text-white" /> : <Check size={18} strokeWidth={3} className="text-white" />}
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-[13px] font-medium uppercase tracking-wide leading-none">{toast.message}</span>
-              <span className="text-[9px] font-normal opacity-80 uppercase mt-1 tracking-widest">System Notification</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Table - Balanced Widths for Equal Gaps */}
       <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -405,7 +387,7 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
             <h3 className="font-medium text-slate-800 text-sm">Confirm Delete?</h3>
             <div className="flex gap-2 mt-6">
               <button onClick={() => setDeleteConfirm({ show: false, id: null })} className="flex-1 py-2 text-xs font-medium text-slate-400 bg-slate-50 rounded-xl">No</button>
-              <button onClick={() => { setData({...data, [activeTab]: data[activeTab].filter(i => i.id !== deleteConfirm.id)}); setDeleteConfirm({ show: false, id: null }); showToast("Deleted Successfully!", "error"); }} className="flex-1 py-2 text-xs font-medium text-white bg-rose-500 rounded-xl shadow-lg">Yes</button>
+              <button onClick={() => { setData({...data, [activeTab]: data[activeTab].filter(i => i.id !== deleteConfirm.id)}); setDeleteConfirm({ show: false, id: null }); showToast(`${activeTab} deleted successfully!`, "delete"); }} className="flex-1 py-2 text-xs font-medium text-white bg-rose-500 rounded-xl shadow-lg">Yes</button>
             </div>
           </div>
         </div>

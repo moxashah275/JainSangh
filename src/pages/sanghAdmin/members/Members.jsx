@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import {
   Users,
   UserCheck,
@@ -16,13 +15,14 @@ import {
   Calendar,
   Dna,
   Droplets,
-  Map,
+  Map as MapIcon,
   Contact,
   Star,
   Clock,
   Zap,
   Heart,
   ChevronDown,
+  X,
 } from "lucide-react";
 import CommonPageLayout from "../../../components/common/CommonPageLayout";
 import Table from "../../../components/common/Table";
@@ -33,225 +33,247 @@ import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import DatePicker from "../../../components/common/DatePicker";
+import { useToast } from "../../../components/common/Toast";
 
-// ─── Initial form shapes ───────────────────────────────────────────────────────
-const INITIAL_FAMILY = {
-  family_name: "",
-  family_head: "",
-  members_count: "",
-  phone: "",
-  email: "",
-  birthDate: "",
-  gender: "",
-  bloodGroup: "",
-  city: "",
-  address: "",
-  status: "Active",
-};
-
+// ── Initial State Constants ──────────────────────────────────────────────────
 const INITIAL_MEMBER = {
   name: "",
-  family: "",
+  family_category: "",
   role: "",
-  age: "",
   gender: "",
   blood_group: "",
   mobile: "",
   email: "",
   birthDate: "",
-  city: "",
   address: "",
   status: "Active",
+  is_volunteer: false,
+  is_family_head: false,
 };
-
-const INITIAL_VOLUNTEER = {
-  name: "",
-  phones: "",
-  skill: "",
-  experience: "",
-  availability: "",
-  interest: "",
-  email: "",
-  birthDate: "",
-  gender: "",
-  bloodGroup: "",
-  city: "",
-  address: "",
-  status: "Active",
-};
-
-// ─── Dummy seed data ───────────────────────────────────────────────────────────
-const SEED_FAMILIES = [
-  {
-    id: 1,
-    family_name: "Shah Family",
-    family_head: "Rajesh Shah",
-    members_count: 5,
-    phone: "9876543210",
-    email: "rajesh.shah@example.com",
-    birthDate: "12/05/1980",
-    gender: "Male",
-    bloodGroup: "O+",
-    city: "Mumbai",
-    address: "123, Jain Society, Borivali West",
-    status: "Active",
-  },
-  {
-    id: 2,
-    family_name: "Mehta Family",
-    family_head: "Suresh Mehta",
-    members_count: 4,
-    phone: "9825011223",
-    email: "suresh.m@example.com",
-    birthDate: "22/08/1975",
-    gender: "Male",
-    bloodGroup: "A+",
-    city: "Ahmedabad",
-    address: "45, Adarsh Nagar, Satellite",
-    status: "Active",
-  },
-  {
-    id: 3,
-    family_name: "Jain Family",
-    family_head: "Amit Jain",
-    members_count: 3,
-    phone: "9988776655",
-    email: "amit.jain@example.com",
-    birthDate: "05/12/1990",
-    gender: "Male",
-    bloodGroup: "B+",
-    city: "Indore",
-    address: "12, Mahaveer Marg",
-    status: "Inactive",
-  },
-];
 
 const SEED_MEMBERS = [
   {
     id: 1,
+    name: "Rajesh Shah",
+    familyId: 100,
+    family_category: "General",
+    role: "Head",
+    mobile: "9876543210",
+    email: "rajesh.shah@example.com",
+    birthDate: "12/05/1980",
+    gender: "Male",
+    blood_group: "O+",
+    address: "123, Jain Society, Borivali West",
+    status: "Active",
+    is_family_head: true,
+    is_volunteer: false,
+  },
+  {
+    id: 101,
     name: "Anik Shah",
-    family: "Rajesh Shah",
+    familyId: 100,
+    family_category: "General",
     role: "Son",
-    age: 24,
     mobile: "9876543211",
     email: "anik.shah@example.com",
     birthDate: "10/03/2000",
     gender: "Male",
     blood_group: "O+",
-    city: "Mumbai",
     address: "123, Jain Society, Borivali West",
     status: "Active",
+    is_family_head: false,
+    is_volunteer: true,
   },
   {
-    id: 2,
+    id: 102,
     name: "Megha Shah",
-    family: "Rajesh Shah",
+    familyId: 100,
+    family_category: "General",
     role: "Daughter",
-    age: 21,
     mobile: "9876543212",
     email: "megha.shah@example.com",
     birthDate: "14/07/2003",
     gender: "Female",
     blood_group: "A+",
-    city: "Mumbai",
     address: "123, Jain Society, Borivali West",
     status: "Active",
-  },
-  {
-    id: 3,
-    name: "Rita Shah",
-    family: "Rajesh Shah",
-    role: "Wife",
-    age: 48,
-    mobile: "9876543213",
-    email: "rita.shah@example.com",
-    birthDate: "20/01/1976",
-    gender: "Female",
-    blood_group: "B+",
-    city: "Mumbai",
-    address: "123, Jain Society, Borivali West",
-    status: "Active",
+    is_family_head: false,
+    is_volunteer: false,
   },
 ];
 
-const SEED_VOLUNTEERS = [
-  {
-    id: 1,
-    name: "Vikas Jain",
-    phones: "9876543210",
-    skill: "Event Management",
-    experience: "3 Years",
-    availability: "Weekends",
-    interest: "Education",
-    email: "vikas.jain@example.com",
-    birthDate: "15/06/1992",
-    gender: "Male",
-    bloodGroup: "O+",
-    city: "Surat",
-    address: "55, Volunteer Colony, Ring Road",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Pratik Mehta",
-    phones: "9825011223",
-    skill: "Public Relations",
-    experience: "5 Years",
-    availability: "Weekdays",
-    interest: "Social Work",
-    email: "pratik.m@example.com",
-    birthDate: "22/02/1988",
-    gender: "Male",
-    bloodGroup: "A-",
-    city: "Rajkot",
-    address: "10, Seva Nagar, Station Road",
-    status: "Active",
-  },
-];
+// ── Helper Components ───────────────────────────────────────────────────────
+const Section = ({ title, icon: Icon, color = "teal", children }) => {
+  const colors = {
+    teal: "text-teal-600 bg-teal-50 border-teal-100",
+    sky: "text-sky-600 bg-sky-50 border-sky-100",
+    amber: "text-amber-600 bg-amber-50 border-amber-100",
+    orange: "text-orange-600 bg-orange-50 border-orange-100",
+  };
+  return (
+    <div className="space-y-4 animate-in fade-in duration-500">
+      <div className="flex items-center gap-2.5 px-1">
+        <div className={`p-1.5 rounded-lg border ${colors[color]}`}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <h3 className="text-[13px] font-bold text-slate-700 uppercase tracking-wider">
+          {title}
+        </h3>
+      </div>
+      <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm relative overflow-hidden group/sec">
+        <div
+          className={`absolute top-0 left-0 w-1 h-full bg-${color}-500 opacity-0 group-hover/sec:opacity-100 transition-opacity`}
+        />
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const DetailField = ({ label, value, icon: Icon, containerClass = "" }) => (
+  <div
+    className={`p-3.5 rounded-xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:border-teal-100 group/field ${containerClass}`}
+  >
+    <div className="flex items-center gap-2 mb-1.5">
+      <Icon className="w-3.5 h-3.5 text-slate-400 group-hover/field:text-teal-500 transition-colors" />
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+        {label}
+      </p>
+    </div>
+    <p className="text-[13px] font-bold text-slate-700">
+      {value || "Not Provided"}
+    </p>
+  </div>
+);
+
+const CustomSelect = ({
+  label,
+  value,
+  options,
+  onChange,
+  icon: Icon,
+  placeholder,
+  error,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target))
+        setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleToggle = () => {
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      // Max height of dropdown is ~220px, check if we have enough space
+      setOpenUp(spaceBelow < 220 && rect.top > spaceBelow);
+    }
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1 flex items-center gap-2">
+        {Icon && <Icon className="w-3.5 h-3.5 text-slate-400" />}
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={handleToggle}
+        className={`w-full h-[36px] px-4 rounded-xl border flex items-center justify-between text-sm transition-all focus:ring-4 focus:ring-teal-50 ${error
+          ? "border-rose-300 bg-rose-50/30"
+          : "border-slate-200 bg-slate-50/50 hover:bg-white hover:border-teal-300"
+          }`}
+      >
+        <span className={value ? "text-slate-700 font-medium" : "text-slate-400"}>
+          {value || placeholder}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className={`absolute z-[60] w-full bg-white rounded-xl border border-slate-100 shadow-[0_15px_40px_-12px_rgba(0,0,0,0.15)] py-1.5 overflow-hidden animate-in zoom-in-95 duration-200 ${openUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}>
+          <div className="max-h-[220px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-[13px] font-medium transition-colors hover:bg-teal-50 hover:text-teal-700 ${value === opt ? "bg-teal-50 text-teal-700" : "text-slate-600"}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {error && (
+        <p className="mt-1.5 ml-1 text-[11px] font-bold text-rose-500 animate-in fade-in slide-in-from-top-1">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Members() {
-  const [activeTab, setActiveTab] = useState("Family");
+  const showToast = useToast();
+  const [activeTab, setActiveTab] = useState("Member");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ status: "" });
+  const [filters, setFilters] = useState({ status: "", family_category: "", is_volunteer: "", role: "" });
   const [loading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [familyCategories, setFamilyCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [viewingFamilyMember, setViewingFamilyMember] = useState(null);
+  const familyDetailRef = useRef(null);
 
-  const tabs = ["Family", "Individual Member", "Volunteers"];
+  useEffect(() => {
+    if (viewingFamilyMember && familyDetailRef.current) {
+      setTimeout(() => {
+        familyDetailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [viewingFamilyMember]);
 
-  const [families, setFamilies] = useState(SEED_FAMILIES);
   const [individualMembers, setIndividualMembers] = useState(SEED_MEMBERS);
-  const [volunteers, setVolunteers] = useState(SEED_VOLUNTEERS);
 
   const stats = useMemo(
     () => [
       {
-        title: "Total Family",
-        value: families.length,
-        icon: Users,
+        title: "Total Members",
+        value: individualMembers.length,
+        icon: UserCheck,
         color: "teal",
       },
       {
-        title: "Total Individual Member",
-        value: individualMembers.length,
-        icon: UserCheck,
-        color: "emerald",
-      },
-      {
         title: "Volunteers",
-        value: volunteers.length,
+        value: individualMembers.filter((m) => m.is_volunteer).length,
         icon: HandHeart,
         color: "sky",
       },
       {
         title: "Active Volunteers",
-        value: volunteers.filter((v) => v.status === "Active").length,
+        value: individualMembers.filter((m) => m.is_volunteer && m.status === "Active").length,
         icon: Shield,
         color: "amber",
       },
     ],
-    [families, individualMembers, volunteers],
+    [individualMembers],
   );
 
   const [modal, setModal] = useState({ type: null, data: null });
@@ -259,281 +281,209 @@ export default function Members() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
-  const getInitialForm = (tab) => {
-    if (tab === "Family") return INITIAL_FAMILY;
-    if (tab === "Individual Member") return INITIAL_MEMBER;
-    return INITIAL_VOLUNTEER;
-  };
+  const BLANK_MEMBER_ENTRY = () => ({
+    name: "", email: "", mobile: "", blood_group: "", birthDate: "",
+    address: "", is_family_head: false, is_volunteer: false, role: "",
+    family_category: "", gender: "Male",
+  });
+  const [membersList, setMembersList] = useState([BLANK_MEMBER_ENTRY()]);
 
   const openModal = (type, data = null) => {
     setModal({ type, data });
-    setFormData(data || getInitialForm(activeTab));
     setErrors({});
+    if (type === "addCategory") {
+      setNewCategory("");
+    } else if (type === "add") {
+      setMembersList([BLANK_MEMBER_ENTRY()]);
+      setFormData({});
+    } else if (type === "edit" || type === "view") {
+      setFormData(data || INITIAL_MEMBER);
+    }
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategory.trim()) {
+      showToast("Please enter a category name", "error");
+      return;
+    }
+    if (familyCategories.includes(newCategory.trim())) {
+      showToast("Category already exists", "error");
+      return;
+    }
+    setFamilyCategories((prev) => [...prev, newCategory.trim()]);
+    setNewCategory("");
+    setModal({ type: null, data: null });
+    showToast("Category added successfully!", "success");
   };
 
   const handleSave = async () => {
     const newErrors = {};
-    const phoneField =
-      activeTab === "Volunteers" ? formData.phones : formData.phone;
-    const mobileField = formData.mobile;
-    if (activeTab === "Individual Member") {
-      if (mobileField && !/^\d{10}$/.test(mobileField))
-        newErrors.mobile = "Mobile must be 10 digits";
+
+    if (modal.type === "add") {
+      let hasError = false;
+      membersList.forEach((m, i) => {
+        if (!m.name.trim()) { newErrors[`name_${i}`] = "Name required"; hasError = true; }
+        if (m.mobile && !/^\d{10}$/.test(m.mobile)) { newErrors[`mobile_${i}`] = "Must be 10 digits"; hasError = true; }
+      });
+      if (hasError) return setErrors(newErrors);
+
+      const batchId = Date.now();
+      const newRecords = membersList.map((m, i) => ({
+        ...m,
+        id: batchId + i,
+        familyId: batchId,
+        status: "Active",
+      }));
+      setIndividualMembers((prev) => [...prev, ...newRecords]);
     } else {
-      if (phoneField && !/^\d{10}$/.test(phoneField))
-        newErrors.phone = "Phone must be 10 digits";
-    }
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = "Invalid email address";
-    if (Object.keys(newErrors).length) return setErrors(newErrors);
+      if (!formData.name?.trim()) newErrors.name = "Name required";
+      if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Must be 10 digits";
+      if (Object.keys(newErrors).length) return setErrors(newErrors);
 
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 600));
-    const isEdit = modal.type === "edit";
-
-    if (activeTab === "Family") {
-      setFamilies((prev) =>
-        isEdit
-          ? prev.map((f) =>
-              f.id === modal.data.id ? { ...f, ...formData } : f,
-            )
-          : [...prev, { ...formData, id: Date.now() }],
-      );
-    } else if (activeTab === "Individual Member") {
+      setSaving(true);
+      await new Promise((r) => setTimeout(r, 600));
       setIndividualMembers((prev) =>
-        isEdit
-          ? prev.map((m) =>
-              m.id === modal.data.id ? { ...m, ...formData } : m,
-            )
-          : [...prev, { ...formData, id: Date.now() }],
-      );
-      // Auto-increment family members_count when adding a new member
-      if (!isEdit && formData.family_id) {
-        setFamilies((prev) =>
-          prev.map((f) =>
-            f.id === formData.family_id
-              ? { ...f, members_count: (Number(f.members_count) || 0) + 1 }
-              : f,
-          ),
-        );
-      }
-    } else {
-      setVolunteers((prev) =>
-        isEdit
-          ? prev.map((v) =>
-              v.id === modal.data.id ? { ...v, ...formData } : v,
-            )
-          : [...prev, { ...formData, id: Date.now() }],
+        prev.map((m) => m.id === modal.data.id ? { ...m, ...formData } : m)
       );
     }
 
     setModal({ type: null, data: null });
     setSaving(false);
+    showToast(modal.type === "edit" ? "Member updated successfully!" : "Member(s) added successfully!", "success");
   };
 
   const handleDelete = () => {
-    if (activeTab === "Family")
-      setFamilies((prev) => prev.filter((f) => f.id !== modal.data.id));
-    else if (activeTab === "Individual Member")
-      setIndividualMembers((prev) =>
-        prev.filter((m) => m.id !== modal.data.id),
-      );
-    else setVolunteers((prev) => prev.filter((v) => v.id !== modal.data.id));
+    setIndividualMembers((prev) => prev.filter((m) => m.id !== modal.data.id));
     setModal({ type: null, data: null });
+    showToast(`Member deleted successfully!`, "delete");
   };
 
-  const updateStatus = (tab, id) => {
+  const updateStatus = (id) => {
     const flip = (s) => (s === "Active" ? "Inactive" : "Active");
-    if (tab === "Family")
-      setFamilies((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, status: flip(f.status) } : f)),
+    let nextStatus = "";
+    setIndividualMembers((prev) => {
+      const updated = prev.map((m) =>
+        m.id === id ? { ...m, status: flip(m.status) } : m
       );
-    else if (tab === "Individual Member")
-      setIndividualMembers((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, status: flip(m.status) } : m)),
-      );
-    else
-      setVolunteers((prev) =>
-        prev.map((v) => (v.id === id ? { ...v, status: flip(v.status) } : v)),
-      );
+      nextStatus = updated.find((m) => m.id === id)?.status ?? "";
+      return updated;
+    });
+    setTimeout(() => {
+      showToast(`Status set to ${nextStatus} successfully!`, "success");
+    }, 0);
   };
 
-  const getActiveData = () => {
-    if (activeTab === "Family") return families;
-    if (activeTab === "Individual Member") return individualMembers;
-    return volunteers;
+  const updateVolunteerStatus = (id) => {
+    let nextVal = false;
+    setIndividualMembers((prev) => {
+      return prev.map((m) => {
+        if (m.id === id) {
+          nextVal = !m.is_volunteer;
+          return { ...m, is_volunteer: nextVal };
+        }
+        return m;
+      });
+    });
+    setTimeout(() => {
+      showToast(nextVal ? "Member added to volunteers list!" : "Member removed from volunteers list!", "success");
+    }, 0);
   };
 
   const filteredData = useMemo(() => {
-    let data = getActiveData();
+    let data = individualMembers;
+    if (activeTab === "Member") {
+      const seenFamilies = new Set();
+      data = data.filter(m => {
+        if (!m.familyId) return true;
+        if (m.is_family_head) {
+          seenFamilies.add(m.familyId);
+          return true;
+        }
+        return false;
+      });
+      individualMembers.forEach(m => {
+        if (m.familyId && !seenFamilies.has(m.familyId)) {
+          const firstInFamily = individualMembers.find(fm => fm.familyId === m.familyId);
+          if (firstInFamily && firstInFamily.id === m.id) {
+            seenFamilies.add(m.familyId);
+            data.push(m);
+          }
+        }
+      });
+      data = Array.from(new Map(data.map(item => [item.id, item])).values());
+    } else {
+      data = data.filter((m) => m.is_volunteer);
+    }
+
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      data = data.filter((item) =>
-        Object.values(item).some((v) => String(v).toLowerCase().includes(q)),
-      );
+      data = data.filter((item) => item.name.toLowerCase().includes(q) || item.mobile?.includes(q));
     }
-    if (filters.status)
-      data = data.filter((item) => item.status === filters.status);
+    if (filters.status) data = data.filter((item) => item.status === filters.status);
+    if (filters.family_category) data = data.filter((item) => item.family_category === filters.family_category);
+    if (filters.role) data = data.filter((item) => item.role === filters.role);
+    if (filters.is_volunteer) {
+      const isVol = filters.is_volunteer === "Yes";
+      data = data.filter((item) => item.is_volunteer === isVol);
+    }
+
     return data;
-  }, [
-    activeTab,
-    searchQuery,
-    filters,
-    families,
-    individualMembers,
-    volunteers,
-  ]);
+  }, [activeTab, searchQuery, filters, individualMembers]);
 
   const paginatedData = useMemo(() => {
-    const s = (currentPage - 1) * recordsPerPage;
-    return filteredData.slice(s, s + recordsPerPage);
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    return filteredData.slice(startIndex, startIndex + recordsPerPage);
   }, [filteredData, currentPage, recordsPerPage]);
 
-  // ── Action buttons renderer ──────────────────────────────────────────────
-  const actionRender = (_, r) => {
-    const styles = {
-      teal: "bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white",
-      sky: "bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white",
-      rose: "bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white",
-    };
-    return (
-      <div className="flex gap-2 justify-center">
-        {[
-          { icon: Eye, color: "teal", t: "view" },
-          { icon: Edit, color: "sky", t: "edit" },
-          { icon: Trash2, color: "rose", t: "delete" },
-        ].map((a) => (
-          <button
-            key={a.t}
-            onClick={() => openModal(a.t, r)}
-            className={`p-1.5 rounded-xl transition-all duration-200 ${styles[a.color]}`}
-            title={a.t.charAt(0).toUpperCase() + a.t.slice(1)}
-          >
-            <a.icon className="w-4 h-4" />
-          </button>
-        ))}
-      </div>
-    );
-  };
+  const actionRender = (_, r) => (
+    <div className="flex gap-2 justify-center">
+      <button onClick={() => openModal("view", r)} className="p-1.5 rounded-xl bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-all"><Eye className="w-4 h-4" /></button>
+      <button onClick={() => openModal("edit", r)} className="p-1.5 rounded-xl bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white transition-all"><Edit className="w-4 h-4" /></button>
+      <button onClick={() => openModal("delete", r)} className="p-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
+    </div>
+  );
 
-  // ── Status toggle renderer ───────────────────────────────────────────────
   const statusRender = (s, row) => (
     <button
-      onClick={() => updateStatus(activeTab, row.id)}
-      className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
+      onClick={() => updateStatus(row.id)}
+      className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
     >
-      <span
-        className={`h-3.5 w-3.5 rounded-xl bg-white shadow-sm transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`}
-      />
+      <span className={`h-3.5 w-3.5 rounded-xl bg-white transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`} />
     </button>
   );
 
-  // ── Column definitions ───────────────────────────────────────────────────
-  const srNo = {
-    key: "sr_no",
-    label: "Sr. No",
-    align: "center",
-    render: (_, __, i) => (
-      <span className="text-slate-500 font-semibold">
-        {(currentPage - 1) * recordsPerPage + i + 1}
-      </span>
-    ),
-  };
+  const columns = [
+    { key: "sr_no", label: "Sr. No", align: "center", render: (_, __, i) => <span className="text-slate-500 font-semibold">{(currentPage - 1) * recordsPerPage + i + 1}</span> },
+    { key: "name", label: "Name", align: "center", render: (v) => <span className="font-bold text-teal-700">{v}</span> },
+    { key: "family_category", label: "Category", align: "center" },
+    { key: "role", label: "Relationship", align: "center", render: (v, r) => r?.is_family_head ? <span className="text-teal-600 font-bold">Head</span> : v },
+    { key: "mobile", label: "Mobile", align: "center" },
+    ...(activeTab === "Member" ? [{
+      key: "is_volunteer",
+      label: "Volunteer Status",
+      align: "center",
+      render: (v, r) => (
+        <button onClick={() => updateVolunteerStatus(r?.id)} className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors ${v ? "bg-emerald-500" : "bg-slate-300"}`}><span className={`h-3.5 w-3.5 rounded-xl bg-white transition-all duration-300 ${v ? "translate-x-[16px]" : "translate-x-0"}`} /></button>
+      )
+    }] : []),
+    { key: "status", label: "Account Status", align: "center", render: statusRender },
+    { key: "actions", label: "Action", align: "center", render: actionRender },
+  ];
 
-  const columns = {
-    Family: [
-      srNo,
-      {
-        key: "family_name",
-        label: "Family Name",
-        align: "center",
-        render: (v) => <span className="font-bold text-teal-700">{v}</span>,
-      },
-      { key: "family_head", label: "Family Head", align: "center" },
-      { key: "members_count", label: "Members", align: "center" },
-      { key: "address", label: "Registered Address", align: "center" },
-      { key: "status", label: "Status", align: "center", render: statusRender },
-      {
-        key: "actions",
-        label: "Action",
-        align: "center",
-        render: actionRender,
-      },
-    ],
-    "Individual Member": [
-      srNo,
-      {
-        key: "name",
-        label: "Member Name",
-        align: "center",
-        render: (v) => <span className="font-bold text-teal-700">{v}</span>,
-      },
-      { key: "family", label: "Family Head", align: "center" },
-      { key: "role", label: "Relationship", align: "center" },
-      { key: "age", label: "Age", align: "center" },
-      { key: "status", label: "Status", align: "center", render: statusRender },
-      {
-        key: "actions",
-        label: "Action",
-        align: "center",
-        render: actionRender,
-      },
-    ],
-    Volunteers: [
-      srNo,
-      {
-        key: "name",
-        label: "Volunteer Name",
-        align: "center",
-        render: (v) => <span className="font-bold text-teal-700">{v}</span>,
-      },
-      { key: "phones", label: "Contact Number", align: "center" },
-      { key: "skill", label: "Primary Skill", align: "center" },
-      { key: "experience", label: "Experience", align: "center" },
-      { key: "status", label: "Status", align: "center", render: statusRender },
-      {
-        key: "actions",
-        label: "Action",
-        align: "center",
-        render: actionRender,
-      },
-    ],
-  };
-
-  // ── Field helpers ────────────────────────────────────────────────────────
   const field = (key) => ({
-    value: formData[key] ?? "",
+    value: formData?.[key] ?? "",
     onChange: (e) => setFormData((p) => ({ ...p, [key]: e.target.value })),
   });
-
-  const clearErr = (k) => setErrors((e) => ({ ...e, [k]: null }));
-
-  // ── Add/Edit form label ──────────────────────────────────────────────────
-  const addLabel =
-    activeTab === "Individual Member"
-      ? "Member"
-      : activeTab === "Volunteers"
-        ? "Volunteer"
-        : "Family";
 
   return (
     <CommonPageLayout title="Member Management" stats={stats}>
       {/* Tab Switcher */}
       <div className="bg-white rounded-xl border border-slate-100 p-1 mb-5 flex gap-1">
-        {tabs.map((tab) => (
+        {["Member", "Volunteers"].map((tab) => (
           <button
             key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setSearchQuery("");
-              setFilters({ status: "" });
-              setCurrentPage(1);
-            }}
-            className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 ${
-              activeTab === tab
-                ? "bg-teal-50 text-teal-700 shadow-sm"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/50"
-            }`}
+            onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+            className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all ${activeTab === tab ? "bg-teal-50 text-teal-700 shadow-sm" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/50"}`}
           >
             {tab}
           </button>
@@ -541,7 +491,6 @@ export default function Members() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-500">
-        {/* Search & Actions */}
         <div className="p-4 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="w-full sm:max-w-sm relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
@@ -549,12 +498,13 @@ export default function Members() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search in ${activeTab}...`}
-              className="w-full h-[36px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium"
+              placeholder={`Search members...`}
+              className="w-full h-[36px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium"
             />
           </div>
           <div className="flex gap-2">
             <FilterButton
+              dataCount={filteredData.length}
               filters={filters}
               options={[
                 {
@@ -565,945 +515,281 @@ export default function Members() {
                     { label: "Inactive", value: "Inactive" },
                   ],
                 },
+                {
+                  key: "family_category",
+                  placeholder: "Family Category",
+                  items: familyCategories.map((cat) => ({
+                    label: cat,
+                    value: cat,
+                  })),
+                },
+                {
+                  key: "role",
+                  placeholder: "Position",
+                  items: [...new Set(individualMembers.map(m => m.role).filter(Boolean))].map(r => ({ label: r, value: r })),
+                },
+                {
+                  key: "is_volunteer",
+                  placeholder: "Volunteer",
+                  items: [
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
+                  ],
+                },
               ]}
-              onChange={(k, v) => setFilters((f) => ({ ...f, [k]: v }))}
-              onClear={() => setFilters({ status: "" })}
+              onChange={(k, v) => {
+                setFilters((f) => ({ ...f, [k]: v }));
+                setCurrentPage(1);
+              }}
+              onClear={() => {
+                setFilters({ status: "", family_category: "", is_volunteer: "", role: "" });
+                setCurrentPage(1);
+              }}
             />
-            <button
-              onClick={() => openModal("add")}
-              className="h-[36px] shrink-0 flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/20 active:scale-95 border border-teal-600"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add {addLabel}</span>
-            </button>
+            {activeTab === "Member" && (
+              <button onClick={() => openModal("addCategory")} className="h-[36px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Family Category</button>
+            )}
+            {activeTab === "Member" && (
+              <button onClick={() => openModal("add")} className="h-[36px] flex items-center gap-2 bg-teal-600 text-white px-4 rounded-xl text-[13px] font-bold hover:bg-teal-700 transition-all shadow-md shadow-teal-50"><Plus className="w-4 h-4" /> Add Member</button>
+            )}
           </div>
         </div>
 
-        <Table
-          columns={columns[activeTab]}
-          data={paginatedData}
-          loading={loading}
-          skipCard
-        />
-        <Pagination
-          currentPage={currentPage}
-          totalRecords={filteredData.length}
-          recordsPerPage={recordsPerPage}
-          onPageChange={setCurrentPage}
-          onRecordsPerPageChange={setRecordsPerPage}
-        />
+        <Table columns={columns} data={paginatedData} loading={loading} skipCard />
+        <Pagination currentPage={currentPage} totalRecords={filteredData.length} recordsPerPage={recordsPerPage} onPageChange={setCurrentPage} onRecordsPerPageChange={setRecordsPerPage} />
       </div>
+
+      {/* ═══ Add Category Modal ═══ */}
+      <Modal isOpen={modal.type === "addCategory"} onClose={() => setModal({ type: null, data: null })} title="Add Family Category" size="sm">
+        <div className="space-y-4">
+          <Input label="Category Name" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Life Member" autoFocus />
+          <Button className="w-full" onClick={handleAddCategory}>Add Category</Button>
+        </div>
+      </Modal>
 
       {/* ═══ Add / Edit Modal ═══════════════════════════════════════════════════ */}
       <Modal
         isOpen={modal.type === "add" || modal.type === "edit"}
         onClose={() => setModal({ type: null, data: null })}
-        size={activeTab === "Individual Member" ? (formData.family_id ? "xl" : "md") : "xxl"}
-        title={`${modal.type === "edit" ? "Edit" : "Add"} ${addLabel}`}
+        size="xl"
+        title={modal.type === "edit" ? "Edit Member Details" : "Add New Members"}
         footer={
           <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setModal({ type: null, data: null })}
-            >
-              Cancel
-            </Button>
-            <Button loading={saving} onClick={handleSave}>
-              {modal.type === "edit" ? "Update" : "Add"} {addLabel}
-            </Button>
+            <Button variant="secondary" onClick={() => setModal({ type: null, data: null })}>Cancel</Button>
+            <Button loading={saving} onClick={handleSave}>{modal.type === "edit" ? "Update" : "Register Batch"}</Button>
           </div>
         }
       >
-        <div className="space-y-8 px-1 pb-2">
-          {/* ── FAMILY FORM ── */}
-          {activeTab === "Family" && (
-            <>
-              <Section title="Family Info" icon={Users} color="teal">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="Family Name"
-                    {...field("family_name")}
-                    icon={Users}
-                    placeholder="e.g. Shah Family"
-                    className="h-[36px]"
-                    containerClass="md:col-span-2"
-                    required
-                  />
-                  <Input
-                    label="Members Count"
-                    {...field("members_count")}
-                    icon={Users}
-                    placeholder="Number of members"
-                    className="h-[36px]"
-                  />
-                </div>
-              </Section>
-              <Section title="Family Head Details" icon={Contact} color="sky">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="Family Head Name"
-                    {...field("family_head")}
-                    icon={Users}
-                    placeholder="Enter head's full name"
-                    className="h-[36px]"
-                    containerClass="md:col-span-2"
-                    required
-                  />
-                  <DatePicker
-                    label="Birth Date"
-                    value={formData.birthDate}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, birthDate: e.target.value }))
-                    }
-                    icon={Calendar}
-                    placeholder="Select Date"
-                  />
-                  <Input
-                    label="Phone"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, phone: e.target.value }));
-                      clearErr("phone");
-                    }}
-                    icon={Phone}
-                    placeholder="10-digit number"
-                    className="h-[36px]"
-                    error={errors.phone}
-                    required
-                  />
-                  <Input
-                    label="Email"
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, email: e.target.value }));
-                      clearErr("email");
-                    }}
-                    icon={Mail}
-                    placeholder="name@example.com"
-                    className="h-[36px]"
-                    error={errors.email}
-                    containerClass="md:col-span-2"
-                  />
-                  <CustomSelect
-                    label="Gender"
-                    value={formData.gender}
-                    options={["Male", "Female", "Other"]}
-                    onChange={(v) => setFormData((p) => ({ ...p, gender: v }))}
-                    icon={Dna}
-                    placeholder="Select Gender"
-                  />
-                  <CustomSelect
-                    label="Blood Group"
-                    value={formData.bloodGroup}
-                    options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
-                    onChange={(v) =>
-                      setFormData((p) => ({ ...p, bloodGroup: v }))
-                    }
-                    icon={Droplets}
-                    placeholder="Select Blood Group"
-                  />
-                </div>
-              </Section>
-              <Section title="Location" icon={MapPin} color="amber">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="City"
-                    {...field("city")}
-                    icon={Map}
-                    placeholder="Enter city"
-                    className="h-[36px]"
-                  />
-                  <div className="md:col-span-2">
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
-                      Registered Address
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-[36px] px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all shadow-sm"
-                      placeholder="Enter complete address..."
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          address: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-              </Section>
-            </>
-          )}
-
-          {/* ── INDIVIDUAL MEMBER FORM ── */}
-          {activeTab === "Individual Member" &&
-            (() => {
-              const selectedFamily =
-                families.find((f) => f.id === formData.family_id) || null;
-              const familyLocked = !selectedFamily;
-
-              return (
-                <>
-                  {/* Select Family */}
-                  <Section title="Select Family" icon={Users} color="teal">
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div className="md:col-span-2">
-                        <CustomSelect
-                          label="Select Family"
-                          value={
-                            selectedFamily ? selectedFamily.family_name : ""
-                          }
-                          options={families.map((f) => f.family_name)}
-                          onChange={(name) => {
-                            const fam = families.find(
-                              (f) => f.family_name === name,
-                            );
-                            setFormData((p) => ({
-                              ...p,
-                              family_id: fam?.id ?? "",
-                              family: fam?.family_head ?? "",
-                            }));
-                          }}
-                          icon={Users}
-                          placeholder="— Choose a family —"
-                        />
-                      </div>
-                      {/* Family Head chip — appears once family selected */}
-                      {selectedFamily && (
-                        <div className="flex flex-col justify-end">
-                          <label className="text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
-                            Family Head
-                          </label>
-                          <div className="h-[36px] flex items-center gap-2.5 px-4 rounded-xl bg-teal-50 border border-teal-200">
-                            <Users className="w-4 h-4 text-teal-500 flex-shrink-0" />
-                            <span className="text-[13px] font-bold text-teal-700 truncate">
-                              {selectedFamily.family_head}
-                            </span>
-                          </div>
-                        </div>
-                      )}
+        <div className="space-y-8 pb-3">
+          {modal.type === "add" ? (
+            <div className="space-y-6">
+              {membersList.map((m, i) => (
+                <div key={i} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 relative group/entry animate-in slide-in-from-right duration-300" style={{ animationDelay: `${i * 100}ms` }}>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-teal-600 text-white flex items-center justify-center text-[11px] font-bold">{i + 1}</div>
+                      <h4 className="text-[13px] font-bold text-slate-700">Member Entry</h4>
                     </div>
-
-                    {/* Locked placeholder when no family selected */}
-                    {familyLocked && (
-                      <div className="mt-4 flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        <div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
-                          <Users className="w-4 h-4 text-slate-400" />
-                        </div>
-                        <p className="text-[13px] text-slate-400 font-medium">
-                          Please select a family above to unlock member details.
-                        </p>
-                      </div>
+                    {membersList.length > 1 && (
+                      <button onClick={() => setMembersList(prev => prev.filter((_, idx) => idx !== i))} className="p-1 px-3 rounded-lg text-[11px] font-bold text-rose-500 hover:bg-rose-50 transition-colors">Remove</button>
                     )}
-                  </Section>
-
-                  {/* Steps 2 & 3 — unlock once family selected */}
-                  {!familyLocked && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
-                      <Section title="Member Info" icon={Contact} color="sky">
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <Input
-                            label="Member Name"
-                            {...field("name")}
-                            icon={Users}
-                            placeholder="Full Name"
-                            className="h-[36px]"
-                            containerClass="md:col-span-2"
-                            required
-                          />
-                          <Input
-                            label="Relationship"
-                            {...field("role")}
-                            icon={Heart}
-                            placeholder="e.g. Son, Wife"
-                            className="h-[36px]"
-                          />
-                          <Input
-                            label="Age"
-                            {...field("age")}
-                            icon={Calendar}
-                            placeholder="Age in years"
-                            className="h-[36px]"
-                          />
-                          <Input
-                            label="Mobile"
-                            value={formData.mobile}
-                            onChange={(e) => {
-                              setFormData((p) => ({
-                                ...p,
-                                mobile: e.target.value,
-                              }));
-                              clearErr("mobile");
-                            }}
-                            icon={Phone}
-                            placeholder="10-digit number"
-                            className="h-[36px]"
-                            error={errors.mobile}
-                            required
-                          />
-                          <Input
-                            label="Email"
-                            value={formData.email}
-                            onChange={(e) => {
-                              setFormData((p) => ({
-                                ...p,
-                                email: e.target.value,
-                              }));
-                              clearErr("email");
-                            }}
-                            icon={Mail}
-                            placeholder="name@example.com"
-                            className="h-[36px]"
-                            error={errors.email}
-                          />
-                          <DatePicker
-                            label="Birth Date"
-                            value={formData.birthDate}
-                            onChange={(e) =>
-                              setFormData((p) => ({
-                                ...p,
-                                birthDate: e.target.value,
-                              }))
-                            }
-                            icon={Calendar}
-                            placeholder="Select Date"
-                          />
-                          <CustomSelect
-                            label="Gender"
-                            value={formData.gender}
-                            options={["Male", "Female", "Other"]}
-                            onChange={(v) =>
-                              setFormData((p) => ({ ...p, gender: v }))
-                            }
-                            icon={Dna}
-                            placeholder="Select Gender"
-                          />
-                          <CustomSelect
-                            label="Blood Group"
-                            value={formData.blood_group}
-                            options={[
-                              "A+",
-                              "A-",
-                              "B+",
-                              "B-",
-                              "AB+",
-                              "AB-",
-                              "O+",
-                              "O-",
-                            ]}
-                            onChange={(v) =>
-                              setFormData((p) => ({ ...p, blood_group: v }))
-                            }
-                            icon={Droplets}
-                            placeholder="Select Blood Group"
-                          />
-                        </div>
-                      </Section>
-                      <Section title="Location" icon={MapPin} color="amber">
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <Input
-                            label="City"
-                            {...field("city")}
-                            icon={Map}
-                            placeholder="Enter city"
-                            className="h-[36px]"
-                          />
-                          <div className="md:col-span-2">
-                            <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
-                              Address
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full h-[36px] px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all shadow-sm"
-                              placeholder="Enter complete address..."
-                              value={formData.address}
-                              onChange={(e) =>
-                                setFormData((p) => ({
-                                  ...p,
-                                  address: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-                        </div>
-                      </Section>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input label="Name" value={m.name} onChange={e => { const list = [...membersList]; list[i].name = e.target.value; setMembersList(list); }} />
+                    <Input label="Mobile" value={m.mobile} onChange={e => { const list = [...membersList]; list[i].mobile = e.target.value; setMembersList(list); }} />
+                    <CustomSelect label="Relationship" value={m.role} options={["Husband", "Wife", "Son", "Daughter", "Father", "Mother", "Other"]} onChange={v => { const list = [...membersList]; list[i].role = v; setMembersList(list); }} placeholder="Select relationship" />
+                    <CustomSelect label="Gender" value={m.gender} options={["Male", "Female", "Other"]} onChange={v => { const list = [...membersList]; list[i].gender = v; setMembersList(list); }} placeholder="Select Gender" />
+                    <DatePicker label="Birth Date" value={m.birthDate} onChange={e => { const list = [...membersList]; list[i].birthDate = e.target.value; setMembersList(list); }} icon={Calendar} />
+                    <CustomSelect label="Blood Group" value={m.blood_group} options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} onChange={v => { const list = [...membersList]; list[i].blood_group = v; setMembersList(list); }} placeholder="Select Blood Group" />
+                    <CustomSelect label="Family Category" value={m.family_category} options={familyCategories} onChange={v => { const list = [...membersList]; list[i].family_category = v; setMembersList(list); }} placeholder="Select Family Category" />
+                    <div className="flex items-center gap-6 mt-4 md:col-span-2">
+                      <label className="flex items-center gap-2 cursor-pointer group"><input type="checkbox" checked={m.is_family_head} onChange={e => { const list = [...membersList]; list[i].is_family_head = e.target.checked; setMembersList(list); }} className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" /> <span className="text-[12px] font-bold text-slate-600 group-hover:text-teal-600 transition-colors">Family Head?</span></label>
+                      <label className="flex items-center gap-2 cursor-pointer group"><input type="checkbox" checked={m.is_volunteer} onChange={e => { const list = [...membersList]; list[i].is_volunteer = e.target.checked; setMembersList(list); }} className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500" /> <span className="text-[12px] font-bold text-slate-600 group-hover:text-teal-600 transition-colors">Register as Volunteer?</span></label>
                     </div>
-                  )}
-                </>
-              );
-            })()}
-
-          {/* ── VOLUNTEER FORM ── */}
-          {activeTab === "Volunteers" && (
-            <>
-              <Section title="Volunteer Info" icon={HandHeart} color="teal">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="Volunteer Name"
-                    {...field("name")}
-                    icon={Users}
-                    placeholder="Full Name"
-                    className="h-[36px]"
-                    containerClass="md:col-span-2"
-                    required
-                  />
-                  <Input
-                    label="Primary Skill"
-                    {...field("skill")}
-                    icon={Star}
-                    placeholder="e.g. Event Mgmt"
-                    className="h-[36px]"
-                  />
-                  <Input
-                    label="Experience"
-                    {...field("experience")}
-                    icon={Clock}
-                    placeholder="e.g. 3 Years"
-                    className="h-[36px]"
-                  />
-                  <Input
-                    label="Availability"
-                    {...field("availability")}
-                    icon={Calendar}
-                    placeholder="e.g. Weekends"
-                    className="h-[36px]"
-                  />
-                  <Input
-                    label="Area of Interest"
-                    {...field("interest")}
-                    icon={Zap}
-                    placeholder="e.g. Education"
-                    className="h-[36px]"
-                  />
+                  </div>
                 </div>
-              </Section>
-              <Section title="Contact & Identity" icon={Contact} color="sky">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="Phone"
-                    value={formData.phones}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, phones: e.target.value }));
-                      clearErr("phone");
-                    }}
-                    icon={Phone}
-                    placeholder="10-digit number"
-                    className="h-[36px]"
-                    error={errors.phone}
-                    required
-                  />
-                  <Input
-                    label="Email"
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, email: e.target.value }));
-                      clearErr("email");
-                    }}
-                    icon={Mail}
-                    placeholder="name@example.com"
-                    className="h-[36px]"
-                    error={errors.email}
-                    containerClass="md:col-span-2"
-                  />
-                  <DatePicker
-                    label="Birth Date"
-                    value={formData.birthDate}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, birthDate: e.target.value }))
-                    }
-                    icon={Calendar}
-                    placeholder="Select Date"
-                  />
-                  <CustomSelect
-                    label="Gender"
-                    value={formData.gender}
-                    options={["Male", "Female", "Other"]}
-                    onChange={(v) => setFormData((p) => ({ ...p, gender: v }))}
-                    icon={Dna}
-                    placeholder="Select Gender"
-                  />
-                  <CustomSelect
-                    label="Blood Group"
-                    value={formData.bloodGroup}
-                    options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
-                    onChange={(v) =>
-                      setFormData((p) => ({ ...p, bloodGroup: v }))
-                    }
-                    icon={Droplets}
-                    placeholder="Select Blood Group"
-                  />
+              ))}
+              <button onClick={() => setMembersList([...membersList, BLANK_MEMBER_ENTRY()])} className="w-full py-4 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-teal-300 hover:text-teal-600 hover:bg-teal-50/30 transition-all font-bold text-[13px] flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add Another Family Member</button>
+            </div>
+          ) : (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+              <Section title="Primary Details" icon={Contact} color="sky">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Input label="Full Name" {...field("name")} icon={Users} error={errors.name} required />
+                  <Input label="Mobile" {...field("mobile")} icon={Phone} error={errors.mobile} />
+                  <Input label="Email" {...field("email")} icon={Mail} />
+                  <DatePicker label="Birth Date" value={formData?.birthDate} onChange={v => setFormData(p => ({ ...p, birthDate: v.target.value }))} icon={Calendar} />
+                  <CustomSelect label="Relationship" value={formData.role} options={["Head", "Husband", "Wife", "Son", "Daughter", "Father", "Mother", "Other"]} onChange={v => setFormData(p => ({ ...p, role: v }))} placeholder="Select relationship" />
+                  <CustomSelect label="Family Category" value={formData.family_category} options={familyCategories} onChange={v => setFormData(p => ({ ...p, family_category: v }))} placeholder="Select Family Category" />
+                  <CustomSelect label="Gender" value={formData.gender} options={["Male", "Female", "Other"]} onChange={v => setFormData(p => ({ ...p, gender: v }))} placeholder="Select Gender" />
+                  <CustomSelect label="Blood Group" value={formData.blood_group} options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} onChange={v => setFormData(p => ({ ...p, blood_group: v }))} placeholder="Select Blood Group" />
+                </div>
+                <div className="mt-6 flex gap-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={formData.is_family_head} onChange={e => setFormData(p => ({ ...p, is_family_head: e.target.checked }))} className="w-4 h-4 rounded text-teal-600" /> <span className="text-[12px] font-bold text-slate-700 underline underline-offset-4 decoration-teal-200">Family Head?</span></label>
+                  <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={formData.is_volunteer} onChange={e => setFormData(p => ({ ...p, is_volunteer: e.target.checked }))} className="w-4 h-4 rounded text-emerald-600" /> <span className="text-[12px] font-bold text-slate-700 underline underline-offset-4 decoration-emerald-200">Volunteer?</span></label>
                 </div>
               </Section>
               <Section title="Location" icon={MapPin} color="amber">
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Input
-                    label="City"
-                    {...field("city")}
-                    icon={Map}
-                    placeholder="Enter city"
-                    className="h-[36px]"
-                  />
-                  <div className="md:col-span-2">
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-[36px] px-4 rounded-xl border border-slate-200 bg-slate-50/50 text-sm outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all shadow-sm"
-                      placeholder="Enter complete address..."
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          address: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
+                <Input label="Complete Address" {...field("address")} icon={MapIcon} placeholder="Residential address..." />
               </Section>
-            </>
+
+              {/* Family Members Section in Edit Mode */}
+              {formData.familyId && individualMembers.filter(m => m.familyId === formData.familyId && m.id !== formData.id).length > 0 && (
+                <Section title="Family Unit" icon={Users} color="orange">
+                  <div className="space-y-3">
+                    {individualMembers.filter(m => m.familyId === formData.familyId && m.id !== formData.id).map((fm, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100 group/fm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-[11px] font-extrabold">{idx + 1}</div>
+                          <div>
+                            <p className="text-[13px] font-bold text-slate-700">{fm.name}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{fm.is_family_head ? "Head" : fm.role || "Member"}</p>
+                          </div>
+                        </div>
+                        <button onClick={() => { setModal({ type: "edit", data: fm }); setFormData(fm); }} className="px-4 py-1.5 rounded-xl bg-white border border-slate-200 text-teal-600 text-[11px] font-bold hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-sm">Quick Edit</button>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+            </div>
           )}
         </div>
       </Modal>
 
       {/* ═══ View Modal ═══════════════════════════════════════════════════════════ */}
-      <Modal
-        isOpen={modal.type === "view"}
-        onClose={() => setModal({ type: null, data: null })}
-        title={`${addLabel} Details`}
-        size="xl"
-      >
+      <Modal isOpen={modal.type === "view"} onClose={() => { setModal({ type: null, data: null }); setViewingFamilyMember(null); }} title="Member Information" size="xl">
         {modal.data && (
-          <div className="space-y-8">
-            {/* ── FAMILY VIEW ── */}
-            {activeTab === "Family" && (
-              <>
-                <Section title="Family Info" icon={Users} color="teal">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Family Name"
-                      value={modal.data.family_name}
-                      icon={Users}
-                    />
-                    <DetailField
-                      label="Family Head"
-                      value={modal.data.family_head}
-                      icon={Users}
-                    />
-                    <DetailField
-                      label="Members Count"
-                      value={modal.data.members_count}
-                      icon={Users}
-                    />
+          <div className="relative -mx-1">
+            <div className="space-y-8 pb-4">
+              <Section title="Basic Info" icon={Users} color="teal">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <DetailField label="Name" value={modal.data.name} icon={Users} />
+                  <DetailField label="Category" value={modal.data.family_category} icon={Star} />
+                  <DetailField label="Relationship" value={modal.data.is_family_head ? "Head" : modal.data.role} icon={Heart} />
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col justify-center">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Volunteer</p>
+                    <span className={`text-[11px] font-bold px-3 py-1 rounded-lg w-fit ${modal.data.is_volunteer ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}`}>{modal.data.is_volunteer ? "Active Volunteer" : "No"}</span>
                   </div>
-                </Section>
-                <Section
-                  title="Head Contact & Identity"
-                  icon={Contact}
-                  color="sky"
-                >
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Phone"
-                      value={modal.data.phone}
-                      icon={Phone}
-                    />
-                    <DetailField
-                      label="Email"
-                      value={modal.data.email}
-                      icon={Mail}
-                      containerClass="md:col-span-2"
-                    />
-                    <DetailField
-                      label="Birth Date"
-                      value={modal.data.birthDate}
-                      icon={Calendar}
-                    />
-                    <DetailField
-                      label="Gender"
-                      value={modal.data.gender}
-                      icon={Dna}
-                    />
-                    <DetailField
-                      label="Blood Group"
-                      value={modal.data.bloodGroup}
-                      icon={Droplets}
-                    />
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">
-                        Status
-                      </p>
-                      <span
-                        className={`px-3 py-1 rounded-xl text-[11px] font-bold ${modal.data.status === "Active" ? "bg-emerald-100/50 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-                      >
-                        {modal.data.status}
-                      </span>
-                    </div>
-                  </div>
-                </Section>
-                <Section title="Location" icon={MapPin} color="amber">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="City"
-                      value={modal.data.city}
-                      icon={Map}
-                    />
-                    <div className="md:col-span-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">
-                          Address
-                        </p>
-                      </div>
-                      <p className="text-[13px] font-semibold text-slate-800">
-                        {modal.data.address || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </Section>
-              </>
-            )}
+                </div>
+              </Section>
 
-            {/* ── INDIVIDUAL MEMBER VIEW ── */}
-            {activeTab === "Individual Member" && (
-              <>
-                <Section title="Basic Info" icon={Users} color="teal">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Member Name"
-                      value={modal.data.name}
-                      icon={Users}
-                    />
-                    <DetailField
-                      label="Family Head"
-                      value={modal.data.family}
-                      icon={Users}
-                    />
-                    <DetailField
-                      label="Relationship"
-                      value={modal.data.role}
-                      icon={Heart}
-                    />
-                    <DetailField
-                      label="Age"
-                      value={modal.data.age ? `${modal.data.age} yrs` : null}
-                      icon={Calendar}
-                    />
-                  </div>
-                </Section>
-                <Section title="Contact & Identity" icon={Contact} color="sky">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Mobile"
-                      value={modal.data.mobile}
-                      icon={Phone}
-                    />
-                    <DetailField
-                      label="Email"
-                      value={modal.data.email}
-                      icon={Mail}
-                      containerClass="md:col-span-2"
-                    />
-                    <DetailField
-                      label="Birth Date"
-                      value={modal.data.birthDate}
-                      icon={Calendar}
-                    />
-                    <DetailField
-                      label="Gender"
-                      value={modal.data.gender}
-                      icon={Dna}
-                    />
-                    <DetailField
-                      label="Blood Group"
-                      value={modal.data.blood_group}
-                      icon={Droplets}
-                    />
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">
-                        Status
-                      </p>
-                      <span
-                        className={`px-3 py-1 rounded-xl text-[11px] font-bold ${modal.data.status === "Active" ? "bg-emerald-100/50 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-                      >
-                        {modal.data.status}
-                      </span>
-                    </div>
-                  </div>
-                </Section>
-                <Section title="Location" icon={MapPin} color="amber">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="City"
-                      value={modal.data.city}
-                      icon={Map}
-                    />
-                    <div className="md:col-span-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">
-                          Address
-                        </p>
-                      </div>
-                      <p className="text-[13px] font-semibold text-slate-800">
-                        {modal.data.address || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </Section>
-              </>
-            )}
+              <Section title="Contact & Identity" icon={Contact} color="sky">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <DetailField label="Mobile" value={modal.data.mobile} icon={Phone} />
+                  <DetailField label="Email" value={modal.data.email} icon={Mail} containerClass="md:col-span-2" />
+                  <DetailField label="Birthday" value={modal.data.birthDate} icon={Calendar} />
+                  <DetailField label="Gender" value={modal.data.gender} icon={Dna} />
+                  <DetailField label="Blood Group" value={modal.data.blood_group} icon={Droplets} />
+                </div>
+              </Section>
 
-            {/* ── VOLUNTEER VIEW ── */}
-            {activeTab === "Volunteers" && (
-              <>
-                <Section title="Volunteer Info" icon={HandHeart} color="teal">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Volunteer Name"
-                      value={modal.data.name}
-                      icon={Users}
-                    />
-                    <DetailField
-                      label="Primary Skill"
-                      value={modal.data.skill}
-                      icon={Star}
-                    />
-                    <DetailField
-                      label="Experience"
-                      value={modal.data.experience}
-                      icon={Clock}
-                    />
-                    <DetailField
-                      label="Availability"
-                      value={modal.data.availability}
-                      icon={Calendar}
-                    />
-                    <DetailField
-                      label="Area of Interest"
-                      value={modal.data.interest}
-                      icon={Zap}
-                      containerClass="md:col-span-2"
-                    />
-                  </div>
-                </Section>
-                <Section title="Contact & Identity" icon={Contact} color="sky">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="Phone"
-                      value={modal.data.phones}
-                      icon={Phone}
-                    />
-                    <DetailField
-                      label="Email"
-                      value={modal.data.email}
-                      icon={Mail}
-                      containerClass="md:col-span-2"
-                    />
-                    <DetailField
-                      label="Birth Date"
-                      value={modal.data.birthDate}
-                      icon={Calendar}
-                    />
-                    <DetailField
-                      label="Gender"
-                      value={modal.data.gender}
-                      icon={Dna}
-                    />
-                    <DetailField
-                      label="Blood Group"
-                      value={modal.data.bloodGroup}
-                      icon={Droplets}
-                    />
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">
-                        Status
-                      </p>
-                      <span
-                        className={`px-3 py-1 rounded-xl text-[11px] font-bold ${modal.data.status === "Active" ? "bg-emerald-100/50 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-                      >
-                        {modal.data.status}
-                      </span>
+              <Section title="Location" icon={MapPin} color="amber">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><MapPin className="w-3 h-3" /> Residential Address</p>
+                  <p className="text-[13px] font-bold text-slate-700 leading-relaxed">{modal.data.address || "No address on file"}</p>
+                </div>
+              </Section>
+
+              {modal.data.familyId && (
+                <div className="space-y-8">
+                  <Section title="Full Family Details" icon={Users} color="orange">
+                    <div className="space-y-3">
+                      {individualMembers.filter(m => m.familyId === modal.data.familyId).map((fm, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => setViewingFamilyMember(fm)}
+                          className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${viewingFamilyMember?.id === fm.id ? "bg-teal-50 border-teal-500 shadow-md ring-1 ring-teal-500/20" : fm.id === modal.data.id ? "bg-teal-50/30 border-teal-100" : "bg-white border-slate-100 hover:border-slate-200 hover:shadow-md"}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-[13px] ${fm.id === modal.data.id ? "bg-teal-600 text-white shadow-lg shadow-teal-600/20" : "bg-slate-100 text-slate-400"}`}>{idx + 1}</div>
+                            <div>
+                              <p className="text-[14px] font-bold text-slate-700">{fm.name} {fm.id === modal.data.id && <span className="text-[10px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded ml-2 uppercase tracking-tighter">Current</span>}</p>
+                              <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase">{fm.is_family_head ? "Family Head" : fm.role || "Member"}</span>
+                                <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                <span className="text-[11px] font-bold text-slate-400">{fm.gender || "N/A"}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[13px] font-bold text-slate-600">{fm.mobile || "No Mobile"}</p>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${fm.status === "Active" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"}`}>{fm.status}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </Section>
-                <Section title="Location" icon={MapPin} color="amber">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <DetailField
-                      label="City"
-                      value={modal.data.city}
-                      icon={Map}
-                    />
-                    <div className="md:col-span-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">
-                          Address
-                        </p>
+                  </Section>
+
+                  {/* Inline Family Member Details */}
+                  {viewingFamilyMember && (
+                    <div ref={familyDetailRef} className="animate-in slide-in-from-top-4 duration-500 pb-10">
+                      <div className="flex items-center justify-between mb-6 pt-8 border-t border-dashed border-teal-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-200">
+                            <Users className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-[16px] font-bold text-slate-800 leading-tight">{viewingFamilyMember.name}'s Details</h3>
+                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">Extended Member Profile</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setViewingFamilyMember(null)}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-bold text-[11px] hover:bg-rose-100 transition-all border border-rose-100"
+                        >
+                          <X className="w-3.5 h-3.5" /> Close Details
+                        </button>
                       </div>
-                      <p className="text-[13px] font-semibold text-slate-800">
-                        {modal.data.address || "N/A"}
-                      </p>
+
+                      <div className="space-y-8">
+                        <Section title="Basic Info" icon={Users} color="teal">
+                          <div className="grid md:grid-cols-4 gap-4">
+                            <DetailField label="Name" value={viewingFamilyMember.name} icon={Users} />
+                            <DetailField label="Category" value={viewingFamilyMember.family_category} icon={Star} />
+                            <DetailField label="Relationship" value={viewingFamilyMember.is_family_head ? "Head" : viewingFamilyMember.role} icon={Heart} />
+                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col justify-center">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Volunteer</p>
+                              <span className={`text-[11px] font-bold px-3 py-1 rounded-lg w-fit ${viewingFamilyMember.is_volunteer ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}`}>{viewingFamilyMember.is_volunteer ? "Active Volunteer" : "No"}</span>
+                            </div>
+                          </div>
+                        </Section>
+
+                        <Section title="Contact & Identity" icon={Contact} color="sky">
+                          <div className="grid md:grid-cols-3 gap-4">
+                            <DetailField label="Mobile" value={viewingFamilyMember.mobile} icon={Phone} />
+                            <DetailField label="Email" value={viewingFamilyMember.email} icon={Mail} containerClass="md:col-span-2" />
+                            <DetailField label="Birthday" value={viewingFamilyMember.birthDate} icon={Calendar} />
+                            <DetailField label="Gender" value={viewingFamilyMember.gender} icon={Dna} />
+                            <DetailField label="Blood Group" value={viewingFamilyMember.blood_group} icon={Droplets} />
+                          </div>
+                        </Section>
+
+                        <Section title="Location" icon={MapPin} color="amber">
+                          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-2"><MapPin className="w-3 h-3" /> Residential Address</p>
+                            <p className="text-[13px] font-bold text-slate-700 leading-relaxed">{viewingFamilyMember.address || "No address on file"}</p>
+                          </div>
+                        </Section>
+                      </div>
                     </div>
-                  </div>
-                </Section>
-              </>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </Modal>
 
-      {/* Delete Confirm */}
+      {/* Delete Confirmation */}
       <ConfirmModal
         isOpen={modal.type === "delete"}
         onClose={() => setModal({ type: null, data: null })}
         onConfirm={handleDelete}
-        title={`Delete ${addLabel}`}
-        message="Are you sure you want to remove this record? This action cannot be undone."
+        title="Delete Member"
+        message={`Are you sure you want to delete ${modal.data?.name}? This action cannot be undone.`}
+        variant="danger"
       />
     </CommonPageLayout>
-  );
-}
-
-// ─── Shared sub-components (same as CommitteeMembers) ─────────────────────────
-const Section = ({ title, icon: Icon, color, children }) => (
-  <div className="space-y-4">
-    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-      <div
-        className={`p-1.5 rounded-xl ${color === "teal" ? "bg-teal-50 text-teal-600" : color === "sky" ? "bg-sky-50 text-sky-600" : color === "amber" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"}`}
-      >
-        <Icon className="w-4 h-4" />
-      </div>
-      <h3 className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">
-        {title}
-      </h3>
-    </div>
-    {children}
-  </div>
-);
-
-function DetailField({ label, value, icon: Icon, containerClass = "" }) {
-  return (
-    <div
-      className={`p-3.5 rounded-xl bg-slate-50 border border-slate-100 ${containerClass}`}
-    >
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-3.5 h-3.5 text-slate-400" />
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          {label}
-        </p>
-      </div>
-      <p className="text-[13px] font-semibold text-slate-800 truncate">
-        {value || "N/A"}
-      </p>
-    </div>
-  );
-}
-
-function CustomSelect({
-  label,
-  value,
-  options,
-  onChange,
-  icon: Icon,
-  placeholder = "Select option",
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, openUp: false });
-  const ref = useRef(null);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handle = (e) => {
-      if (
-        ref.current && !ref.current.contains(e.target) &&
-        (!dropdownRef.current || !dropdownRef.current.contains(e.target))
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
-  }, []);
-
-  const toggle = () => {
-    if (!isOpen && ref.current) {
-      const rect = ref.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const shouldOpenUp = spaceBelow < 200 && rect.top > 200;
-      setCoords({
-        top: shouldOpenUp ? rect.top : rect.bottom,
-        left: rect.left,
-        width: rect.width,
-        openUp: shouldOpenUp,
-      });
-    }
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <div className="relative" ref={ref}>
-      {label && (
-        <label className="block text-[13px] font-medium text-slate-700 mb-1.5 ml-1">
-          {label}
-        </label>
-      )}
-      <div className="relative group">
-        <button
-          type="button"
-          onClick={toggle}
-          className="w-full h-[36px] flex items-center justify-between px-4 bg-slate-50/50 border border-slate-200 rounded-xl transition-all outline-none group hover:border-teal-500 hover:bg-white focus:ring-4 focus:ring-teal-50"
-        >
-          <span
-            className={`text-sm truncate ${value ? "text-slate-700 font-medium" : "text-slate-400"}`}
-          >
-            {value || placeholder}
-          </span>
-          <div className="flex items-center gap-1.5">
-            {Icon && (
-              <Icon className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
-            )}
-            <ChevronDown
-              className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isOpen ? "rotate-180" : ""}`}
-            />
-          </div>
-        </button>
-
-        {isOpen &&
-          createPortal(
-            <div
-              ref={dropdownRef}
-              className={`fixed z-[9999] bg-white border border-slate-100 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] py-1 animate-in fade-in zoom-in-95 duration-200 ${coords.openUp ? "mb-2" : "mt-2"}`}
-              style={{
-                top: coords.openUp ? "auto" : coords.top,
-                bottom: coords.openUp ? window.innerHeight - coords.top : "auto",
-                left: coords.left,
-                width: coords.width,
-              }}
-            >
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: `${Math.min(options.length, 6) * 40}px` }}
-              >
-                {options.map((opt, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      onChange(opt);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-slate-50 hover:text-teal-600 transition-colors ${opt === value ? "bg-teal-50 text-teal-700 font-bold border-l-4 border-teal-500" : "text-slate-600"}`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>,
-            document.body,
-          )}
-      </div>
-    </div>
   );
 }
