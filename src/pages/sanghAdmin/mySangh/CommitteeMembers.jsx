@@ -139,7 +139,7 @@ export default function CommitteeMembers() {
 
   const updateMembers = (updated) => {
     setMembers(updated);
-    localStorage.setItem("sangh_committee_members", JSON.stringify(updated));
+    sessionStorage.setItem("sangh_committee_members", JSON.stringify(updated));
   };
 
   const handleDelete = () => {

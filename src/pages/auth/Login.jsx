@@ -38,12 +38,12 @@ export default function Login() {
         throw new Error('No authentication token received');
       }
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('userRole', role);
-      localStorage.setItem('userName', userName);
-      localStorage.setItem('userId', data.user_id || data.user?.id);
-      if (scopeId) localStorage.setItem('scopeId', scopeId);
-      if (scopeType) localStorage.setItem('scopeType', scopeType);
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('userRole', role);
+      sessionStorage.setItem('userName', userName);
+      sessionStorage.setItem('userId', data.user_id || data.user?.id);
+      if (scopeId) sessionStorage.setItem('scopeId', scopeId);
+      if (scopeType) sessionStorage.setItem('scopeType', scopeType);
 
       showToast('Welcome back! Login successful.', 'success');
       

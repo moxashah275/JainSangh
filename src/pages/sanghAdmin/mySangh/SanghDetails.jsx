@@ -5,9 +5,6 @@ import {
   Calendar,
   Info,
   Globe,
-  Clock,
-  Landmark,
-  BookOpen,
 } from "lucide-react";
 import Skeleton from "../../../components/common/Skeleton";
 import { 
@@ -39,7 +36,7 @@ export default function SanghDetails() {
   const [sangh, setSangh] = useState(defaultData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("Overview");
+
   const [errors, setErrors] = useState({});
   
   const fetchSanghDetails = async () => {
@@ -137,31 +134,11 @@ export default function SanghDetails() {
           </div>
         </div>
 
-        {/* Tab switcher - Enhanced Pill Style */}
-        <div className="mx-4 mt-1 mb-1">
-          <div className="flex items-center gap-1 p-1 bg-slate-50 border border-slate-100/50 rounded-xl w-full">
-            {["Overview", "Finance", "Institutions"].map((tab) => (
-              <button
-                key={tab}
-                disabled={loading}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-1.5 text-[12px] font-bold rounded-xl transition-all duration-300 ${
-                  activeTab === tab
-                    ? "bg-white text-teal-600 shadow-sm border border-slate-100"
-                    : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
-                } disabled:opacity-50`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Detail Content - Premium Cards */}
+        {/* Detail Content - Direct Overview */}
         <div className="px-4 pt-2 pb-4">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton variant="text" width="60px" height="10px" />
                   <Skeleton variant="text" width="150px" height="16px" />
@@ -169,54 +146,26 @@ export default function SanghDetails() {
               ))}
             </div>
           ) : (
-            activeTab === "Overview" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <DetailBox
-                  label="ESTABLISHED YEAR"
-                  value={sangh.established_year}
-                  icon={Calendar}
-                />
-                <DetailBox label="SANGH TYPE" value={sangh.sangh_type} icon={Info} />
-                <DetailBox
-                  label="STATUS"
-                  value={sangh.status}
-                  icon={Globe}
-                />
-                <div className="md:col-span-2">
-                  <DetailBox
-                    label="FULL REGISTERED ADDRESS"
-                    value={sangh.address}
-                    icon={MapPin}
-                  />
-                </div>
-              </div>
-            )
-          )}
-          {!loading && activeTab === "Finance" && (
-            <div className="h-48 flex flex-col items-center justify-center bg-slate-50/50 border border-dashed border-slate-200 rounded-[32px] animate-in zoom-in-95 duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-3">
-                <Clock className="w-6 h-6 text-slate-300" />
-              </div>
-              <p className="text-[13px] text-slate-400 font-bold tracking-tight uppercase">
-                Records Coming Soon
-              </p>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Financial summaries are being generated.
-              </p>
-            </div>
-          )}
-          {activeTab === "Institutions" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-in slide-in-from-right-4 duration-500">
-              <InstitutionCard
-                icon={Landmark}
-                title="Derasar Units"
-                count="2"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+              <DetailBox label="SANGH TYPE" value={sangh.sangh_type} icon={Info} />
+              <DetailBox
+                label="STATUS"
+                value={sangh.status}
+                icon={Globe}
+                valueClass={
+                  sangh.status?.toLowerCase() === "active"
+                    ? "text-emerald-600"
+                    : "text-rose-600"
+                }
               />
-              <InstitutionCard
-                icon={BookOpen}
-                title="Pathshala units"
-                count="1"
-              />
+              <div className="md:col-span-2">
+                <DetailBox
+                  label="FULL REGISTERED ADDRESS"
+                  value={sangh.address}
+                  icon={MapPin}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -249,7 +198,7 @@ function StatSmall({ label, value, icon: Icon, color, bg }) {
   );
 }
 
-function DetailBox({ label, value, icon: Icon }) {
+function DetailBox({ label, value, icon: Icon, valueClass }) {
   return (
     <div className="space-y-1.5 group">
       <div className="flex items-center gap-2">
@@ -258,25 +207,15 @@ function DetailBox({ label, value, icon: Icon }) {
           {label}
         </p>
       </div>
-      <p className="text-[14px] font-bold text-slate-700 pl-5.5 leading-relaxed group-hover:text-teal-600 transition-colors">
+      <p
+        className={`text-[14px] font-bold pl-5.5 leading-relaxed transition-colors ${
+          valueClass || "text-slate-700 group-hover:text-teal-600"
+        }`}
+      >
         {value || "-"}
       </p>
     </div>
   );
 }
 
-function InstitutionCard({ icon: Icon, title, count }) {
-  return (
-    <div className="p-4 bg-white rounded-2xl border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow cursor-default group">
-      <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <p className="text-[13px] font-bold text-slate-800">{title}</p>
-        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
-          {count} Registered Units
-        </p>
-      </div>
-    </div>
-  );
-}
+

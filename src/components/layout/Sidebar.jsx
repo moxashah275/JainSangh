@@ -101,7 +101,7 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const navigate = useNavigate()
   const [openSection, setOpenSection] = useState(null)
   const showLabels = isMobile || isSidebarOpen
-  const userRole = localStorage.getItem('userRole') || ROLES.SUPER_ADMIN
+  const userRole = sessionStorage.getItem('userRole') || ROLES.SUPER_ADMIN
   const isSanghAdmin = userRole === ROLES.SANGH_ADMIN
 
   const currentDropdownSections = isSanghAdmin ? sanghAdminDropdownSections : dropdownSections

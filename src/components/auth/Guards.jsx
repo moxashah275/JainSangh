@@ -3,8 +3,8 @@ import { ROLES } from '../../config/roles'
 
 // Note: Replace with actual auth logic
 const getAuthUser = () => {
-  const token = localStorage.getItem('token')
-  const role = localStorage.getItem('userRole')
+  const token = sessionStorage.getItem('token')
+  const role = sessionStorage.getItem('userRole')
   return {
     isAuthenticated: !!token,
     role: role
