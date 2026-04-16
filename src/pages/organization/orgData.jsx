@@ -1,279 +1,241 @@
+// Initial Data - Clean frontend only
 export const INITIAL_TRUSTS = [
   {
     id: 1,
-    name: 'Sathandji Kalyanji Trust',
-    code: 'SKT-001',
-    address: 'Sathandji Area, Palitana',
-    established: '1986',
-    phone: '+91 98765 21001',
-    admin: 'Rajesh Shah',
-    sanghCount: 3,
-    managerCount: 8,
-    accountCount: 3,
-    committeeCount: 12,
-    derasarCount: 2,
-    pathshalaCount: 1,
-    status: 'Active',
+    name: 'Shree Palitana Jain Trust',
+    mainContactPerson: 'Rajesh Mehta',
+    mobile: '+91 98765 43210',
+    email: 'rajesh@palitanatrust.org',
+    address: 'Main Road, Near Derasar',
+    area: 'Taleti',
+    city: 'Palitana',
+    state: 'Gujarat',
+    about: 'Managing Palitana Jain temple and community services with focus on education and healthcare.',
+    totalMembers: 1250,
+    team: [],
+    document: null,
+    linkedSanghs: [101, 103],
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Trust Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
   },
   {
     id: 2,
-    name: 'Palitana Jain Welfare Trust',
-    code: 'PJT-014',
-    address: 'Main Bazaar, Palitana',
-    established: '1994',
-    phone: '+91 98765 21014',
-    admin: 'Prakash Mehta',
-    sanghCount: 2,
-    managerCount: 4,
-    accountCount: 2,
-    committeeCount: 8,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
+    name: 'Ahmedabad Jain Trust',
+    mainContactPerson: 'Nitin Shah',
+    mobile: '+91 98765 43211',
+    email: 'nitin@ahmedabadtrust.org',
+    address: 'SG Highway, Bodakdev',
+    area: 'Bodakdev',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    about: 'Ahmedabad Jain community services, managing multiple temples and social activities.',
+    totalMembers: 2100,
+    team: [],
+    document: null,
+    linkedSanghs: [101],
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Trust Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
   },
   {
     id: 3,
-    name: 'Shatrunjay Seva Trust',
-    code: 'SST-021',
-    address: 'Taleti Road, Palitana',
-    established: '2002',
-    phone: '+91 98765 21021',
-    admin: 'Bhavesh Jain',
-    sanghCount: 1,
-    managerCount: 3,
-    accountCount: 1,
-    committeeCount: 5,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Inactive',
+    name: 'Surat Jain Mandir Trust',
+    mainContactPerson: 'Mukesh Patel',
+    mobile: '+91 98765 43212',
+    email: 'mukesh@surattrust.org',
+    address: 'City Light Road, Adajan',
+    area: 'Adajan',
+    city: 'Surat',
+    state: 'Gujarat',
+    about: 'Managing Surat Jain temple and community events.',
+    totalMembers: 850,
+    team: [],
+    document: null,
+    linkedSanghs: [102],
+    status: false,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Trust Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
   },
-]
+  {
+    id: 4,
+    name: 'Rajkot Jain Sangh Trust',
+    mainContactPerson: 'Dinesh Boda',
+    mobile: '+91 98765 43213',
+    email: 'dinesh@rajkottrust.org',
+    address: 'Jain Derasar, Kalavad Road',
+    area: 'Kalavad Road',
+    city: 'Rajkot',
+    state: 'Gujarat',
+    about: 'Rajkot region Jain activities and community welfare programs.',
+    totalMembers: 980,
+    team: [],
+    document: null,
+    linkedSanghs: [104],
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Trust Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
+  }
+];
 
 export const INITIAL_SANGHS = [
   {
-    id: 1,
-    trustId: 1,
-    name: 'Sathandji Kalyanji Sangh',
-    type: 'Main Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Sathandji Area',
-    memberCount: 840,
-    managersCount: 8,
-    accountsCount: 3,
-    committeeCount: 12,
-    derasarCount: 2,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    trustId: 1,
-    name: 'Taleti Jain Sangh',
-    type: 'Regional Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Taleti',
-    memberCount: 420,
-    managersCount: 4,
-    accountsCount: 2,
-    committeeCount: 8,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    trustId: 2,
-    name: 'Bhavnagar Upashray Sangh',
-    type: 'City Sangh',
-    city: 'Bhavnagar',
-    state: 'Gujarat',
-    area: 'Ghoghagate',
-    memberCount: 310,
-    managersCount: 3,
-    accountsCount: 2,
-    committeeCount: 6,
-    derasarCount: 1,
-    pathshalaCount: 1,
-    status: 'Active',
-  },
-  {
-    id: 4,
-    trustId: 2,
-    name: 'Shatrunjay Yatri Sangh',
-    type: 'Yatri Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Yatrik Bhavan',
-    memberCount: 165,
-    managersCount: 2,
-    accountsCount: 1,
-    committeeCount: 4,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Inactive',
-  },
-  {
-    id: 5,
-    trustId: 3,
-    name: 'Seva Marg Sangh',
-    type: 'Support Sangh',
-    city: 'Palitana',
-    state: 'Gujarat',
-    area: 'Taleti Road',
-    memberCount: 120,
-    managersCount: 2,
-    accountsCount: 1,
-    committeeCount: 3,
-    derasarCount: 1,
-    pathshalaCount: 0,
-    status: 'Active',
-  },
-]
-
-export const INITIAL_DEPARTMENTS = [
-  {
-    id: 1,
-    name: 'Managers',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Mahavirbhai Shah',
-    memberCount: 8,
-    description: 'Daily operations, events, permissions follow-up, and family coordination.',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    name: 'Accounts',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Anil Shah',
-    memberCount: 3,
-    description: 'Income, expense, receipt management, bank reconciliation, and yearly reports.',
-    status: 'Active',
-  },
-  {
-    id: 3,
-    name: 'Committee',
-    trustId: 1,
-    sanghId: 1,
-    head: 'Vipul Shah',
-    memberCount: 12,
-    description: 'Strategy, sangh governance, approvals, and trust-level decision making.',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    name: 'Derasar',
-    trustId: 2,
-    sanghId: 3,
-    head: 'Pravinbhai Shah',
-    memberCount: 5,
-    description: 'Daily pooja schedule, seva assignments, temple maintenance, and utsav support.',
-    status: 'Active',
-  },
-  {
-    id: 5,
-    name: 'Pathshala',
-    trustId: 2,
-    sanghId: 3,
-    head: 'Hemant Joshi',
-    memberCount: 6,
-    description: 'Student batches, teacher planning, exams, results, and attendance follow-up.',
-    status: 'Active',
-  },
-  {
-    id: 6,
-    name: 'Accounts',
-    trustId: 2,
-    sanghId: 4,
-    head: 'Dinesh Jain',
-    memberCount: 2,
-    description: 'Travel income, pilgrim expenses, donor acknowledgements, and expense summaries.',
-    status: 'Inactive',
-  },
-]
-
-export const INITIAL_LOCATIONS = [
-  {
-    id: 1,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Palitana',
-    locality: 'Sathandji Area',
-    pincode: '364270',
-    sanghCount: 2,
-    trustCount: 1,
-    managerCount: 8,
-    status: 'Active',
-  },
-  {
-    id: 2,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Palitana',
-    locality: 'Taleti',
-    pincode: '364270',
-    sanghCount: 2,
-    trustCount: 2,
-    managerCount: 5,
-    status: 'Active',
-  },
-  {
-    id: 3,
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Bhavnagar',
-    area: 'Bhavnagar City',
-    locality: 'Ghoghagate',
-    pincode: '364001',
-    sanghCount: 1,
-    trustCount: 1,
-    managerCount: 3,
-    status: 'Active',
-  },
-  {
-    id: 4,
-    country: 'India',
-    state: 'Gujarat',
+    id: 101,
+    name: 'Ahmedabad Jain Sangh',
+    mainPersonName: 'Ramesh Shah',
+    mobile: '+91 98765 43214',
+    email: 'ramesh@ahmedabadsangh.org',
+    address: 'Near Jain Temple, Ellisbridge',
+    area: 'Navrangpura',
     city: 'Ahmedabad',
-    area: 'Satellite',
-    locality: 'Jodhpur',
-    pincode: '380015',
-    sanghCount: 1,
-    trustCount: 1,
-    managerCount: 2,
-    status: 'Inactive',
+    state: 'Gujarat',
+    totalFamilies: 350,
+    totalMembers: 1250,
+    about: 'Main sangh for Ahmedabad region, active in community service and religious activities.',
+    committee: [],
+    document: null,
+    linkedTrustId: 2,
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Sangh Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
   },
-]
+  {
+    id: 102,
+    name: 'Surat Jain Sangh',
+    mainPersonName: 'Kiran Patel',
+    mobile: '+91 98765 43215',
+    email: 'kiran@suratsangh.org',
+    address: 'City Light Road',
+    area: 'City Light',
+    city: 'Surat',
+    state: 'Gujarat',
+    totalFamilies: 250,
+    totalMembers: 850,
+    about: 'Surat region Jain activities and community engagement.',
+    committee: [],
+    document: null,
+    linkedTrustId: 3,
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Sangh Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
+  },
+  {
+    id: 103,
+    name: 'Palitana Sangh',
+    mainPersonName: 'Vijay Mehta',
+    mobile: '+91 98765 43216',
+    email: 'vijay@palitanasangh.org',
+    address: 'Taleti Road',
+    area: 'Taleti',
+    city: 'Palitana',
+    state: 'Gujarat',
+    totalFamilies: 120,
+    totalMembers: 450,
+    about: 'Palitana region sangh, focused on pilgrimage services.',
+    committee: [],
+    document: null,
+    linkedTrustId: 1,
+    status: false,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Sangh Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
+  },
+  {
+    id: 104,
+    name: 'Rajkot Jain Sangh',
+    mainPersonName: 'Ashok Boda',
+    mobile: '+91 98765 43217',
+    email: 'ashok@rajkotsangh.org',
+    address: 'Kalavad Road',
+    area: 'Kalavad Road',
+    city: 'Rajkot',
+    state: 'Gujarat',
+    totalFamilies: 180,
+    totalMembers: 620,
+    about: 'Rajkot region Jain sangh, active in social welfare.',
+    committee: [],
+    document: null,
+    linkedTrustId: 4,
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Sangh Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
+  },
+  {
+    id: 105,
+    name: 'Vadodara Jain Sangh',
+    mainPersonName: 'Mahesh Jain',
+    mobile: '+91 98765 43218',
+    email: 'mahesh@vadodarasangh.org',
+    address: 'Alkapuri',
+    area: 'Alkapuri',
+    city: 'Vadodara',
+    state: 'Gujarat',
+    totalFamilies: 220,
+    totalMembers: 780,
+    about: 'Vadodara Jain community sangh, active in educational programs.',
+    committee: [],
+    document: null,
+    linkedTrustId: 2,
+    status: true,
+    createdAt: '2024-01-01T10:00:00Z',
+    updatedAt: '2024-01-01T10:00:00Z',
+    activity: [{ id: 1, action: 'Sangh Created', timestamp: '2024-01-01T10:00:00Z', user: 'Admin' }]
+  }
+];
 
-export const LOCATION_LEVELS = [
-  { label: 'Country', value: 'India' },
-  { label: 'State', value: 'Gujarat' },
-  { label: 'City', value: 'Bhavnagar' },
-  { label: 'Area', value: 'Palitana' },
-  { label: 'Locality', value: 'Sathandji Area' },
-  { label: 'Pincode', value: '364270' },
-]
+export const INITIAL_LINKS = [
+  { id: 1, trustId: 1, sanghId: 101, linkedAt: '2020-01-01', status: true },
+  { id: 2, trustId: 1, sanghId: 103, linkedAt: '2020-06-15', status: true },
+  { id: 3, trustId: 2, sanghId: 101, linkedAt: '2019-03-10', status: true },
+  { id: 4, trustId: 3, sanghId: 102, linkedAt: '2021-02-20', status: true },
+  { id: 5, trustId: 4, sanghId: 104, linkedAt: '2018-11-30', status: true }
+];
 
-export function getTrustName(trustId, trusts = INITIAL_TRUSTS) {
-  const trust = (trusts || []).find((item) => item.id === Number(trustId))
-  return trust ? trust.name : '-'
-}
+// Add this export - INITIAL_DEPARTMENTS
+export const INITIAL_DEPARTMENTS = [
+  { id: 1, name: 'Accounts & Finance', head: 'Nirav Shah', members: 5 },
+  { id: 2, name: 'Donation Management', head: 'Mehul Mehta', members: 8 },
+  { id: 3, name: 'Event Management', head: 'Rakesh Jain', members: 12 },
+];
 
-export function getSanghName(sanghId, sanghs = INITIAL_SANGHS) {
-  const sangh = (sanghs || []).find((item) => item.id === Number(sanghId))
-  return sangh ? sangh.name : '-'
-}
+const STORAGE_KEY = 'org_management_final_v2';
 
-export function getDeptName(deptId, departments = INITIAL_DEPARTMENTS) {
-  const department = (departments || []).find((item) => item.id === Number(deptId))
-  return department ? department.name : '-'
-}
+export const getOrgData = () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) return JSON.parse(saved);
+  return { trusts: INITIAL_TRUSTS, sanghs: INITIAL_SANGHS, links: INITIAL_LINKS };
+};
 
-export default function orgData() {
-  return null
-}
+export const saveOrgData = (data) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
+
+export const getTrustName = (trustId, trusts) => {
+  const trust = trusts.find(t => t.id === trustId);
+  return trust ? trust.name : 'Unknown Trust';
+};
+
+export const getSanghName = (sanghId, sanghs) => {
+  const sangh = sanghs.find(s => s.id === sanghId);
+  return sangh ? sangh.name : 'Unknown Sangh';
+};
+
+export const addActivity = (item, action, user = 'Admin') => {
+  const newActivity = {
+    id: Date.now(),
+    action,
+    timestamp: new Date().toISOString(),
+    user
+  };
+  item.activity = item.activity || [];
+  item.activity.unshift(newActivity);
+  item.updatedAt = new Date().toISOString();
+  return item;
+};
