@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Menu,
   Bell,
@@ -8,6 +9,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import SearchBar from "../common/SearchBar";
+import { ROLES } from "../../config/roles";
+
 
 export default function Navbar({ onMenuClick, sidebarOpen, onToggleSidebar }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,6 +26,16 @@ export default function Navbar({ onMenuClick, sidebarOpen, onToggleSidebar }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    setIsDropdownOpen(false);
+    navigate('/login');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-50 shadow-sm shadow-slate-100/50">
@@ -108,15 +121,17 @@ export default function Navbar({ onMenuClick, sidebarOpen, onToggleSidebar }) {
               }`}
             >
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center shadow-md shadow-teal-500/10 ring-2 ring-white shrink-0">
-                <span className="text-[13px] font-bold text-white">ND</span>
+                <span className="text-[13px] font-bold text-white">
+                  {(localStorage.getItem('userName') || 'User').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                </span>
               </div>
 
               <div className="hidden lg:block text-left">
                 <p className="text-[14px] font-bold text-slate-700 leading-tight">
-                  Naman Doshi
+                  {localStorage.getItem('userName') || 'User'}
                 </p>
-                <p className="text-[11px] text-emerald-500 font-semibold">
-                  Super Admin
+                <p className="text-[11px] text-emerald-500 font-semibold uppercase">
+                  {localStorage.getItem('userRole') === ROLES.SANGH_ADMIN ? 'Sangh Admin' : 'Super Admin'}
                 </p>
               </div>
 
@@ -147,7 +162,7 @@ export default function Navbar({ onMenuClick, sidebarOpen, onToggleSidebar }) {
 
                 {/* Logout Link */}
                 <button
-                  onClick={() => setIsDropdownOpen(false)}
+                  onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-500 hover:bg-rose-50/60 rounded-xl transition-colors"
                 >
                   <LogOut className="w-4 h-4" strokeWidth={2} />

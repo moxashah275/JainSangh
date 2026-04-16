@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Landmark, ChevronDown, X, PlusCircle, Shield,
   UserCog, Building2, HardHat, HandHeart, BookOpen, BarChart3, Bell,
-  ClipboardList, MapPin, Receipt, Settings
+  ClipboardList, MapPin, Receipt, Settings, Users2, Hotel, CalendarDays, FileText
 } from 'lucide-react'
+import { ROLES } from '../../config/roles'
+import { sanghAdminDropdownSections, sanghAdminTopFlatItems, sanghAdminBottomFlatItems } from '../../config/sanghAdminnav'
 
 const dropdownSections = [
   {
@@ -14,7 +16,7 @@ const dropdownSections = [
       { to: '/organization/trust', icon: Landmark, label: 'Trust' },
       { to: '/organization/sangh', icon: Users, label: 'Sangh' },
       { to: '/organization/departments', icon: Building2, label: 'Departments' },
-      { to: '/organization/location', icon: MapPin, label: 'Location' },
+      { to: '/locations', icon: MapPin, label: 'Location' },
     ],
   },
   {
@@ -90,24 +92,41 @@ const flatItems = [
 ]
 
 function isRouteActive(pathname, to) {
-  if (to === '/') return pathname === '/'
+  if (to === '/' || to === '/sangh-admin') return pathname === to || pathname === to + '/'
   return pathname === to || pathname.startsWith(to + '/')
 }
 
 export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [openSection, setOpenSection] = useState(null)
   const showLabels = isMobile || isSidebarOpen
+  const userRole = localStorage.getItem('userRole') || ROLES.SUPER_ADMIN
+  const isSanghAdmin = userRole === ROLES.SANGH_ADMIN
+
+  const currentDropdownSections = isSanghAdmin ? sanghAdminDropdownSections : dropdownSections
+  const topFlatItems = isSanghAdmin ? sanghAdminTopFlatItems : flatItems
 
   useEffect(() => {
-    dropdownSections.forEach(section => {
-      const isActive = section.children.some(child => isRouteActive(pathname, child.to))
-      if (isActive) setOpenSection(section.trigger.label)
+    let hasActive = false;
+    currentDropdownSections.forEach(section => {
+      const isActive = section.children?.some(child => isRouteActive(pathname, child.to))
+      if (isActive) {
+        setOpenSection(section.trigger.label)
+        hasActive = true;
+      }
     });
-  }, [pathname])
+    if (!hasActive) {
+      setOpenSection(null);
+    }
+  }, [pathname, currentDropdownSections])
 
-  const toggleSection = (label) => {
-    setOpenSection(openSection === label ? null : label)
+  const handleSectionClick = (section) => {
+    if (!isSidebarOpen && section.children?.length > 0) {
+      navigate(section.children[0].to);
+      return;
+    }
+    setOpenSection(openSection === section.trigger.label ? null : section.trigger.label)
   }
 
   const content = (
@@ -124,8 +143,8 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
       
       <nav className={`flex-1 overflow-y-auto px-3 ${isMobile ? 'py-4' : 'pt-7 pb-4'} space-y-3 custom-scrollbar`}>
         
-        {/* Dashboard & Notifications */}
-        {flatItems.map((item) => {
+        {/* Dashboard & Notifications (or Top Flat Items) */}
+        {topFlatItems.map((item) => {
           const active = isRouteActive(pathname, item.to)
           return (
             <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
@@ -140,64 +159,102 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
         })}
 
         {/* Dropdown Menu Items */}
-        {dropdownSections.map((section) => {
-          const isSectionActive = section.children.some(child => isRouteActive(pathname, child.to))
-          const isOpen = openSection === section.trigger.label
+        {currentDropdownSections.map((section) => {
+          const hasChildren = section.children && section.children.length > 0;
+          const isDirectLink = section.to && !hasChildren;
+          const isSectionActive = hasChildren 
+            ? section.children.some(child => isRouteActive(pathname, child.to))
+            : (section.to ? isRouteActive(pathname, section.to) : false);
+          const isOpen = openSection === section.trigger.label;
+
+          const handleClick = () => {
+            if (isDirectLink) {
+              navigate(section.to);
+              if (isMobile) onClose();
+              return;
+            }
+            handleSectionClick(section);
+          };
 
           return (
             <div key={section.trigger.label} className="space-y-1">
               <button
-                onClick={() => showLabels ? toggleSection(section.trigger.label) : null}
+                onClick={handleClick}
                 className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 transform active:scale-95 group
-                  ${isSectionActive || isOpen ? 'bg-slate-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
+                  ${isSectionActive ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-600'}
                   ${!showLabels ? 'justify-center' : 'gap-3'}`}
               >
                 <section.trigger.icon className={`w-5 h-5 shrink-0 transition-colors ${isSectionActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
                 {showLabels && (
                   <>
                     <span className="flex-1 text-left text-sm font-semibold">{section.trigger.label}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    {hasChildren && <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />}
                   </>
                 )}
               </button>
 
-              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showLabels && isOpen ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
-                <div className="ml-4 space-y-1">
-                  {section.children.map((child) => {
-                    const active = isRouteActive(pathname, child.to)
-                    return (
-                      <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
-                        <div className={`flex items-center gap-3 px-4 py-2 rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
-                          ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}`}>
-                          <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
-                          {child.label}
-                        </div>
-                      </NavLink>
-                    )
-                  })}
+              {hasChildren && (
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${(isOpen && showLabels) ? 'max-h-[600px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                  <div className={`space-y-1 ${showLabels ? 'ml-4' : ''}`}>
+                    {section.children.map((child) => {
+                      const active = isRouteActive(pathname, child.to)
+                      return (
+                        <NavLink key={child.to} to={child.to} onClick={isMobile ? onClose : undefined} className="block">
+                          <div className={`flex items-center rounded-lg text-[13px] transition-all duration-200 transform active:scale-95
+                            ${active ? 'text-teal-600 font-bold bg-teal-50/50' : 'text-slate-500 hover:text-teal-600 hover:bg-slate-50/50'}
+                            ${!showLabels ? 'justify-center py-2' : 'gap-3 px-4 py-2'}`}>
+                            <child.icon className={`w-4 h-4 transition-colors ${active ? 'text-teal-500' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                            {showLabels && child.label}
+                          </div>
+                        </NavLink>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )
         })}
+
+        {isSanghAdmin && sanghAdminBottomFlatItems.length > 0 && (
+          <div className="pt-2 border-t border-slate-100 mt-2 space-y-1">
+            {sanghAdminBottomFlatItems.map((item) => {
+               const active = isRouteActive(pathname, item.to)
+               return (
+                 <NavLink key={item.to} to={item.to} onClick={isMobile ? onClose : undefined} className="block group">
+                   <div className={`relative flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 hover:text-teal-600 transition-all duration-200 transform active:scale-95 ${active ? 'bg-teal-50 text-teal-700' : 'text-slate-600'} ${!showLabels ? 'justify-center' : 'gap-3'}`}>
+                     <item.icon className={`w-5 h-5 shrink-0 ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-500'}`} />
+                     {showLabels && <span className="text-sm font-semibold">{item.label}</span>}
+                   </div>
+                 </NavLink>
+               )
+            })}
+          </div>
+        )}
       </nav>
     </div>
-  )
+  );
 
+  // Mobile & Desktop render logic stays the same...
   if (isMobile) {
     return (
       <>
-        {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" onClick={onClose} />}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-white shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40" onClick={onClose} />}
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 bg-white shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <span className="text-xl font-black bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">JAIN SANGH</span>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-100 rounded-full"><X className="w-6 h-6"/></button>
+          </div>
           {content}
         </div>
       </>
-    )
+    );
   }
 
   return (
-    <aside className={`hidden lg:flex flex-col fixed top-[64px] bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+    <aside className={`fixed top-16 bottom-0 left-0 z-10 transition-all duration-300 ease-in-out bg-white border-r border-slate-100 
+      ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       {content}
     </aside>
-  )
+  );
 }
