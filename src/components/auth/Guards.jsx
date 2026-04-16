@@ -3,9 +3,10 @@ import { ROLES } from '../../config/roles'
 
 // Note: Replace with actual auth logic
 const getAuthUser = () => {
-  const role = localStorage.getItem('userRole') || ROLES.SUPER_ADMIN
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('userRole')
   return {
-    isAuthenticated: true, 
+    isAuthenticated: !!token,
     role: role
   }
 }

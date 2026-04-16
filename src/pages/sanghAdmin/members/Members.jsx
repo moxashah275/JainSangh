@@ -34,6 +34,7 @@ import Button from "../../../components/common/Button";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import DatePicker from "../../../components/common/DatePicker";
 import { useToast } from "../../../components/common/Toast";
+import { memberService } from "../../../services/apiService";
 
 // ── Initial State Constants ──────────────────────────────────────────────────
 const INITIAL_MEMBER = {
@@ -51,56 +52,7 @@ const INITIAL_MEMBER = {
   is_family_head: false,
 };
 
-const SEED_MEMBERS = [
-  {
-    id: 1,
-    name: "Rajesh Shah",
-    familyId: 100,
-    family_category: "General",
-    role: "Head",
-    mobile: "9876543210",
-    email: "rajesh.shah@example.com",
-    birthDate: "12/05/1980",
-    gender: "Male",
-    blood_group: "O+",
-    address: "123, Jain Society, Borivali West",
-    status: "Active",
-    is_family_head: true,
-    is_volunteer: false,
-  },
-  {
-    id: 101,
-    name: "Anik Shah",
-    familyId: 100,
-    family_category: "General",
-    role: "Son",
-    mobile: "9876543211",
-    email: "anik.shah@example.com",
-    birthDate: "10/03/2000",
-    gender: "Male",
-    blood_group: "O+",
-    address: "123, Jain Society, Borivali West",
-    status: "Active",
-    is_family_head: false,
-    is_volunteer: true,
-  },
-  {
-    id: 102,
-    name: "Megha Shah",
-    familyId: 100,
-    family_category: "General",
-    role: "Daughter",
-    mobile: "9876543212",
-    email: "megha.shah@example.com",
-    birthDate: "14/07/2003",
-    gender: "Female",
-    blood_group: "A+",
-    address: "123, Jain Society, Borivali West",
-    status: "Active",
-    is_family_head: false,
-    is_volunteer: false,
-  },
-];
+// ── Seed members removed - now using Postgres via memberService ──
 
 // ── Helper Components ───────────────────────────────────────────────────────
 const Section = ({ title, icon: Icon, color = "teal", children }) => {
@@ -233,14 +185,32 @@ export default function Members() {
   const showToast = useToast();
   const [activeTab, setActiveTab] = useState("Member");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ status: "", family_category: "", is_volunteer: "", role: "" });
-  const [loading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
-  const [familyCategories, setFamilyCategories] = useState([]);
+  const [familyCategories, setFamilyCategories] = useState(["General", "Life Member", "Niyat", "Other"]);
   const [newCategory, setNewCategory] = useState("");
+  const [filters, setFilters] = useState({ status: "", family_category: "", is_volunteer: "", role: "" });
+  const [loading, setLoading] = useState(true);
+  const [individualMembers, setIndividualMembers] = useState([]);
   const [viewingFamilyMember, setViewingFamilyMember] = useState(null);
   const familyDetailRef = useRef(null);
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const data = await memberService.getMembers();
+      setIndividualMembers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch members:", error);
+      showToast("Could not load members from server", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
 
   useEffect(() => {
     if (viewingFamilyMember && familyDetailRef.current) {
@@ -249,8 +219,6 @@ export default function Members() {
       }, 100);
     }
   }, [viewingFamilyMember]);
-
-  const [individualMembers, setIndividualMembers] = useState(SEED_MEMBERS);
 
   const stats = useMemo(
     () => [
@@ -327,66 +295,67 @@ export default function Members() {
       });
       if (hasError) return setErrors(newErrors);
 
-      const batchId = Date.now();
-      const newRecords = membersList.map((m, i) => ({
-        ...m,
-        id: batchId + i,
-        familyId: batchId,
-        status: "Active",
-      }));
-      setIndividualMembers((prev) => [...prev, ...newRecords]);
+      setSaving(true);
+      try {
+        // Registering each member in batch
+        for (const m of membersList) {
+          await memberService.createMember({ ...m, status: "Active" });
+        }
+        showToast("Member(s) registered successfully in Postgres!", "success");
+        fetchMembers();
+      } catch (error) {
+        showToast("Failed to save member to database", "error");
+      }
     } else {
       if (!formData.name?.trim()) newErrors.name = "Name required";
       if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Must be 10 digits";
       if (Object.keys(newErrors).length) return setErrors(newErrors);
 
       setSaving(true);
-      await new Promise((r) => setTimeout(r, 600));
-      setIndividualMembers((prev) =>
-        prev.map((m) => m.id === modal.data.id ? { ...m, ...formData } : m)
-      );
+      try {
+        await memberService.updateMember(modal.data.id, formData);
+        showToast("Member updated in database!", "success");
+        fetchMembers();
+      } catch (error) {
+        showToast("Update failed", "error");
+      }
     }
 
     setModal({ type: null, data: null });
     setSaving(false);
-    showToast(modal.type === "edit" ? "Member updated successfully!" : "Member(s) added successfully!", "success");
   };
 
-  const handleDelete = () => {
-    setIndividualMembers((prev) => prev.filter((m) => m.id !== modal.data.id));
+  const handleDelete = async () => {
+    try {
+      await memberService.deleteMember(modal.data.id);
+      showToast(`Member removed from database!`, "delete");
+      fetchMembers();
+    } catch (error) {
+      showToast("Delete failed", "error");
+    }
     setModal({ type: null, data: null });
-    showToast(`Member deleted successfully!`, "delete");
   };
 
-  const updateStatus = (id) => {
-    const flip = (s) => (s === "Active" ? "Inactive" : "Active");
-    let nextStatus = "";
-    setIndividualMembers((prev) => {
-      const updated = prev.map((m) =>
-        m.id === id ? { ...m, status: flip(m.status) } : m
-      );
-      nextStatus = updated.find((m) => m.id === id)?.status ?? "";
-      return updated;
-    });
-    setTimeout(() => {
-      showToast(`Status set to ${nextStatus} successfully!`, "success");
-    }, 0);
+  const updateStatus = async (id, currentStatus) => {
+    const nextStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    try {
+      await memberService.updateMember(id, { status: nextStatus });
+      showToast(`Status updated to ${nextStatus}`, "success");
+      fetchMembers();
+    } catch (error) {
+      showToast("Failed to update status", "error");
+    }
   };
 
-  const updateVolunteerStatus = (id) => {
-    let nextVal = false;
-    setIndividualMembers((prev) => {
-      return prev.map((m) => {
-        if (m.id === id) {
-          nextVal = !m.is_volunteer;
-          return { ...m, is_volunteer: nextVal };
-        }
-        return m;
-      });
-    });
-    setTimeout(() => {
-      showToast(nextVal ? "Member added to volunteers list!" : "Member removed from volunteers list!", "success");
-    }, 0);
+  const updateVolunteerStatus = async (id, currentVal) => {
+    const nextVal = !currentVal;
+    try {
+      await memberService.updateMember(id, { is_volunteer: nextVal });
+      showToast(nextVal ? "Added to volunteers!" : "Removed from volunteers", "success");
+      fetchMembers();
+    } catch (error) {
+      showToast("Action failed", "error");
+    }
   };
 
   const filteredData = useMemo(() => {
@@ -445,7 +414,7 @@ export default function Members() {
 
   const statusRender = (s, row) => (
     <button
-      onClick={() => updateStatus(row.id)}
+      onClick={() => updateStatus(row.id, s)}
       className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
     >
       <span className={`h-3.5 w-3.5 rounded-xl bg-white transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`} />
@@ -463,7 +432,7 @@ export default function Members() {
       label: "Volunteer Status",
       align: "center",
       render: (v, r) => (
-        <button onClick={() => updateVolunteerStatus(r?.id)} className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors ${v ? "bg-emerald-500" : "bg-slate-300"}`}><span className={`h-3.5 w-3.5 rounded-xl bg-white transition-all duration-300 ${v ? "translate-x-[16px]" : "translate-x-0"}`} /></button>
+        <button onClick={() => updateVolunteerStatus(r?.id, v)} className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors ${v ? "bg-emerald-500" : "bg-slate-300"}`}><span className={`h-3.5 w-3.5 rounded-xl bg-white transition-all duration-300 ${v ? "translate-x-[16px]" : "translate-x-0"}`} /></button>
       )
     }] : []),
     { key: "status", label: "Account Status", align: "center", render: statusRender },

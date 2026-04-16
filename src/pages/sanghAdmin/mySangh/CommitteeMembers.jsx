@@ -32,6 +32,7 @@ import Button from "../../../components/common/Button";
 import Pagination from "../../../components/common/Pagination";
 import DatePicker from "../../../components/common/DatePicker";
 import { useToast } from "../../../components/common/Toast";
+import { sanghService, authService } from "../../../services/apiService";
 
 const INITIAL_FORM = {
   name: "",
@@ -59,65 +60,36 @@ export default function CommitteeMembers() {
   const [saving, setSaving] = useState(false);
   const showToast = useToast();
 
-  useEffect(() => {
-    const stored = localStorage.getItem("sangh_committee_members");
-    if (stored) {
-      setMembers(JSON.parse(stored));
+  const fetchMembers = async () => {
+    try {
+      setLoading(true);
+      
+      // Step 1: Fetch Profile to get assigned Sangh ID
+      const profile = await authService.getProfile();
+      const scopeId = 
+        profile?.user?.scope_id || 
+        profile?.scope_id || 
+        profile?.user?.sangh_id || 
+        profile?.sangh_id ||
+        profile?.sangh || 
+        profile?.user?.sangh;
+
+      if (!scopeId) {
+        setMembers([]);
+        return;
+      }
+      
+      const data = await sanghService.getCommitteeMembers(scopeId);
+      setMembers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch committee members", error);
+    } finally {
       setLoading(false);
-    } else {
-      setTimeout(() => {
-        const defaultData = [
-          {
-            id: 1,
-            name: "Rajesh Shah",
-            role: "President",
-            phone: "9876543210",
-            email: "rajesh.shah@example.com",
-            status: "Active",
-            addedAt: "2024-01-15",
-            gender: "Male",
-            birthDate: "12/05/1980",
-            bloodGroup: "O+",
-            city: "Mumbai",
-            address: "123, Jain Society, Borivali West",
-          },
-          {
-            id: 2,
-            name: "Suresh Mehta",
-            role: "Secretary",
-            phone: "9825011223",
-            email: "suresh.m@example.com",
-            status: "Active",
-            addedAt: "2024-02-10",
-            gender: "Male",
-            birthDate: "22/08/1985",
-            bloodGroup: "A+",
-            city: "Ahmedabad",
-            address: "45, Adarsh Nagar, Satellite",
-          },
-          {
-            id: 3,
-            name: "Amit Jain",
-            role: "Treasurer",
-            phone: "9988776655",
-            email: "amit.jain@example.com",
-            status: "Active",
-            addedAt: "2024-03-05",
-            gender: "Male",
-            birthDate: "05/12/1990",
-            bloodGroup: "B+",
-            city: "Indore",
-            address: "12, Mahaveer Marg",
-          },
-        ];
-        setMembers(defaultData);
-        localStorage.setItem(
-          "sangh_committee_members",
-          JSON.stringify(defaultData),
-        );
-        setLoading(false);
-      }, 300);
     }
+  };
+
+  useEffect(() => {
+    fetchMembers();
   }, []);
 
   const filteredMembers = useMemo(
@@ -145,13 +117,13 @@ export default function CommitteeMembers() {
     },
     {
       title: "Active Member",
-      value: members.filter((m) => m.status === "Active").length,
+      value: members.filter((m) => m.status?.toUpperCase() === "ACTIVE").length,
       icon: UserCheck,
       color: "emerald",
     },
     {
       title: "Inactive Member",
-      value: members.filter((m) => m.status === "Inactive").length,
+      value: members.filter((m) => m.status?.toUpperCase() === "INACTIVE").length,
       icon: UserMinus,
       color: "rose",
     },
@@ -235,7 +207,8 @@ export default function CommitteeMembers() {
       render: (s, row) => (
         <button
           onClick={() => {
-            const nextStatus = s === "Active" ? "Inactive" : "Active";
+            const isActive = s?.toUpperCase() === "ACTIVE";
+            const nextStatus = isActive ? "INACTIVE" : "ACTIVE";
             updateMembers(
               members.map((m) =>
                 m.id === row.id ? { ...m, status: nextStatus } : m,
@@ -243,10 +216,10 @@ export default function CommitteeMembers() {
             );
             showToast(`Status set to ${nextStatus} successfully!`, "success");
           }}
-          className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s === "Active" ? "bg-emerald-500" : "bg-slate-300"}`}
+          className={`relative inline-flex h-5 w-9 items-center rounded-xl px-[3px] transition-colors focus:ring-2 focus:ring-offset-1 focus:ring-teal-500/20 ${s?.toUpperCase() === "ACTIVE" ? "bg-emerald-500" : "bg-slate-300"}`}
         >
           <span
-            className={`h-3.5 w-3.5 rounded-xl bg-white shadow-sm transition-all duration-300 ${s === "Active" ? "translate-x-[16px]" : "translate-x-0"}`}
+            className={`h-3.5 w-3.5 rounded-xl bg-white shadow-sm transition-all duration-300 ${s?.toUpperCase() === "ACTIVE" ? "translate-x-[16px]" : "translate-x-0"}`}
           />
         </button>
       ),

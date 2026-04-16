@@ -7,49 +7,30 @@ import Input from '../../components/common/Input'
 import Modal from '../../components/common/Modal'
 import Table from '../../components/common/Table'
 import UserStatusToggle from '../../components/users/UserStatusToggle'
+import { locationService } from '../../services/apiService'
 
-const STORAGE_KEY = 'master_locations'
-const INITIAL_DATA = [
-  { id: 1, country: 'India', state: 'Gujarat', city: 'Ahmedabad', area: 'Bhadaj', pincode: '380060', status: 'Active' },
-  { id: 2, country: 'India', state: 'Gujarat', city: 'Bhavnagar', area: 'Palitana', pincode: '364270', status: 'Active' },
-  { id: 3, country: 'India', state: 'Maharashtra', city: 'Mumbai', area: 'Andheri West', pincode: '400053', status: 'Inactive' },
-  { id: 4, country: 'India', state: 'Rajasthan', city: 'Jaipur', area: 'Malviya Nagar', pincode: '302017', status: 'Active' },
-  { id: 5, country: 'India', state: 'Karnataka', city: 'Bangalore', area: 'Indiranagar', pincode: '560038', status: 'Active' },
-]
-
-const EMPTY_FORM = {
-  country: '',
-  state: '',
-  city: '',
-  area: '',
-  pincode: '',
-  status: 'Active',
-}
-
-function readLocations() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    const parsed = stored ? JSON.parse(stored) : INITIAL_DATA
-    return Array.isArray(parsed) && parsed.length ? parsed : INITIAL_DATA
-  } catch {
-    return INITIAL_DATA
-  }
-}
+// Seed data removed - now using PostgreSQL
 
 export default function LocationMaster() {
   const [search, setSearch] = useState('')
-  const [locations, setLocations] = useState(function() {
-    return readLocations()
-  })
-  const [showModal, setShowModal] = useState(false)
-  const [editingLocation, setEditingLocation] = useState(null)
-  const [deleteId, setDeleteId] = useState(null)
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [errors, setErrors] = useState({})
+  const [locations, setLocations] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchLocations = async () => {
+    setLoading(true)
+    try {
+      const data = await locationService.getLocations()
+      setLocations(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Fetch locations fail', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(function() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(locations))
-  }, [locations])
+    fetchLocations()
+  }, [])
 
   const stats = useMemo(function() {
     const activeCount = locations.filter(function(item) { return item.status === 'Active' }).length
@@ -140,34 +121,29 @@ export default function LocationMaster() {
     }
 
     if (editingLocation) {
-      setLocations(function(current) {
-        return current.map(function(item) {
-          return item.id === editingLocation.id ? { ...item, ...payload } : item
-        })
-      })
+      locationService.updateLocation(editingLocation.id, payload)
+        .then(() => fetchLocations())
+        .catch(err => console.error('Update fail', err))
     } else {
-      setLocations(function(current) {
-        const nextId = current.reduce(function(maxId, item) { return Math.max(maxId, item.id) }, 0) + 1
-        return current.concat([{ id: nextId, ...payload }])
-      })
+      locationService.createLocation(payload)
+        .then(() => fetchLocations())
+        .catch(err => console.error('Create fail', err))
     }
 
     closeModal()
   }
 
   function handleDelete() {
-    setLocations(function(current) {
-      return current.filter(function(item) { return item.id !== deleteId })
-    })
+    locationService.deleteLocation(deleteId)
+      .then(() => fetchLocations())
+      .catch(err => console.error('Delete fail', err))
     setDeleteId(null)
   }
 
   function handleToggle(id, nextStatus) {
-    setLocations(function(current) {
-      return current.map(function(item) {
-        return item.id === id ? { ...item, status: nextStatus } : item
-      })
-    })
+    locationService.updateLocation(id, { status: nextStatus })
+      .then(() => fetchLocations())
+      .catch(err => console.error('Toggle fail', err))
   }
 
   function handleGroupedToggle(key, value, nextStatus) {

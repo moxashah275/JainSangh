@@ -1,5 +1,6 @@
 import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Edit2, Trash2, Eye, X, Check, AlertTriangle, ArrowLeft, ChevronDown } from 'lucide-react';
+import { locationService } from '../../services/apiService';
 import StatusToggle from '../../components/common/StatusToggle';
 import { useToast } from '../../components/common/Toast';
 
@@ -30,15 +31,43 @@ const generateInitialData = () => {
 };
 
 const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage, currentPage, setCurrentPage, setTotalEntries, onDataChange }, ref) => {
-  const [data, setData] = useState(() => {
-    const saved = localStorage.getItem('location_v_final_production');
-    if (saved) return JSON.parse(saved);
-    return generateInitialData();
+  const [data, setData] = useState({
+    Country: [],
+    State: [],
+    City: [],
+    Area: [],
+    Pincode: []
   });
 
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ isOpen: false, type: '', data: null });
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
   const showToast = useToast();
+
+  const fetchLocations = async () => {
+    setLoading(true);
+    try {
+      const response = await locationService.getLocations();
+      // Expecting { Country: [], State: [], ... } or just array? 
+      // If the API returns a flat list, we might need to group it, but usually multi-level location APIs are structured.
+      // Falls back to empty if not match.
+      if (response && typeof response === 'object' && response.Country) {
+        setData(response);
+      } else {
+        // Handle alternative API structures or map the list
+        setData(generateInitialData()); 
+      }
+    } catch (error) {
+      console.error('Failed to fetch locations:', error);
+      setData(generateInitialData());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
 
   const getDefaultFormData = () => {
     const firstCountry = data.Country[0]?.id || 1;
@@ -80,7 +109,6 @@ const LocationTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPe
   };
 
   useEffect(() => {
-    localStorage.setItem('location_v_final_production', JSON.stringify(data));
     if (onDataChange) onDataChange({
       Country: data.Country.length, State: data.State.length, City: data.City.length, Area: data.Area.length, Pincode: data.Pincode.length
     });

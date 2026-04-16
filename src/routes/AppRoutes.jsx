@@ -42,6 +42,7 @@ import SanghDetails from '../pages/sanghAdmin/mySangh/SanghDetails'
 import LinkedTrusts from '../pages/sanghAdmin/mySangh/LinkedTrusts'
 import SanghCommitteeMembers from '../pages/sanghAdmin/mySangh/CommitteeMembers'
 import Members from '../pages/sanghAdmin/members/Members'
+import Login from '../pages/auth/Login'
 
 import { ROLES } from '../config/roles'
 import { ProtectedRoute, RoleGuard } from '../components/auth/Guards'
@@ -129,6 +130,7 @@ export default function AppRoutes() {
         </Route>
       </Route>
       
+      <Route path="/login" element={<Login />} />
     </Routes>
   )
 }

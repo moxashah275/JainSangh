@@ -6,6 +6,7 @@ import ConfirmModal from "../../../components/common/ConfirmModal";
 import FilterButton from "../../../components/common/FilterButton";
 import Modal from "../../../components/common/Modal";
 import Pagination from "../../../components/common/Pagination";
+import { sanghService } from "../../../services/apiService";
 
 export default function LinkedTrusts() {
   const [trusts, setTrusts] = useState([]);
@@ -13,68 +14,36 @@ export default function LinkedTrusts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ status: "", category: "" });
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
   const [viewModal, setViewModal] = useState({ open: false, data: null });
 
+  const fetchLinkedTrusts = async () => {
+    try {
+      setLoading(true);
+      // Fetch Profile to get assigned Sangh ID
+      const profile = await authService.getProfile();
+      const scopeId = 
+        profile?.user?.scope_id || 
+        profile?.scope_id || 
+        profile?.user?.sangh_id || 
+        profile?.sangh_id ||
+        profile?.sangh || 
+        profile?.user?.sangh;
+
+      if (!scopeId) return;
+      
+      const data = await sanghService.getLinkedTrusts(scopeId);
+      setTrusts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch trusts from Postgres", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchLinkedTrusts = async () => {
-      try {
-        setLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 150)); // Ultra-fast shimmer
-        const stored = localStorage.getItem("linked_trusts_data");
-        const defaultData = [
-          {
-            id: 1,
-            name: "Anandji Kalyanji Trust",
-            category: "General",
-            phone: "9876543210",
-            status: "Active",
-          },
-          {
-            id: 2,
-            name: "Palitana Teerth Trust",
-            category: "Religious",
-            phone: "9825011223",
-            status: "Active",
-          },
-          {
-            id: 3,
-            name: "Jain Education Fund",
-            category: "Education",
-            phone: "9988776655",
-            status: "Inactive",
-          },
-          {
-            id: 4,
-            name: "Mahavir Seva Trust",
-            category: "Welfare",
-            phone: "9554433221",
-            status: "Active",
-          },
-          {
-            id: 5,
-            name: "Shantinath Charitable Trust",
-            category: "Welfare",
-            phone: "9443322110",
-            status: "Inactive",
-          },
-        ];
-        const data = stored ? JSON.parse(stored) : defaultData;
-        setTrusts(data);
-        if (!stored)
-          localStorage.setItem(
-            "linked_trusts_data",
-            JSON.stringify(defaultData),
-          );
-      } catch (error) {
-        console.error("Failed to fetch trusts", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchLinkedTrusts();
   }, []);
 
@@ -117,19 +86,18 @@ export default function LinkedTrusts() {
   ];
 
   const handleToggleStatus = (id) => {
-    const updated = trusts.map((t) =>
-      t.id === id
-        ? { ...t, status: t.status === "Active" ? "Inactive" : "Active" }
-        : t,
-    );
-    setTrusts(updated);
-    localStorage.setItem("linked_trusts_data", JSON.stringify(updated));
+    const trust = trusts.find(t => t.id === id);
+    const nextStatus = trust.status === "Active" ? "Inactive" : "Active";
+    // We can use a general update method if available or specific toggle
+    sanghService.updateTrust(id, { status: nextStatus })
+      .then(() => fetchLinkedTrusts())
+      .catch(err => console.error("Toggle fail", err));
   };
 
   const handleDelete = () => {
-    const updated = trusts.filter((t) => t.id !== deleteModal.id);
-    setTrusts(updated);
-    localStorage.setItem("linked_trusts_data", JSON.stringify(updated));
+    sanghService.removeTrust(deleteModal.id)
+      .then(() => fetchLinkedTrusts())
+      .catch(err => console.error("Remove fail", err));
     setDeleteModal({ open: false, id: null });
   };
 
