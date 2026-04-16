@@ -40,7 +40,13 @@ export default function LinkedSanghTrust({ onDataChange }) {
       showToast("This link already exists!", "error");
       return;
     }
-    const newLinks = [...data.links, { id: Date.now(), trustId: Number(trustId), sanghId: Number(sanghId), status: true }];
+    const newLinks = [...data.links, { 
+      id: Date.now(), 
+      trustId: Number(trustId), 
+      sanghId: Number(sanghId), 
+      linkedAt: new Date().toISOString().split('T')[0],
+      status: true 
+    }];
     const newData = { ...data, links: newLinks };
     setData(newData);
     saveOrgData(newData);
@@ -51,7 +57,6 @@ export default function LinkedSanghTrust({ onDataChange }) {
 
   return (
     <div className="w-full font-sans antialiased text-slate-600">
-      {/* Toast Notification */}
       {toast.show && (
         <div className="fixed top-8 right-8 z-[999] animate-in fade-in slide-in-from-right-10 duration-300">
           <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-md ${toast.type === "error" ? "bg-rose-500 border-rose-400" : "bg-emerald-500 border-emerald-400"} text-white`}>
@@ -67,46 +72,37 @@ export default function LinkedSanghTrust({ onDataChange }) {
       )}
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        {/* Header Section */}
         <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-slate-700 text-sm">Manage Trust-Sangh Relations</h3>
             <p className="text-[11px] text-slate-400 font-medium mt-0.5">Connect Trusts with Sanghs to establish relationships</p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-white border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-xl font-bold text-[12px] transition-all shadow-sm"
-          >
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-white border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-xl font-bold text-[12px] transition-all shadow-sm">
             <Link2 size={14} /> Create New Link
           </button>
         </div>
 
-        {/* Table Section */}
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
           <table className="w-full table-fixed border-collapse">
             <thead>
               <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-                <th className="w-2/5 px-6 py-3 text-left">Trust Name</th>
-                <th className="w-2/5 px-6 py-3 text-left">Sangh Name</th>
-                <th className="w-1/5 px-6 py-3 text-center">Actions</th>
-               </tr>
+                <th className="w-1/3 px-6 py-3 text-left">Trust Name</th>
+                <th className="w-1/3 px-6 py-3 text-left">Sangh Name</th>
+                <th className="w-1/3 px-6 py-3 text-center">Actions</th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {data.links.length > 0 ? (
                 data.links.map((link) => (
                   <tr key={link.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="w-2/5 px-6 py-3 text-left">
+                    <td className="w-1/3 px-6 py-3 text-left">
                       <span className="text-sm font-semibold text-slate-700">{getTrustName(link.trustId, data.trusts)}</span>
                     </td>
-                    <td className="w-2/5 px-6 py-3 text-left">
+                    <td className="w-1/3 px-6 py-3 text-left">
                       <span className="text-sm font-medium text-slate-600">{getSanghName(link.sanghId, data.sanghs)}</span>
                     </td>
-                    <td className="w-1/5 px-6 py-3 text-center">
-                      <button
-                        onClick={() => handleRemoveLink(link.id)}
-                        className="text-slate-400 hover:text-rose-500 transition-all p-1.5 hover:bg-rose-50 rounded-lg"
-                        title="Remove Link"
-                      >
+                    <td className="w-1/3 px-6 py-3 text-center">
+                      <button onClick={() => handleRemoveLink(link.id)} className="text-slate-400 hover:text-rose-500 transition-all p-1.5 hover:bg-rose-50 rounded-lg" title="Remove Link">
                         <Unlink size={15} />
                       </button>
                     </td>
@@ -129,7 +125,6 @@ export default function LinkedSanghTrust({ onDataChange }) {
           </table>
         </div>
 
-        {/* Stats Footer */}
         {data.links.length > 0 && (
           <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
             <p className="text-[11px] font-medium text-slate-400">
@@ -143,7 +138,6 @@ export default function LinkedSanghTrust({ onDataChange }) {
         )}
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <LinkTrustSanghModal
           isOpen={isModalOpen}

@@ -140,33 +140,33 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
     if (activeTab === 'all') {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/4 px-6 py-3 text-center">Sr. No.</th>
-          <th className="w-1/4 px-6 py-3 text-center">Organization Name</th>
-          <th className="w-1/4 px-6 py-3 text-center">Type</th>
-          <th className="w-1/4 px-6 py-3 text-center">Actions</th>
-         </tr>
+          <th className="w-1/4 px-6 py-2 text-center">Sr. No.</th>
+          <th className="w-1/4 px-6 py-2 text-center">Organization Name</th>
+          <th className="w-1/4 px-6 py-2 text-center">Type</th>
+          <th className="w-1/4 px-6 py-2 text-center">Actions</th>
+        </tr>
       );
     } else if (activeTab === 'trusts') {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/5 px-6 py-3 text-center">Sr. No.</th>
-          <th className="w-1/5 px-6 py-3 text-center">Trust Name</th>
-          <th className="w-1/5 px-6 py-3 text-center">City</th>
-          <th className="w-1/5 px-6 py-3 text-center">Admin Name</th>
-          <th className="w-1/5 px-6 py-3 text-center">Status</th>
-          <th className="w-1/5 px-6 py-3 text-center">Actions</th>
-         </tr>
+          <th className="w-1/5 px-6 py-2 text-center">Sr. No.</th>
+          <th className="w-1/5 px-6 py-2 text-center">Trust Name</th>
+          <th className="w-1/5 px-6 py-2 text-center">City</th>
+          <th className="w-1/5 px-6 py-2 text-center">Admin Name</th>
+          <th className="w-1/5 px-6 py-2 text-center">Status</th>
+          <th className="w-1/5 px-6 py-2 text-center">Actions</th>
+        </tr>
       );
     } else {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/6 px-6 py-3 text-center">Sr. No.</th>
-          <th className="w-1/6 px-6 py-3 text-center">Sangh Name</th>
-          <th className="w-1/6 px-6 py-3 text-center">City</th>
-          <th className="w-1/6 px-6 py-3 text-center">Members</th>
-          <th className="w-1/6 px-6 py-3 text-center">Status</th>
-          <th className="w-1/6 px-6 py-3 text-center">Actions</th>
-         </tr>
+          <th className="w-1/6 px-6 py-2 text-center">Sr. No.</th>
+          <th className="w-1/6 px-6 py-2 text-center">Sangh Name</th>
+          <th className="w-1/6 px-6 py-2 text-center">City</th>
+          <th className="w-1/6 px-6 py-2 text-center">Members</th>
+          <th className="w-1/6 px-6 py-2 text-center">Status</th>
+          <th className="w-1/6 px-6 py-2 text-center">Actions</th>
+        </tr>
       );
     }
   };
@@ -210,10 +210,10 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 if (activeTab === 'all') {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.orgType}</td>
-                      <td className="w-1/4 px-6 py-3 text-center">
+                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.orgType}</td>
+                      <td className="w-1/4 px-6 py-2 text-center">
                         <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: item.orgType === 'Trust' ? 'trust' : 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
@@ -225,16 +225,16 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 } else if (activeTab === 'trusts') {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.city}</td>
-                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.admin}</td>
-                      <td className="w-1/5 px-6 py-3 text-center">
+                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.city}</td>
+                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.admin}</td>
+                      <td className="w-1/5 px-6 py-2 text-center">
                         <div className="flex justify-center">
                           <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'trust', item.status)} />
                         </div>
                       </td>
-                      <td className="w-1/5 px-6 py-3 text-center">
+                      <td className="w-1/5 px-6 py-2 text-center">
                         <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: 'trust', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
@@ -252,16 +252,16 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 } else {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.city}</td>
-                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.members?.toLocaleString() || 0}</td>
-                      <td className="w-1/6 px-6 py-3 text-center">
+                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.city}</td>
+                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.members?.toLocaleString() || 0}</td>
+                      <td className="w-1/6 px-6 py-2 text-center">
                         <div className="flex justify-center">
                           <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'sangh', item.status)} />
                         </div>
                       </td>
-                      <td className="w-1/6 px-6 py-3 text-center">
+                      <td className="w-1/6 px-6 py-2 text-center">
                         <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
@@ -280,7 +280,7 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
               })
             ) : (
               <tr>
-                <td colSpan={activeTab === 'all' ? 4 : 6} className="py-10 text-center text-sm text-slate-400">
+                <td colSpan={activeTab === 'all' ? 4 : 6} className="py-6 text-center text-sm text-slate-400">
                   No matching records found
                 </td>
               </tr>

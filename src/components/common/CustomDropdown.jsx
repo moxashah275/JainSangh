@@ -60,82 +60,93 @@ export default function CustomDropdown({
   };
 
   return (
-    <div className={`relative min-w-[160px] ${className}`} ref={triggerRef}>
-      <div
-        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] text-slate-700 font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100 transition-all cursor-pointer flex items-center justify-between group hover:border-emerald-400"
-        onClick={toggle}
-      >
-        <span className="truncate">
-          {selectedLabel
-            ? typeof selectedLabel === "string"
-              ? selectedLabel
-              : selectedLabel.label
-            : placeholder}
-        </span>
-        {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
-        )}
-      </div>
+  <div className={`relative min-w-[160px] ${className}`} ref={triggerRef}>
+    <div
+      className={`px-3 py-2 bg-white border rounded-lg text-[13px] text-slate-700 font-medium transition-all cursor-pointer flex items-center justify-between group ${
+        isOpen
+          ? "border-emerald-500"
+          : "border-slate-200 hover:border-emerald-500"
+      }`}
+      onClick={toggle}
+    >
+      <span className="truncate">
+        {selectedLabel
+          ? typeof selectedLabel === "string"
+            ? selectedLabel
+            : selectedLabel.label
+          : placeholder}
+      </span>
 
-      {isOpen &&
-        createPortal(
-          <div
-            ref={portalRef}
-            className={`fixed z-[11000] bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden`}
-            style={{
-              top: coords.openUp ? "auto" : coords.top,
-              bottom: coords.openUp ? window.innerHeight - coords.top : "auto",
-              left: coords.left,
-              width: coords.width,
-            }}
-          >
-            <div className="p-2 border-b border-slate-100 bg-white">
-              <input
-                type="text"
-                placeholder={`Search...`}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-3 py-1.5 text-[12px] border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100 transition-all"
-                autoFocus
-              />
-            </div>
-            <ul className="py-1 max-h-60 overflow-y-auto">
-              {filteredItems.length === 0 ? (
-                <li className="px-4 py-2 text-[12px] text-slate-500 italic">
-                  No options found
-                </li>
-              ) : (
-                filteredItems.map((item, index) => {
-                  const itemValue =
-                    typeof item === "string" ? item : item.value;
-                  const itemLabel =
-                    typeof item === "string" ? item : item.label;
-                  const selected = String(itemValue) === String(value);
-                  return (
-                    <li
-                      key={`${itemValue}-${index}`}
-                      className={`px-3 py-2 text-[13px] font-medium cursor-pointer transition-all hover:bg-emerald-50 ${
-                        selected
-                          ? "bg-emerald-50 text-emerald-600 font-semibold"
-                          : "text-slate-700 hover:text-emerald-600"
-                      }`}
-                      onClick={() => {
-                        onChange(itemValue);
-                        setIsOpen(false);
-                        setSearch("");
-                      }}
-                    >
-                      <span className="truncate">{itemLabel}</span>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          </div>,
-          document.body,
-        )}
+      {isOpen ? (
+        <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+      ) : (
+        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+      )}
     </div>
-  );
+
+    {isOpen &&
+      createPortal(
+        <div
+          ref={portalRef}
+          className="fixed z-[11000] bg-white border border-emerald-500 rounded-lg shadow-xl overflow-hidden"
+          style={{
+            top: coords.openUp ? "auto" : coords.top,
+            bottom: coords.openUp
+              ? window.innerHeight - coords.top
+              : "auto",
+            left: coords.left,
+            width: coords.width,
+          }}
+        >
+          <div className="p-2 border-b border-emerald-100 bg-white">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-3 py-1.5 text-[12px] border border-emerald-500 rounded-lg focus:outline-none focus:border-emerald-500 text-slate-700"
+              autoFocus
+            />
+          </div>
+
+          <ul className="py-1 max-h-60 overflow-y-auto">
+            {filteredItems.length === 0 ? (
+              <li className="px-4 py-2 text-[12px] text-slate-500 italic">
+                No options found
+              </li>
+            ) : (
+              filteredItems.map((item, index) => {
+                const itemValue =
+                  typeof item === "string" ? item : item.value;
+                const itemLabel =
+                  typeof item === "string" ? item : item.label;
+
+                const selected =
+                  String(itemValue) === String(value);
+
+                return (
+                  <li
+                    key={`${itemValue}-${index}`}
+                    className={`px-3 py-2 text-[13px] font-medium cursor-pointer transition-all ${
+                      selected
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-600"
+                    }`}
+                    onClick={() => {
+                      onChange(itemValue);
+                      setIsOpen(false);
+                      setSearch("");
+                    }}
+                  >
+                    <span className="truncate">{itemLabel}</span>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>,
+        document.body
+      )}
+  </div>
+);
 }

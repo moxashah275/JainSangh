@@ -1,12 +1,15 @@
-import React from 'react';
-import { X, Link2, MapPin, Phone, User, Building2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Building2, User, Phone, Mail, MapPin, Users, Calendar, FileText, Activity, Eye, Trash2 } from 'lucide-react';
 import StatusToggle from '../../../components/common/StatusToggle';
 import { getSanghName } from '../orgData';
 
 export default function TrustDetailsModal({ isOpen, onClose, trust, allData, onStatusToggle }) {
+  const [activeTab, setActiveTab] = useState('overview');
+
   if (!isOpen || !trust) return null;
 
   const linkedSanghs = allData.links.filter(l => l.trustId === trust.id && l.status);
+  const activities = trust.activity || [];
 
   const DetailItem = ({ icon: Icon, label, value }) => (
     <div className="p-3 bg-slate-50 rounded-xl">
@@ -17,69 +20,135 @@ export default function TrustDetailsModal({ isOpen, onClose, trust, allData, onS
     </div>
   );
 
+  const TabButton = ({ tab, label }) => (
+    <button onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === tab ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'}`}>
+      {label}
+    </button>
+  );
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="text-base font-bold text-slate-800">Trust Details</h3>
+        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <Building2 size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Trust Details</h3>
+              <p className="text-xs text-slate-400">{trust.name}</p>
+            </div>
+          </div>
           <button onClick={onClose} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors">
             <X className="w-4 h-4 text-slate-500" />
           </button>
         </div>
-        
-        {/* Content - No scroll needed, fits naturally */}
-        <div className="p-5">
-          <div className="flex items-start gap-3 mb-5">
-            <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-              <Building2 size={22} />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">{trust.name}</h2>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] font-bold uppercase">{trust.code}</span>
-                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${trust.status ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-                  {trust.status ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <DetailItem icon={User} label="Admin" value={trust.admin} />
-            <DetailItem icon={Phone} label="Phone" value={trust.phone} />
-            <DetailItem icon={MapPin} label="City" value={trust.city} />
-            <div className="col-span-2 p-3 bg-slate-50 rounded-xl">
-              <p className="text-[10px] font-medium text-slate-400 uppercase mb-1">Address</p>
-              <p className="text-[13px] font-semibold text-slate-700">{trust.address}</p>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="px-6 pt-4 border-b border-slate-100 flex gap-2">
+          <TabButton tab="overview" label="Overview" />
+          <TabButton tab="team" label="Team Members" />
+          <TabButton tab="linked" label="Linked Sanghs" />
+          <TabButton tab="activity" label="Activity" />
+        </div>
 
-          <div className="border-t border-slate-100 pt-4">
-            <h4 className="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2">
-              <Link2 size={14} className="text-emerald-600" /> Linked Sanghs ({linkedSanghs.length})
-            </h4>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {linkedSanghs.length > 0 ? linkedSanghs.map(link => (
-                <div key={link.id} className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center">
-                  <span className="text-[12px] font-semibold text-slate-700">{getSanghName(link.sanghId, allData.sanghs)}</span>
-                  <span className="px-2 py-0.5 bg-white rounded text-[9px] font-bold text-emerald-600 shadow-sm">Active</span>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Status</p>
+                  <p className={`text-sm font-semibold ${trust.status ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {trust.status ? 'Active' : 'Inactive'}
+                  </p>
                 </div>
-              )) : <p className="text-xs text-slate-400 italic">No linked sanghs found.</p>}
-            </div>
-          </div>
-
-          <div className="border-t border-slate-100 pt-4 mt-4">
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-              <div>
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Quick Status</p>
-                <p className={`text-[12px] font-medium ${trust.status ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {trust.status ? 'Active' : 'Inactive'}
-                </p>
+                <StatusToggle status={trust.status} onToggle={() => onStatusToggle(trust.id, 'trust', trust.status)} />
               </div>
-              <StatusToggle status={trust.status} onToggle={() => onStatusToggle(trust.id, 'trust', trust.status)} />
+
+              <div>
+                <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><Building2 size={14} className="text-emerald-600" /> Basic Information</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <DetailItem icon={Building2} label="Trust Name" value={trust.name} />
+                  <DetailItem icon={User} label="Main Contact Person" value={trust.mainContactPerson} />
+                  <DetailItem icon={Phone} label="Mobile" value={trust.mobile} />
+                  <DetailItem icon={Mail} label="Email" value={trust.email} />
+                  <div className="col-span-2">
+                    <DetailItem icon={MapPin} label="Address" value={`${trust.address}, ${trust.area}, ${trust.city}, ${trust.state}`} />
+                  </div>
+                  <DetailItem icon={Users} label="Total Members" value={trust.totalMembers} />
+                  <div className="col-span-2">
+                    <DetailItem icon={FileText} label="About Trust" value={trust.about} />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Team Members Tab */}
+          {activeTab === 'team' && (
+            <div className="space-y-4">
+              {trust.team && trust.team.length > 0 ? (
+                trust.team.map((member) => (
+                  <div key={member.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-slate-800">{member.name}</h4>
+                        <p className="text-xs text-emerald-600 font-medium">{member.designation}</p>
+                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+                          <span className="flex items-center gap-1"><Phone size={11} /> {member.mobile}</span>
+                          <span className="flex items-center gap-1"><Mail size={11} /> {member.email}</span>
+                          <span className="flex items-center gap-1"><MapPin size={11} /> {member.area}, {member.city}</span>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${member.status ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {member.status ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-slate-400">No team members added</div>
+              )}
+            </div>
+          )}
+
+          {/* Linked Sanghs Tab */}
+          {activeTab === 'linked' && (
+            <div className="space-y-3">
+              {linkedSanghs.length > 0 ? linkedSanghs.map(link => {
+                const sangh = allData.sanghs.find(s => s.id === link.sanghId);
+                return (
+                  <div key={link.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-slate-800">{sangh?.name || 'Unknown Sangh'}</h4>
+                        <p className="text-xs text-slate-500 mt-1">{sangh?.mainPersonName} • {sangh?.mobile}</p>
+                        <p className="text-xs text-slate-400 mt-1">{sangh?.area}, {sangh?.city}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold ${sangh?.status ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                        {sangh?.status ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }) : <div className="text-center py-8 text-slate-400">No linked sanghs found</div>}
+            </div>
+          )}
+
+          {/* Activity Tab */}
+          {activeTab === 'activity' && (
+            <div className="space-y-3">
+              {activities.length > 0 ? activities.map(activity => (
+                <div key={activity.id} className="p-3 bg-slate-50 rounded-xl border-l-4 border-emerald-500">
+                  <p className="text-sm font-medium text-slate-700">{activity.action}</p>
+                  <p className="text-xs text-slate-400 mt-1">{new Date(activity.timestamp).toLocaleString()} by {activity.user || 'Admin'}</p>
+                </div>
+              )) : <div className="text-center py-8 text-slate-400">No activity recorded</div>}
+            </div>
+          )}
         </div>
       </div>
     </div>

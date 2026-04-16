@@ -20,7 +20,7 @@ export default function Pagination({
     pageNumbers.push(i);
   }
 
-  const limitOptions = [10, 20, 30, 50];
+  const limitOptions = [5, 10, 15, 20];
 
   useEffect(() => {
     function handleClickOutside(event) {

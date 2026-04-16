@@ -45,9 +45,6 @@ export default function FilterButton({ filters, options, onChange, onClear, data
             const spaceBelow = window.innerHeight - rect.bottom;
             const spaceAbove = rect.top;
             
-            // Heuristic for "less data" as requested by user
-            // If dataCount is low (<= 3) or space below is tight (< 380px),
-            // we open UP if there's more space above than below.
             const isLessData = dataCount !== undefined && dataCount <= 3;
             if (isLessData || spaceBelow < 380) {
               setOpenUp(spaceAbove > spaceBelow);
@@ -58,16 +55,14 @@ export default function FilterButton({ filters, options, onChange, onClear, data
           setIsOpen(!isOpen);
         }}
         className="flex items-center gap-1.5 px-3 h-[34px] rounded-lg border transition-all duration-200 text-[13px] font-medium shadow-sm"
-        style={hasActive ? { backgroundColor: '#ecfdf5', borderColor: '#6ee7b7', color: '#047857' } : { backgroundColor: 'white', borderColor: '#e2e8f0', color: '#475569' }}
+        style={hasActive ? { backgroundColor: '#ecfdf5', borderColor: '#10b981', color: '#059669' } : { backgroundColor: 'white', borderColor: '#e2e8f0', color: '#475569' }}
         onMouseEnter={(e) => {
           if (!hasActive) {
-            e.currentTarget.style.backgroundColor = '#f8fafc';
             e.currentTarget.style.borderColor = '#10b981';
           }
         }}
         onMouseLeave={(e) => {
           if (!hasActive) {
-            e.currentTarget.style.backgroundColor = 'white';
             e.currentTarget.style.borderColor = '#e2e8f0';
           }
         }}
@@ -121,9 +116,7 @@ export default function FilterButton({ filters, options, onChange, onClear, data
                 onClear();
                 setIsOpen(false);
               }}
-              className="flex-1 px-3 py-2 bg-white border border-slate-200 text-slate-600 text-[12px] font-medium rounded-lg transition-colors"
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+              className="flex-1 px-3 py-2 bg-white border border-slate-200 text-slate-600 text-[12px] font-medium rounded-lg transition-colors hover:bg-slate-50"
             >
               Reset
             </button>
@@ -150,43 +143,77 @@ function CustomSelect({ value, options, onChange }) {
   const selectRef = useRef(null);
 
   const selectedOption = options.find(
-    (opt) => (typeof opt === "string" ? opt : opt.value) === value,
+    (opt) => (typeof opt === "string" ? opt : opt.value) === value
   );
-  const selectedLabel = typeof selectedOption === "string" ? selectedOption : selectedOption?.label;
+
+  const selectedLabel =
+    typeof selectedOption === "string"
+      ? selectedOption
+      : selectedOption?.label;
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
+      if (
+        selectRef.current &&
+        !selectRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className="relative" ref={selectRef}>
+      {/* Select Button */}
       <button
         onClick={() => {
           if (!isOpen && selectRef.current) {
             const rect = selectRef.current.getBoundingClientRect();
             setOpenUp(window.innerHeight - rect.bottom < 200);
           }
+
           setIsOpen(!isOpen);
         }}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] text-slate-700 font-medium transition-all text-left"
-        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
-        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+        className="
+          w-full flex items-center justify-between
+          px-3 py-2 rounded-lg border-2
+          border-emerald-600 bg-white
+          text-[13px] font-medium text-emerald-600
+          hover:bg-emerald-50 hover:border-emerald-700
+          transition-all duration-200
+        "
       >
-        <span className="truncate">{selectedLabel || 'Select option'}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <span className="truncate">
+          {selectedLabel || "Select option"}
+        </span>
+
+        <ChevronDown
+          className={`w-4 h-4 text-emerald-600 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
+      {/* Dropdown Options */}
       {isOpen && (
-        <div className={`absolute left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-lg z-[60] py-1 max-h-48 overflow-y-auto ${openUp ? "bottom-full mb-1" : "top-full mt-1"}`}>
+        <div
+          className={`
+            absolute left-0 right-0 z-[60] py-1 rounded-lg shadow-xl
+            bg-white border-2 border-emerald-600
+            max-h-48 overflow-y-auto
+            ${openUp ? "bottom-full mb-1" : "top-full mt-1"}
+          `}
+        >
           {options.map((opt, i) => {
-            const val = typeof opt === "string" ? opt : opt.value;
-            const label = typeof opt === "string" ? opt : opt.label;
+            const val =
+              typeof opt === "string" ? opt : opt.value;
+            const label =
+              typeof opt === "string" ? opt : opt.label;
+
             const isSelected = val === value;
 
             return (
@@ -196,20 +223,14 @@ function CustomSelect({ value, options, onChange }) {
                   onChange(val);
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 text-[13px] font-medium transition-colors"
-                style={isSelected ? { backgroundColor: '#ecfdf5', color: '#059669' } : { color: '#334155' }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = '#ecfdf5';
-                    e.currentTarget.style.color = '#059669';
+                className={`
+                  w-full text-left px-3 py-2 text-[13px] font-medium transition-all duration-150
+                  ${
+                    isSelected
+                      ? "bg-emerald-500 text-white border-l-4 border-emerald-700"
+                      : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                   }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = '';
-                    e.currentTarget.style.color = '#334155';
-                  }
-                }}
+                `}
               >
                 {label}
               </button>
