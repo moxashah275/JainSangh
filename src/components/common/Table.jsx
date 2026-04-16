@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import Skeleton, { TableSkeleton } from './Skeleton';
 import EmptyState from './EmptyState';
 
-export default function Table({
+export default function Table({  // Add 'default' here
   columns,
   data,
   loading,
@@ -51,7 +51,7 @@ export default function Table({
                   </th>
                 );
               })}
-            </tr>
+             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
             {data.map((row, i) => (
@@ -73,3 +73,6 @@ export default function Table({
     </div>
   );
 }
+
+// Also export Skeleton and TableSkeleton if needed elsewhere
+export { Skeleton, TableSkeleton };

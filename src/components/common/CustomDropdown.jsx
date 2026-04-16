@@ -62,7 +62,7 @@ export default function CustomDropdown({
   return (
     <div className={`relative min-w-[160px] ${className}`} ref={triggerRef}>
       <div
-        className="px-3.5 py-3 h-[36px] bg-slate-50/70 border border-slate-200 rounded-2xl text-[12px] text-slate-600 font-medium focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-50 transition-all cursor-pointer flex items-center justify-between group hover:border-slate-300"
+        className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] text-slate-700 font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100 transition-all cursor-pointer flex items-center justify-between group hover:border-emerald-400"
         onClick={toggle}
       >
         <span className="truncate">
@@ -73,9 +73,9 @@ export default function CustomDropdown({
             : placeholder}
         </span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+          <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+          <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
         )}
       </div>
 
@@ -83,7 +83,7 @@ export default function CustomDropdown({
         createPortal(
           <div
             ref={portalRef}
-            className={`fixed z-[11000] bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${coords.openUp ? "mb-1" : "mt-1"}`}
+            className={`fixed z-[11000] bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden`}
             style={{
               top: coords.openUp ? "auto" : coords.top,
               bottom: coords.openUp ? window.innerHeight - coords.top : "auto",
@@ -91,19 +91,19 @@ export default function CustomDropdown({
               width: coords.width,
             }}
           >
-            <div className="p-2 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-2 border-b border-slate-100 bg-white">
               <input
                 type="text"
-                placeholder={`Search ${placeholder.toLowerCase()}...`}
+                placeholder={`Search...`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-3 py-1.5 text-[12px] border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all"
+                className="w-full px-3 py-1.5 text-[12px] border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-100 transition-all"
                 autoFocus
               />
             </div>
             <ul className="py-1 max-h-60 overflow-y-auto">
               {filteredItems.length === 0 ? (
-                <li className="px-4 py-3 text-[12px] text-slate-500 italic">
+                <li className="px-4 py-2 text-[12px] text-slate-500 italic">
                   No options found
                 </li>
               ) : (
@@ -116,10 +116,10 @@ export default function CustomDropdown({
                   return (
                     <li
                       key={`${itemValue}-${index}`}
-                      className={`px-4 py-2.5 text-[12px] font-medium cursor-pointer transition-all flex items-center gap-2 hover:bg-teal-50 ${
+                      className={`px-3 py-2 text-[13px] font-medium cursor-pointer transition-all hover:bg-emerald-50 ${
                         selected
-                          ? "bg-teal-50 text-teal-700 font-bold border-l-4 border-teal-500"
-                          : "text-slate-700 hover:text-teal-600"
+                          ? "bg-emerald-50 text-emerald-600 font-semibold"
+                          : "text-slate-700 hover:text-emerald-600"
                       }`}
                       onClick={() => {
                         onChange(itemValue);

@@ -7,11 +7,11 @@ export const INITIAL_TRUSTS = [
 ];
 
 export const INITIAL_SANGHS = [
-  { id: 101, name: 'Ahmedabad Jain Sangh', city: 'Ahmedabad', members: 1250, address: 'Near Jain Temple, Ahmedabad', type: 'Main', status: true },
-  { id: 102, name: 'Surat Jain Sangh', city: 'Surat', members: 850, address: 'City Light, Surat', type: 'Main', status: true },
-  { id: 103, name: 'Palitana Sangh', city: 'Palitana', members: 450, address: 'Taleti Road, Palitana', type: 'Regional', status: false },
-  { id: 104, name: 'Rajkot Jain Sangh', city: 'Rajkot', members: 620, address: 'Kalavad Road, Rajkot', type: 'Main', status: true },
-  { id: 105, name: 'Vadodara Jain Sangh', city: 'Vadodara', members: 780, address: 'Alkapuri, Vadodara', type: 'Main', status: true },
+  { id: 101, name: 'Ahmedabad Jain Sangh', city: 'Ahmedabad', members: 1250, address: 'Near Jain Temple, Ahmedabad', type: 'Main', sanghHead: 'Ramesh Shah', headContact: '+91 98765 43214', status: true },
+  { id: 102, name: 'Surat Jain Sangh', city: 'Surat', members: 850, address: 'City Light, Surat', type: 'Main', sanghHead: 'Kiran Patel', headContact: '+91 98765 43215', status: true },
+  { id: 103, name: 'Palitana Sangh', city: 'Palitana', members: 450, address: 'Taleti Road, Palitana', type: 'Regional', sanghHead: 'Vijay Mehta', headContact: '+91 98765 43216', status: false },
+  { id: 104, name: 'Rajkot Jain Sangh', city: 'Rajkot', members: 620, address: 'Kalavad Road, Rajkot', type: 'Main', sanghHead: 'Ashok Boda', headContact: '+91 98765 43217', status: true },
+  { id: 105, name: 'Vadodara Jain Sangh', city: 'Vadodara', members: 780, address: 'Alkapuri, Vadodara', type: 'Main', sanghHead: 'Mahesh Jain', headContact: '+91 98765 43218', status: true },
 ];
 
 export const INITIAL_LINKS = [
@@ -22,6 +22,7 @@ export const INITIAL_LINKS = [
   { id: 5, trustId: 4, sanghId: 104, status: true },
 ];
 
+// Add this export - INITIAL_DEPARTMENTS
 export const INITIAL_DEPARTMENTS = [
   { id: 1, name: 'Accounts & Finance', head: 'Nirav Shah', members: 5 },
   { id: 2, name: 'Donation Management', head: 'Mehul Mehta', members: 8 },

@@ -10,6 +10,8 @@ export default function LinkTrustSanghModal({ isOpen, onClose, trusts, sanghs, o
   const handleSubmit = () => {
     if (!trustId || !sanghId) return;
     onLink(trustId, sanghId);
+    setTrustId('');
+    setSanghId('');
   };
 
   return (
@@ -17,7 +19,9 @@ export default function LinkTrustSanghModal({ isOpen, onClose, trusts, sanghs, o
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h3 className="text-lg font-bold text-slate-800">Link Trust & Sangh</h3>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X className="w-5 h-5 text-slate-500" /></button>
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-1.5">

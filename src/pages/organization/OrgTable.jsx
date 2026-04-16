@@ -1,5 +1,5 @@
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
-import { Edit2, Trash2, Eye, X, Check, AlertTriangle, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Edit2, Trash2, Eye, Check, AlertTriangle, ArrowLeft, X } from 'lucide-react';
 import StatusToggle from '../../components/common/StatusToggle';
 import TrustFormModal from './forms/TrustFormModal';
 import SanghFormModal from './forms/SanghFormModal';
@@ -9,7 +9,6 @@ import { getOrgData, saveOrgData } from './orgData';
 
 const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage, currentPage, setCurrentPage, setTotalEntries, onDataChange }, ref) => {
   const [data, setData] = useState(() => getOrgData());
-  
   const [trustModal, setTrustModal] = useState({ isOpen: false, type: 'add', data: null });
   const [sanghModal, setSanghModal] = useState({ isOpen: false, type: 'add', data: null });
   const [detailsModal, setDetailsModal] = useState({ isOpen: false, type: '', data: null });
@@ -98,12 +97,10 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
     }
   };
 
-  // Helper function to check if a trust has a specific sangh linked
   const trustHasLinkedSangh = (trustId, sanghId) => {
     return data.links.some(l => l.trustId === trustId && l.sanghId === sanghId && l.status);
   };
 
-  // Helper function to check if a sangh has a specific trust linked
   const sanghHasLinkedTrust = (sanghId, trustId) => {
     return data.links.some(l => l.sanghId === sanghId && l.trustId === trustId && l.status);
   };
@@ -143,33 +140,33 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
     if (activeTab === 'all') {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-20 px-4 py-3 text-center">Sr. No.</th>
-          <th className="px-4 py-3 text-left">Organization Name</th>
-          <th className="w-24 px-4 py-3 text-center">Type</th>
-          <th className="w-28 px-4 py-3 text-center">Actions</th>
-        </tr>
+          <th className="w-1/4 px-6 py-3 text-center">Sr. No.</th>
+          <th className="w-1/4 px-6 py-3 text-center">Organization Name</th>
+          <th className="w-1/4 px-6 py-3 text-center">Type</th>
+          <th className="w-1/4 px-6 py-3 text-center">Actions</th>
+         </tr>
       );
     } else if (activeTab === 'trusts') {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-16 px-4 py-3 text-center">Sr. No.</th>
-          <th className="px-4 py-3 text-left">Trust Name</th>
-          <th className="w-28 px-4 py-3 text-center">City</th>
-          <th className="w-28 px-4 py-3 text-center">Admin Name</th>
-          <th className="w-24 px-4 py-3 text-center">Status</th>
-          <th className="w-28 px-4 py-3 text-center">Actions</th>
-        </tr>
+          <th className="w-1/5 px-6 py-3 text-center">Sr. No.</th>
+          <th className="w-1/5 px-6 py-3 text-center">Trust Name</th>
+          <th className="w-1/5 px-6 py-3 text-center">City</th>
+          <th className="w-1/5 px-6 py-3 text-center">Admin Name</th>
+          <th className="w-1/5 px-6 py-3 text-center">Status</th>
+          <th className="w-1/5 px-6 py-3 text-center">Actions</th>
+         </tr>
       );
     } else {
       return (
         <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-16 px-4 py-3 text-center">Sr. No.</th>
-          <th className="px-4 py-3 text-left">Sangh Name</th>
-          <th className="w-28 px-4 py-3 text-center">City</th>
-          <th className="w-28 px-4 py-3 text-center">Members</th>
-          <th className="w-24 px-4 py-3 text-center">Status</th>
-          <th className="w-28 px-4 py-3 text-center">Actions</th>
-        </tr>
+          <th className="w-1/6 px-6 py-3 text-center">Sr. No.</th>
+          <th className="w-1/6 px-6 py-3 text-center">Sangh Name</th>
+          <th className="w-1/6 px-6 py-3 text-center">City</th>
+          <th className="w-1/6 px-6 py-3 text-center">Members</th>
+          <th className="w-1/6 px-6 py-3 text-center">Status</th>
+          <th className="w-1/6 px-6 py-3 text-center">Actions</th>
+         </tr>
       );
     }
   };
@@ -186,7 +183,7 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
         .animate-toast-custom { animation: toast-in-out 3s ease-in-out forwards; }
       `}</style>
 
-      {/* Toast - Same as Location */}
+      {/* Toast */}
       {toast.show && (
         <div className="fixed top-8 right-8 z-[999] animate-toast-custom">
           <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-md ${toast.type === 'error' ? 'bg-rose-500 border-rose-400' : 'bg-emerald-500 border-emerald-400'} text-white`}>
@@ -203,7 +200,7 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
 
       {/* Main Table */}
       <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-        <table className="w-full border-collapse">
+        <table className="w-full table-fixed border-collapse">
           <thead>{renderHeaders()}</thead>
           <tbody className="divide-y divide-slate-100">
             {paginatedData.length > 0 ? (
@@ -212,16 +209,12 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 
                 if (activeTab === 'all') {
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => setDetailsModal({ isOpen: true, type: item.orgType === 'Trust' ? 'trust' : 'sangh', data: item })}>
-                      <td className="px-4 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-slate-700">{item.name}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex px-2 py-1 rounded text-[10px] font-bold uppercase ${item.orgType === 'Trust' ? 'bg-emerald-100 text-emerald-700' : 'bg-teal-100 text-teal-700'}`}>
-                          {item.orgType}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/4 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.orgType}</td>
+                      <td className="w-1/4 px-6 py-3 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: item.orgType === 'Trust' ? 'trust' : 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
                           </button>
@@ -232,17 +225,17 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 } else if (activeTab === 'trusts') {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-4 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-slate-700">{item.name}</td>
-                      <td className="px-4 py-3 text-center text-sm text-slate-600">{item.city}</td>
-                      <td className="px-4 py-3 text-center text-sm text-slate-600">{item.admin}</td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.city}</td>
+                      <td className="w-1/5 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.admin}</td>
+                      <td className="w-1/5 px-6 py-3 text-center">
                         <div className="flex justify-center">
                           <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'trust', item.status)} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="w-1/5 px-6 py-3 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: 'trust', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
                           </button>
@@ -259,17 +252,17 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
                 } else {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-4 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-slate-700">{item.name}</td>
-                      <td className="px-4 py-3 text-center text-sm text-slate-600">{item.city}</td>
-                      <td className="px-4 py-3 text-center text-sm text-slate-600">{item.members?.toLocaleString() || 0}</td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{serialNo}</td>
+                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.name}</td>
+                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.city}</td>
+                      <td className="w-1/6 px-6 py-3 text-center text-sm font-medium text-slate-500">{item.members?.toLocaleString() || 0}</td>
+                      <td className="w-1/6 px-6 py-3 text-center">
                         <div className="flex justify-center">
                           <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'sangh', item.status)} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="w-1/6 px-6 py-3 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button onClick={() => setDetailsModal({ isOpen: true, type: 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
                             <Eye size={15} />
                           </button>
@@ -287,7 +280,7 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
               })
             ) : (
               <tr>
-                <td colSpan={activeTab === 'all' ? 4 : 6} className="py-8 text-center text-sm text-slate-400">
+                <td colSpan={activeTab === 'all' ? 4 : 6} className="py-10 text-center text-sm text-slate-400">
                   No matching records found
                 </td>
               </tr>
@@ -296,7 +289,7 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
         </table>
       </div>
 
-      {/* Trust Form Modal */}
+      {/* Modals */}
       {trustModal.isOpen && (
         <TrustFormModal 
           isOpen={trustModal.isOpen} 
@@ -306,7 +299,6 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
         />
       )}
 
-      {/* Sangh Form Modal */}
       {sanghModal.isOpen && (
         <SanghFormModal 
           isOpen={sanghModal.isOpen} 
@@ -316,13 +308,13 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
         />
       )}
 
-      {/* Details Modals */}
       {detailsModal.isOpen && detailsModal.type === 'trust' && (
         <TrustDetailsModal 
           isOpen={detailsModal.isOpen} 
           onClose={() => setDetailsModal({ isOpen: false, type: '', data: null })} 
           trust={detailsModal.data} 
           allData={data} 
+          onStatusToggle={toggleStatus}
         />
       )}
       
@@ -332,21 +324,22 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
           onClose={() => setDetailsModal({ isOpen: false, type: '', data: null })} 
           sangh={detailsModal.data} 
           allData={data} 
+          onStatusToggle={toggleStatus}
         />
       )}
 
-      {/* Delete Confirmation - Same as Location */}
+      {/* Delete Confirmation */}
       {deleteConfirm.show && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm">
           <div className="bg-white w-full max-w-[280px] rounded-2xl p-5 text-center shadow-2xl animate-in zoom-in duration-200">
-            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-11 h-11 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
               <AlertTriangle size={22} />
             </div>
-            <h3 className="font-semibold text-slate-800 text-base">Confirm Delete?</h3>
+            <h3 className="font-semibold text-slate-800 text-sm">Confirm Delete?</h3>
             <p className="text-[11px] text-slate-400 mt-1">This action cannot be undone</p>
-            <div className="flex gap-2 mt-5">
-              <button onClick={() => setDeleteConfirm({ show: false, id: null, type: '' })} className="flex-1 py-2 text-xs font-semibold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
-              <button onClick={handleDelete} className="flex-1 py-2 text-xs font-semibold text-white bg-rose-500 rounded-xl shadow-md hover:bg-rose-600 transition-all">Delete</button>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setDeleteConfirm({ show: false, id: null, type: '' })} className="flex-1 py-2 text-xs font-medium text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
+              <button onClick={handleDelete} className="flex-1 py-2 text-xs font-medium text-white bg-rose-500 rounded-xl shadow-md hover:bg-rose-600 transition-all">Delete</button>
             </div>
           </div>
         </div>

@@ -34,22 +34,22 @@ export default function Pagination({
 
   return (
     <div className="px-4 py-3 bg-white border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-      {/* Left: Custom Records Per Page Selection */}
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-slate-400">Showing</span>
+        <span className="text-[13px] text-slate-500">Show</span>
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsLimitOpen(!isLimitOpen)}
-            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[36px] text-[13px] font-bold text-slate-500 hover:bg-white hover:border-teal-500 hover:text-teal-600 transition-all cursor-pointer min-w-[55px] justify-between shadow-sm"
+            className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 h-[34px] text-[13px] font-medium text-slate-600 transition-all cursor-pointer min-w-[55px] justify-between"
+            style={{ backgroundColor: 'white' }}
+            onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
           >
             <span>{recordsPerPage}</span>
-            <ChevronDown
-              className={`w-3 h-3 text-slate-400 transition-transform ${isLimitOpen ? "rotate-180" : ""}`}
-            />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {isLimitOpen && (
-            <div className="absolute bottom-full left-0 mb-2 w-full bg-white border border-slate-100 rounded-xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] z-50 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
+            <div className="absolute bottom-full left-0 mb-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
               {limitOptions.map((opt) => (
                 <button
                   key={opt}
@@ -57,11 +57,20 @@ export default function Pagination({
                     onRecordsPerPageChange(opt);
                     setIsLimitOpen(false);
                   }}
-                  className={`w-full text-center py-2 text-[13px] font-bold transition-all ${
-                    recordsPerPage === opt
-                      ? "bg-teal-50 text-teal-600 border-l-2 border-teal-600"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-teal-600"
-                  }`}
+                  className="w-full text-center py-2 text-[13px] font-medium transition-all text-slate-600"
+                  style={recordsPerPage === opt ? { backgroundColor: '#10b981', color: 'white' } : {}}
+                  onMouseEnter={(e) => {
+                    if (recordsPerPage !== opt) {
+                      e.currentTarget.style.backgroundColor = '#ecfdf5';
+                      e.currentTarget.style.color = '#059669';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (recordsPerPage !== opt) {
+                      e.currentTarget.style.backgroundColor = '';
+                      e.currentTarget.style.color = '#475569';
+                    }
+                  }}
                 >
                   {opt}
                 </button>
@@ -69,25 +78,22 @@ export default function Pagination({
             </div>
           )}
         </div>
+        <span className="text-[13px] text-slate-500">entries</span>
       </div>
 
-      {/* Center: Record Range Info */}
-      <div className="text-[13px] text-slate-400 font-medium order-3 sm:order-2">
+      <div className="text-[13px] text-slate-500 font-medium order-3 sm:order-2">
         {totalRecords > 0 ? (
-          <>
-            Showing {startRecord} to {endRecord} out of {totalRecords} records
-          </>
+          <>Showing {startRecord} to {endRecord} out of {totalRecords} records</>
         ) : (
           "No records found"
         )}
       </div>
 
-      {/* Right: Page Navigation */}
       <div className="flex items-center gap-1 order-2 sm:order-3">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[32px] h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 border border-slate-200 disabled:opacity-30 transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -96,11 +102,20 @@ export default function Pagination({
           <button
             key={num}
             onClick={() => onPageChange(num)}
-            className={`w-[36px] h-[36px] flex items-center justify-center rounded-xl text-[13px] font-bold transition-all ${
-              currentPage === num
-                ? "bg-teal-50 text-teal-600 border border-teal-200 shadow-sm"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-            }`}
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-lg text-[13px] font-medium transition-all border border-slate-200"
+            style={currentPage === num ? { backgroundColor: '#10b981', color: 'white' } : { color: '#475569' }}
+            onMouseEnter={(e) => {
+              if (currentPage !== num) {
+                e.currentTarget.style.backgroundColor = '#ecfdf5';
+                e.currentTarget.style.color = '#059669';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== num) {
+                e.currentTarget.style.backgroundColor = '';
+                e.currentTarget.style.color = '#475569';
+              }
+            }}
           >
             {num}
           </button>
@@ -109,7 +124,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="w-[36px] h-[36px] flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 border border-transparent hover:border-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+          className="w-[32px] h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 border border-slate-200 disabled:opacity-30 transition-all"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
