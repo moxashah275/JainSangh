@@ -1,70 +1,45 @@
-import { useMemo, useState } from 'react'
-import { Building2, Users, UserCog, BookOpen, Plus } from 'lucide-react'
-import Button from '../../components/common/Button'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
-import SanghCard from '../../components/organization/SanghCard'
-import { INITIAL_SANGHS, INITIAL_TRUSTS, getTrustName } from './orgData'
+import React from 'react';
+import { Building2, MapPin, Users } from 'lucide-react';
+// Correct Named Imports
+import { INITIAL_SANGHS, getTrustName } from './orgData';
 
 export default function Sangh() {
-  const [search, setSearch] = useState('')
-  const sanghs = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
-    }
-  }, [])
-  const trusts = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
-    }
-  }, [])
-
-  const filteredSanghs = useMemo(function() {
-    return sanghs.filter(function(sangh) {
-      const query = search.toLowerCase()
-      return !query || [sangh.name, sangh.type, sangh.city, sangh.area, getTrustName(sangh.trustId, trusts)].some(function(value) {
-        return String(value || '').toLowerCase().includes(query)
-      })
-    })
-  }, [search, sanghs, trusts])
-
-  const stats = useMemo(function() {
-    const active = sanghs.filter(function(sangh) { return sangh.status === 'Active' }).length
-    const members = sanghs.reduce(function(sum, sangh) { return sum + (sangh.memberCount || 0) }, 0)
-    const pathshalas = sanghs.reduce(function(sum, sangh) { return sum + (sangh.pathshalaCount || 0) }, 0)
-    return [
-      { title: 'Total Sanghs', value: sanghs.length, icon: Building2, color: 'teal' },
-      { title: 'Active Sanghs', value: active, icon: Users, color: 'emerald' },
-      { title: 'Members', value: members, icon: UserCog, color: 'sky' },
-      { title: 'Pathshala Units', value: pathshalas, icon: BookOpen, color: 'amber' },
-    ]
-  }, [sanghs])
-
   return (
-    <CommonPageLayout
-      title="Sangh Management"
-      subtitle="Manage sanghs, local units, and operational counts under each trust."
-      breadcrumbs={[{ label: 'Organization' }, { label: 'Sangh' }]}
-      action={<Button icon={Plus}>Add Sangh</Button>}
-      stats={stats}
-      searchValue={search}
-      onSearchChange={setSearch}
-      searchPlaceholder="Search sangh, type, city, area, or trust..."
-      isEmpty={!filteredSanghs.length}
-      emptyState={<EmptyState message="No sangh records found" description="Try a wider search or create a sangh under the selected trust." icon={Users} action={<Button variant="secondary" size="sm" icon={Plus}>Add Sangh</Button>} />}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredSanghs.map(function(sangh, index) {
-          return <SanghCard key={sangh.id} sangh={sangh} trustName={getTrustName(sangh.trustId, trusts)} memberCount={sangh.memberCount} index={index} />
-        })}
-      </div>
-    </CommonPageLayout>
-  )
-}
+    <div className="p-6 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {INITIAL_SANGHS.map((sangh) => (
+          <div key={sangh.id} className="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-12 w-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white transition-all">
+                <Users size={24} />
+              </div>
+              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${sangh.type === 'Main' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
+                {sangh.type}
+              </span>
+            </div>
 
+            <h3 className="text-lg font-bold text-slate-800 leading-tight">{sangh.name}</h3>
+            
+            <div className="mt-4 space-y-2">
+              {/* Using getTrustName function here */}
+              <div className="flex items-center gap-2 text-slate-500">
+                <Building2 size={14} className="text-emerald-500" />
+                <span className="text-xs font-semibold">{getTrustName(sangh.trustId)}</span>
+              </div>
+              
+              <div className="flex items-center gap-2 text-slate-400">
+                <MapPin size={14} />
+                <span className="text-xs font-medium uppercase tracking-wide">{sangh.city}</span>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Members</p>
+              <p className="text-sm font-black text-slate-700">{sangh.members.toLocaleString()}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
