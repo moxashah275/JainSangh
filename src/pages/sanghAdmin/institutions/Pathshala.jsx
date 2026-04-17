@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  Gem, Plus, Eye, Pencil, Trash2, MapPin, Users, CalendarDays,
+  BookOpen, Plus, Eye, Pencil, Trash2, MapPin, Users, GraduationCap,
   Search, Phone, Mail, Clock, Building2, ChevronRight, Image as ImageIcon,
-  ArrowLeft, X, Check, Camera
+  ArrowLeft, X, Check, Globe, School, Camera
 } from 'lucide-react';
 import CommonPageLayout from '../../../components/common/CommonPageLayout';
 import Button from '../../../components/common/Button';
@@ -11,7 +11,7 @@ import StatusToggle from '../../../components/common/StatusToggle';
 import { useToast } from '../../../components/common/Toast';
 import Modal from '../../../components/common/Modal';
 import ConfirmModal from '../../../components/common/ConfirmModal';
-import { derasarService } from '../../../services/derasarService';
+import { pathshalaService } from '../../../services/pathshalaService';
 import FilterButton from '../../../components/common/FilterButton';
 import Input from '../../../components/common/Input';
 import Pagination from '../../../components/common/Pagination';
@@ -19,43 +19,39 @@ import CustomDropdown from '../../../components/common/CustomDropdown';
 import TimePicker from '../../../components/common/TimePicker';
 
 // ── Tab config ──────────────────────────────────────────────────────────────
-const TABS = ['Derasar Details', 'Location', 'Contact & Management'];
+const TABS = ['Institute Details', 'Location', 'Contact & Management'];
 
 // ── Dropdown Options ────────────────────────────────────────────────────────
-const DERASAR_TYPES = ['Shwetambar', 'Digambar', 'Sthanakvasi', 'Terapanthi'];
-const PRATIMA_TYPES = [
-  { label: 'Marble (આરસ)', value: 'Marble (આરસ)' },
-  { label: 'Panchdhatu', value: 'Panchdhatu' },
-  { label: 'Ashtadhatu', value: 'Ashtadhatu' },
-  { label: 'Stone (પથ્થર)', value: 'Stone (પથ્થર)' }
-];
+const MEDIUMS = ['Gujarati', 'Hindi', 'English', 'Marathi'];
+const FEE_TYPES = ['Free', 'Paid', 'Donation'];
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'Active' },
   { label: 'Inactive', value: 'Inactive' }
 ];
-const GUJARAT_DISTRICTS = ['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Junagadh','Patan','Mehsana','Gandhinagar','Anand','Kheda','Nadiad','Surendranagar','Amreli','Porbandar','Jamnagar','Kutch','Banaskantha','Sabarkantha','Other'];
+const GUJARAT_DISTRICTS = [
+  'Ahmedabad', 'Amreli', 'Anand', 'Aravalli', 'Banaskantha', 'Bharuch', 'Bhavnagar', 
+  'Botad', 'Chhota Udepur', 'Dahod', 'Dang', 'Devbhumi Dwarka', 'Gandhinagar', 
+  'Gir Somnath', 'Jamnagar', 'Junagadh', 'Kutch', 'Kheda', 'Mahisagar', 'Mehsana', 
+  'Morbi', 'Narmada', 'Navsari', 'Panchmahal', 'Patan', 'Porbandar', 'Rajkot', 
+  'Sabarkantha', 'Surat', 'Surendranagar', 'Tapi', 'Vadodara', 'Valsad'
+];
 
 // ── Empty form ───────────────────────────────────────────────────────────────
 const emptyForm = {
   name: '',
-  type: '',
-  moolNayak: '',
-  pratimaType: '',
+  medium: [],
   established: '',
-  pratimas: '',
-  poojaris: '',
-  morningFrom: '06:00',
-  morningTo: '12:00',
-  eveningFrom: '16:00',
-  eveningTo: '20:00',
-  dharamshala: false,
-  bhojanshala: false,
-  parking: false,
-  upashray: false,
-  disabled: false,
-  photos: [],
+  totalTeachers: '',
+  ageGroupFrom: '',
+  ageGroupTo: '',
+  morningFrom: '08:00',
+  morningTo: '10:00',
+  feeType: 'Free',
+  monthlyFee: '',
   status: 'Active',
-  registrationNumber: '',
+  photos: [],
+  
+  // Tab 2: Location
   address: '',
   landmark: '',
   city: '',
@@ -63,16 +59,19 @@ const emptyForm = {
   district: '',
   pincode: '',
   mapLink: '',
+
+  // Tab 3: Contact
+  principalName: '',
+  principalPhone: '',
   trusteeName: '',
   trusteePhone: '',
-  pujariName: '',
-  pujariPhone: '',
   trustName: '',
   email: '',
+  website: ''
 };
 
-export default function Derasar() {
-  const [derasars, setDerasars] = useState([]);
+export default function Pathshala() {
+  const [pathshalas, setPathshalas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ status: 'All' });
@@ -93,11 +92,11 @@ export default function Derasar() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await derasarService.getDerasars();
-      setDerasars(Array.isArray(response) ? response : []);
+      const response = await pathshalaService.getPathshalas();
+      setPathshalas(Array.isArray(response) ? response : []);
     } catch (error) {
-      console.error('Error fetching derasars:', error);
-      showToast('Failed to load derasar data', 'error');
+      console.error('Error fetching pathshalas:', error);
+      showToast('Failed to load pathshala data', 'error');
     } finally {
       setLoading(false);
     }
@@ -105,10 +104,17 @@ export default function Derasar() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const filteredData = useMemo(() => derasars.filter(item => {
+  const filteredData = useMemo(() => pathshalas.filter(item => {
     const q = search.toLowerCase();
-    return (!search || item.name?.toLowerCase().includes(q) || item.city?.toLowerCase().includes(q) || item.moolNayak?.toLowerCase().includes(q)) && (filters.status === 'All' || item.status === filters.status);
-  }), [derasars, search, filters]);
+    return (
+      (!search || 
+        item.name?.toLowerCase().includes(q) || 
+        item.city?.toLowerCase().includes(q) || 
+        item.trustName?.toLowerCase().includes(q)
+      ) && 
+      (filters.status === 'All' || item.status === filters.status)
+    );
+  }), [pathshalas, search, filters]);
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * recordsPerPage;
@@ -116,10 +122,10 @@ export default function Derasar() {
   }, [filteredData, currentPage, recordsPerPage]);
 
   const stats = useMemo(() => [
-    { title: 'TOTAL DERASAR', value: derasars.length, icon: Gem, color: 'sky' },
-    { title: 'ACTIVE DERASAR', value: derasars.filter(d => d.status === 'Active').length, icon: Gem, color: 'teal' },
-    { title: 'INACTIVE DERASAR', value: derasars.filter(d => d.status === 'Inactive').length, icon: Gem, color: 'rose' },
-  ], [derasars]);
+    { title: 'TOTAL INSTITUTES', value: pathshalas.length, icon: School, color: 'sky' },
+    { title: 'ACTIVE INSTITUTES', value: pathshalas.filter(p => p.status === 'Active').length, icon: Check, color: 'teal' },
+    { title: 'INACTIVE INSTITUTES', value: pathshalas.filter(p => p.status === 'Inactive').length, icon: X, color: 'rose' },
+  ], [pathshalas]);
 
   const openModal = (mode, item = null) => {
     setModalMode(mode);
@@ -134,9 +140,9 @@ export default function Derasar() {
   const toggleStatus = async (item) => {
     try {
       const newStatus = item.status === 'Active' ? 'Inactive' : 'Active';
-      await derasarService.updateDerasar(item.id, { ...item, status: newStatus });
+      await pathshalaService.updatePathshala(item.id, { ...item, status: newStatus });
       fetchData();
-      showToast(`Derasar set to ${newStatus}`);
+      showToast(`Institute status updated`);
     } catch (error) {
       console.error('Error updating status:', error);
       showToast('Failed to update status', 'error');
@@ -146,28 +152,28 @@ export default function Derasar() {
   const handleSave = async () => {
     try {
       if (modalMode === 'add') {
-        await derasarService.createDerasar(formData);
-        showToast('Derasar added successfully');
+        await pathshalaService.createPathshala(formData);
+        showToast('Institute added successfully');
       } else {
-        await derasarService.updateDerasar(currentItem.id, formData);
-        showToast('Derasar updated successfully');
+        await pathshalaService.updatePathshala(currentItem.id, formData);
+        showToast('Institute updated successfully');
       }
       fetchData();
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Error saving derasar:', error);
+      console.error('Error saving pathshala:', error);
       showToast('Action failed', 'error');
     }
   };
 
   const handleDelete = async () => {
     try {
-      await derasarService.deleteDerasar(itemToDelete.id);
-      showToast('Derasar deleted successfully', 'delete');
+      await pathshalaService.deletePathshala(itemToDelete.id);
+      showToast('Institute deleted successfully', 'delete');
       fetchData();
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error('Error deleting derasar:', error);
+      console.error('Error deleting pathshala:', error);
       showToast('Delete failed', 'error');
     }
   };
@@ -185,21 +191,22 @@ export default function Derasar() {
 
   const columns = [
     { key: 'id', label: 'SR. NO', align: 'center', render: (_, __, i) => i + 1 },
-    { key: 'name', label: 'DERASAR NAME', sortable: true, render: (v, r) => (
+    { key: 'name', label: 'INSTITUTE NAME', sortable: true, render: (v, r) => (
       <div className="flex flex-col">
         <span className="font-bold text-teal-600">{v}</span>
-        <span className="text-xs text-slate-400">{r.type || ''}</span>
+        <span className="text-xs text-slate-400">
+          {Array.isArray(r.medium) ? r.medium.join(', ') : r.medium}
+        </span>
       </div>
     )},
-    { key: 'moolNayak', label: 'MOOL NAYAK', render: v => <span className="text-slate-600 font-medium text-sm">{v || '—'}</span> },
+    { key: 'trustName', label: 'SANGH', render: v => <span className="text-slate-600 font-medium text-sm">{v || '—'}</span> },
     { key: 'city', label: 'CITY / DISTRICT', render: (v, r) => (
       <div className="flex flex-col">
         <span className="text-slate-600 font-medium text-sm">{v}</span>
         <span className="text-xs text-slate-400">{r.district || ''}</span>
       </div>
     )},
-    { key: 'pratimas', label: 'PRATIMAS', align: 'center' },
-    { key: 'poojaris', label: 'POOJARIS', align: 'center' },
+    { key: 'totalTeachers', label: 'TEACHERS', align: 'center' },
     { key: 'status', label: 'STATUS', align: 'center', render: (v, r) => <StatusToggle status={v === 'Active'} onToggle={() => toggleStatus(r)} /> },
     { key: 'actions', label: 'ACTION', align: 'center', render: (_, r) => (
       <div className="flex items-center justify-center gap-2">
@@ -216,7 +223,7 @@ export default function Derasar() {
         <ArrowLeft size={18} />
       </button>
       <h2 className="text-[17px] font-bold text-slate-800">
-        {modalMode === 'add' ? 'Add New' : modalMode === 'edit' ? 'Edit' : 'View'} Derasar
+        {modalMode === 'add' ? 'Add New' : modalMode === 'edit' ? 'Edit' : 'View'} Institute
       </h2>
     </div>
   );
@@ -263,16 +270,16 @@ export default function Derasar() {
   );
 
   return (
-    <CommonPageLayout title="Derasar Management" stats={stats}>
+    <CommonPageLayout title="Institute Management" stats={stats}>
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="w-full sm:max-w-sm relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="w-full h-[40px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] focus:ring-2 focus:ring-teal-50 focus:border-teal-500 outline-none transition-all font-medium" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Institute, City, or Sangh..." className="w-full h-[40px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] focus:ring-2 focus:ring-teal-50 focus:border-teal-500 outline-none transition-all font-medium" />
           </div>
           <div className="flex items-center gap-2">
             <FilterButton filters={filters} options={[{ key: 'status', placeholder: 'Status', items: [{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }] }]} onChange={(k, v) => { setFilters(p => ({ ...p, [k]: v })); setCurrentPage(1); }} onClear={() => { setFilters({ status: 'All' }); setCurrentPage(1); }} dataCount={filteredData.length} />
-            <Button icon={Plus} onClick={() => openModal('add')} className="bg-teal-600 hover:bg-teal-700 shadow-lg shadow-teal-100 text-[13px] h-[40px] px-4">Add Derasar</Button>
+            <Button icon={Plus} onClick={() => openModal('add')} className="bg-teal-600 hover:bg-teal-700 shadow-lg shadow-teal-100 text-[13px] h-[40px] px-4">Add Institute</Button>
           </div>
         </div>
         <Table columns={columns} data={paginatedData} loading={loading} />
@@ -287,7 +294,7 @@ export default function Derasar() {
         footer={modalFooter}
       >
         <div className="flex flex-col h-full">
-          {/* Tabs - Sticky at the top of the body area */}
+          {/* Tabs - Sticky */}
           <div className="sticky -top-5 z-20 bg-white/95 backdrop-blur-sm -mx-5 px-5 pt-1 pb-4 mb-2 border-b border-slate-100/50">
             <div className="flex gap-2 p-1 bg-slate-100/60 rounded-xl w-fit">
               {TABS.map((tab, i) => (
@@ -311,7 +318,7 @@ export default function Derasar() {
         </div>
       </Modal>
 
-      <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDelete} title="Delete Derasar" message={`Delete "${itemToDelete?.name}"?`} confirmLabel="Delete" variant="danger" />
+      <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDelete} title="Delete Institute" message={`Delete "${itemToDelete?.name}"?`} confirmLabel="Delete" variant="danger" />
 
       {/* Image Preview Overlay */}
       {previewImage && (
@@ -364,6 +371,7 @@ function Tab1({ formData, set, isView, onImageClick }) {
       set('photos', [...(formData.photos || []), ...filesArray]);
     }
     setShowMenu(false);
+    // Reset inputs so the same file can be selected again if needed
     if (galleryRef.current) galleryRef.current.value = '';
     if (cameraRef.current) cameraRef.current.value = '';
   };
@@ -379,7 +387,7 @@ function Tab1({ formData, set, isView, onImageClick }) {
       <div className="flex-shrink-0">
         <div className="w-[340px] space-y-4">
           <div className="flex items-center justify-between px-1">
-            <label className="text-[13px] font-bold text-slate-700">Derasar Gallery</label>
+            <label className="text-[13px] font-bold text-slate-700">Institute Gallery</label>
             {!isView && (formData.photos?.length || 0) < 8 && (
               <div className="relative" ref={menuRef}>
                 <button 
@@ -428,6 +436,7 @@ function Tab1({ formData, set, isView, onImageClick }) {
           </div>
           
           <div className="space-y-3">
+            {/* Main Preview */}
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-sm">
               {formData.photos?.length > 0 ? (
                 <img 
@@ -444,6 +453,7 @@ function Tab1({ formData, set, isView, onImageClick }) {
               )}
             </div>
 
+            {/* Thumbnails Grid */}
             <div className="grid grid-cols-4 gap-2">
               {formData.photos?.map((photo, idx) => (
                 <div 
@@ -471,6 +481,7 @@ function Tab1({ formData, set, isView, onImageClick }) {
                 </div>
               ))}
               
+              {/* Empty placeholder for next upload */}
               {/* Empty placeholder removed as requested */}
             </div>
           </div>
@@ -482,42 +493,65 @@ function Tab1({ formData, set, isView, onImageClick }) {
           )}
         </div>
       </div>
+
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-        <Input label="Derasar Name" placeholder="Enter Name" value={formData.name} onChange={e => set('name', e.target.value)} required disabled={isView} />
+        <Input label="Institute Name" placeholder="Enter Name" value={formData.name} onChange={e => set('name', e.target.value)} required disabled={isView} />
+        
+
         <div className="flex flex-col gap-1.5">
-          <label className="text-[13px] font-medium text-slate-600">Derasar Type *</label>
+          <label className="text-[13px] font-medium text-slate-600">Medium *</label>
           <CustomDropdown
-            value={formData.type}
-            onChange={v => set('type', v)}
-            items={DERASAR_TYPES}
-            placeholder="Select Type"
+            value={formData.medium}
+            onChange={v => set('medium', v)}
+            items={MEDIUMS}
+            placeholder="Select Medium"
             disabled={isView}
+            multiple={true}
           />
         </div>
-        <Input label="Mool Nayak (મૂળ નાયક)" placeholder="Enter Name" value={formData.moolNayak} onChange={e => set('moolNayak', e.target.value)} required disabled={isView} />
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[13px] font-medium text-slate-600">Pratima Type</label>
-          <CustomDropdown
-            value={formData.pratimaType}
-            onChange={v => set('pratimaType', v)}
-            items={PRATIMA_TYPES}
-            placeholder="Select Material"
-            disabled={isView}
-          />
-        </div>
+
         <Input label="Established Year" placeholder="Enter Year" value={formData.established} onChange={e => set('established', e.target.value)} disabled={isView} />
-        <Input label="No. of Pratimas" type="number" placeholder="Count" value={formData.pratimas} onChange={e => set('pratimas', e.target.value)} required disabled={isView} />
-        <Input label="No. of Poojaris" type="number" placeholder="Count" value={formData.poojaris} onChange={e => set('poojaris', e.target.value)} required disabled={isView} />
-        <Input label="Registration Number" placeholder="Number" value={formData.registrationNumber} onChange={e => set('registrationNumber', e.target.value)} disabled={isView} />
+        
+        <Input label="Total Teachers" type="number" placeholder="Count" value={formData.totalTeachers} onChange={e => set('totalTeachers', e.target.value)} required disabled={isView} />
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Age Group (From)" type="number" placeholder="Years" value={formData.ageGroupFrom} onChange={e => set('ageGroupFrom', e.target.value)} disabled={isView} />
+          <Input label="Age Group (To)" type="number" placeholder="Years" value={formData.ageGroupTo} onChange={e => set('ageGroupTo', e.target.value)} disabled={isView} />
+        </div>
+
+
+
         <div className="flex flex-col gap-1.5">
-          <label className="text-[13px] font-medium text-slate-600">Status *</label>
+          <label className="text-[13px] font-medium text-slate-600">Fee Type *</label>
           <CustomDropdown
-            value={formData.status}
-            onChange={v => set('status', v)}
-            items={STATUS_OPTIONS}
-            placeholder="Select Status"
+            value={formData.feeType}
+            onChange={v => set('feeType', v)}
+            items={FEE_TYPES}
+            placeholder="Select Fee Type"
             disabled={isView}
           />
+        </div>
+
+        {formData.feeType === 'Paid' && (
+          <Input label="Monthly Fee (₹)" type="number" placeholder="Amount" value={formData.monthlyFee} onChange={e => set('monthlyFee', e.target.value)} required disabled={isView} />
+        )}
+
+        <div className="md:col-span-2 bg-slate-50/50 p-6 rounded-2xl border border-slate-100 shadow-sm mt-2">
+          <h4 className="flex items-center gap-2 text-slate-800 font-bold text-[14px] mb-6">
+            <Clock size={16} className="text-teal-600" />
+            Institute Timings
+          </h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-10">
+            <div>
+              <label className="block text-[13px] font-bold text-slate-600 mb-3">Time</label>
+              <div className="flex items-center gap-3 max-w-[400px]">
+                <TimePicker value={formData.morningFrom} onChange={e => set('morningFrom', e.target.value)} disabled={isView} className="flex-1" />
+                <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest px-1">to</span>
+                <TimePicker value={formData.morningTo} onChange={e => set('morningTo', e.target.value)} disabled={isView} className="flex-1" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -527,8 +561,11 @@ function Tab1({ formData, set, isView, onImageClick }) {
 function Tab2({ formData, set, isView }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-      <div className="md:col-span-2"><Input label="Address" placeholder="Address" value={formData.address} onChange={e => set('address', e.target.value)} required disabled={isView} /></div>
+      <div className="md:col-span-2">
+        <Input label="Address" placeholder="Address" value={formData.address} onChange={e => set('address', e.target.value)} required disabled={isView} />
+      </div>
       <Input label="Landmark" placeholder="Landmark" value={formData.landmark} onChange={e => set('landmark', e.target.value)} disabled={isView} />
+      
       <div className="flex flex-col gap-1.5">
         <label className="text-[13px] font-medium text-slate-600">District *</label>
         <CustomDropdown
@@ -539,8 +576,9 @@ function Tab2({ formData, set, isView }) {
           disabled={isView}
         />
       </div>
+      
       <Input label="City / Village" placeholder="City" value={formData.city} onChange={e => set('city', e.target.value)} required disabled={isView} icon={Building2} />
-      <Input label="Taluka / Area" placeholder="Area" value={formData.taluka} onChange={e => set('taluka', e.target.value)} disabled={isView} icon={Building2} />
+      <Input label="Sub-district / Area" placeholder="Area" value={formData.taluka} onChange={e => set('taluka', e.target.value)} disabled={isView} icon={Building2} />
       <Input label="Pincode" placeholder="6 Digits" value={formData.pincode} onChange={e => set('pincode', e.target.value)} required disabled={isView} maxLength={6} />
       <Input label="Google Maps Link" placeholder="Link" value={formData.mapLink} onChange={e => set('mapLink', e.target.value)} disabled={isView} icon={MapPin} />
     </div>
@@ -549,72 +587,19 @@ function Tab2({ formData, set, isView }) {
 
 function Tab3({ formData, set, isView }) {
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-        <Input label="Trustee Name" placeholder="Trustee Name" value={formData.trusteeName} onChange={e => set('trusteeName', e.target.value)} required disabled={isView} icon={Users} />
-        <Input label="Trustee Phone" placeholder="Phone" type="tel" value={formData.trusteePhone} onChange={e => set('trusteePhone', e.target.value)} required disabled={isView} icon={Phone} />
-        <Input label="Pujari Name" placeholder="Pujari Name" value={formData.pujariName} onChange={e => set('pujariName', e.target.value)} disabled={isView} icon={Users} />
-        <Input label="Pujari Phone" placeholder="Phone" type="tel" value={formData.pujariPhone} onChange={e => set('pujariPhone', e.target.value)} disabled={isView} icon={Phone} />
-        <Input label="Trust Name" placeholder="Trust Name" value={formData.trustName} onChange={e => set('trustName', e.target.value)} disabled={isView} icon={Building2} />
-        <Input label="Email" placeholder="Email" type="email" value={formData.email} onChange={e => set('email', e.target.value)} disabled={isView} icon={Mail} />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+      <Input label="Principal Name" placeholder="Name" value={formData.principalName} onChange={e => set('principalName', e.target.value)} required disabled={isView} icon={Users} />
+      <Input label="Principal Phone" placeholder="Phone" type="tel" value={formData.principalPhone} onChange={e => set('principalPhone', e.target.value)} required disabled={isView} icon={Phone} />
+      
+      <Input label="Trustee Name" placeholder="Trustee Name" value={formData.trusteeName} onChange={e => set('trusteeName', e.target.value)} required disabled={isView} icon={Users} />
+      <Input label="Trustee Phone" placeholder="Phone" type="tel" value={formData.trusteePhone} onChange={e => set('trusteePhone', e.target.value)} required disabled={isView} icon={Phone} />
+      
+      <Input label="Sangh Name" placeholder="Sangh Name" value={formData.trustName} onChange={e => set('trustName', e.target.value)} disabled={isView} icon={School} />
+      <Input label="Email" placeholder="Email" type="email" value={formData.email} onChange={e => set('email', e.target.value)} disabled={isView} icon={Mail} />
+      
+      <div className="md:col-span-2">
+        <Input label="Website" placeholder="www.website.com" value={formData.website} onChange={e => set('website', e.target.value)} disabled={isView} icon={Globe} />
       </div>
-      <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <h4 className="flex items-center gap-2 text-slate-800 font-bold text-[14px] mb-6">
-          <Clock size={16} className="text-teal-600" />
-          Temple Timings
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
-            <label className="block text-[13px] font-bold text-slate-600 mb-3">Morning Session</label>
-            <div className="flex items-center gap-3">
-              <TimePicker 
-                value={formData.morningFrom} 
-                onChange={e => set('morningFrom', e.target.value)} 
-                disabled={isView} 
-                className="flex-1" 
-              />
-              <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest px-1">to</span>
-              <TimePicker 
-                value={formData.morningTo} 
-                onChange={e => set('morningTo', e.target.value)} 
-                disabled={isView} 
-                className="flex-1" 
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[13px] font-bold text-slate-600 mb-3">Evening Session</label>
-            <div className="flex items-center gap-3">
-              <TimePicker 
-                value={formData.eveningFrom} 
-                onChange={e => set('eveningFrom', e.target.value)} 
-                disabled={isView} 
-                className="flex-1" 
-              />
-              <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest px-1">to</span>
-              <TimePicker 
-                value={formData.eveningTo} 
-                onChange={e => set('eveningTo', e.target.value)} 
-                disabled={isView} 
-                className="flex-1" 
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div><h4 className="text-slate-800 font-bold text-[14px] mb-4">Facilities</h4><div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {['dharamshala','bhojanshala','parking','upashray','disabled'].map(k => (
-          <label key={k} className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-200 select-none ${formData[k] ? 'border-teal-200 bg-teal-50 text-teal-700' : 'border-slate-200 bg-white text-slate-500 hover:border-teal-300'} ${isView ? 'pointer-events-none' : 'active:scale-95'}`}>
-            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${formData[k] ? 'bg-teal-600 border-teal-600' : 'border-slate-300 bg-white'}`}>
-              {formData[k] && <Check size={14} className="text-white stroke-[3px]" />}
-            </div>
-            <input type="checkbox" checked={!!formData[k]} onChange={e => set(k, e.target.checked)} disabled={isView} className="hidden" />
-            <span className="text-[13px] font-bold capitalize">{k}</span>
-          </label>
-        ))}
-      </div></div>
     </div>
   );
 }

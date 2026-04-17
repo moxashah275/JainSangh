@@ -28,6 +28,7 @@ import LinkedTrusts from '../pages/sanghAdmin/mySangh/LinkedTrusts'
 import SanghCommitteeMembers from '../pages/sanghAdmin/mySangh/CommitteeMembers'
 import Members from '../pages/sanghAdmin/members/Members'
 import Derasar from '../pages/sanghAdmin/institutions/Derasar'
+import Pathshala from '../pages/sanghAdmin/institutions/Pathshala'
 import Login from '../pages/auth/Login'
 
 export default function AppRoutes() {
@@ -68,6 +69,7 @@ export default function AppRoutes() {
             <Route path="my-sangh/committee" element={<SanghCommitteeMembers />} />
             <Route path="members" element={<Members />} />
             <Route path="institutions/derasar" element={<Derasar />} />
+            <Route path="institutions/Pathshala" element={<Pathshala />} />
           </Route>
         </Route>
       </Route>

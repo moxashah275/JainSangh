@@ -35,7 +35,8 @@ let MOCK_DERASARS = [
     bhojanshala: true,
     parking: true,
     upashray: true,
-    disabled: false
+    disabled: false,
+    photos: []
   },
   { 
     id: 2, 
@@ -69,7 +70,8 @@ let MOCK_DERASARS = [
     bhojanshala: true,
     parking: false,
     upashray: true,
-    disabled: true
+    disabled: true,
+    photos: []
   },
   { 
     id: 3, 
@@ -103,7 +105,8 @@ let MOCK_DERASARS = [
     bhojanshala: false,
     parking: true,
     upashray: false,
-    disabled: false
+    disabled: false,
+    photos: []
   },
 ];
 
