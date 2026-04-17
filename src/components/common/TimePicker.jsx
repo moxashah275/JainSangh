@@ -15,19 +15,27 @@ export default function TimePicker({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0, openUp: false });
+  const [stagingHour, setStagingHour] = useState(12);
+  const [stagingMinute, setStagingMinute] = useState(0);
+  const [stagingPeriod, setStagingPeriod] = useState("AM");
+  
+  const [hourDir, setHourDir] = useState(null);
+  const [minDir, setMinDir] = useState(null);
+  const [periodDir, setPeriodDir] = useState(null);
+  
   const triggerRef = useRef(null);
   const portalRef = useRef(null);
 
   // Parse internal 24h format (HH:mm) to display parts
-  const getTimeParts = () => {
-    if (!value) return { hour: 7, minute: 0, period: "AM" };
-    const [h, m] = value.split(":").map(Number);
-    const period = h >= 12 ? "PM" : "AM";
+  const getTimeParts = (val) => {
+    if (!val) return { hour: 7, minute: 0, period: "AM" };
+    const [h, m] = val.split(":").map(Number);
+    const p = h >= 12 ? "PM" : "AM";
     const displayH = h % 12 || 12;
-    return { hour: displayH, minute: m || 0, period };
+    return { hour: displayH, minute: m || 0, period: p };
   };
 
-  const { hour, minute, period } = getTimeParts();
+  const { hour, minute, period } = getTimeParts(value);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -46,37 +54,47 @@ export default function TimePicker({
   const toggle = () => {
     if (disabled) return;
     if (!isOpen && triggerRef.current) {
+      const parts = getTimeParts(value);
+      setStagingHour(parts.hour);
+      setStagingMinute(parts.minute);
+      setStagingPeriod(parts.period);
+      setHourDir(null);
+      setMinDir(null);
+      setPeriodDir(null);
+
       const rect = triggerRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       const shouldOpenUp = spaceBelow < 320 && rect.top > 320;
       setCoords({
         top: shouldOpenUp ? rect.top : rect.bottom,
         left: rect.left,
-        width: 260,
+        width: 180,
         openUp: shouldOpenUp,
       });
     }
     setIsOpen(!isOpen);
   };
 
-  const updateTime = (newH, newM, newP) => {
-    let h = newH;
-    if (newP === "PM" && h < 12) h += 12;
-    if (newP === "AM" && h === 12) h = 0;
-    const formatted = `${String(h).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
+  const handleDone = () => {
+    let h = stagingHour;
+    if (stagingPeriod === "PM" && h < 12) h += 12;
+    if (stagingPeriod === "AM" && h === 12) h = 0;
+    const formatted = `${String(h).padStart(2, "0")}:${String(stagingMinute).padStart(2, "0")}`;
     onChange({ target: { value: formatted } });
+    setIsOpen(false);
   };
 
   const adjust = (type, direction) => {
-    let nh = hour, nm = minute, np = period;
     if (type === "h") {
-      nh = direction === "up" ? (hour === 1 ? 12 : hour - 1) : (hour === 12 ? 1 : hour + 1);
+      setHourDir(direction);
+      setStagingHour(prev => direction === "up" ? (prev === 1 ? 12 : prev - 1) : (prev === 12 ? 1 : prev + 1));
     } else if (type === "m") {
-      nm = direction === "up" ? (minute === 0 ? 59 : minute - 1) : (minute === 59 ? 0 : minute + 1);
+      setMinDir(direction);
+      setStagingMinute(prev => direction === "up" ? (prev === 0 ? 59 : prev - 1) : (prev === 59 ? 0 : prev + 1));
     } else if (type === "p") {
-      np = period === "AM" ? "PM" : "AM";
+      setPeriodDir(direction);
+      setStagingPeriod(prev => prev === "AM" ? "PM" : "AM");
     }
-    updateTime(nh, nm, np);
   };
 
   return (
@@ -100,54 +118,108 @@ export default function TimePicker({
         createPortal(
           <div
             ref={portalRef}
-            className={`fixed z-[11000] bg-white border border-slate-100 rounded-[24px] shadow-2xl flex flex-col p-6 animate-in fade-in zoom-in-95 duration-200 ${coords.openUp ? "mb-2" : "mt-2"}`}
+            className={`fixed z-[11000] bg-white border border-slate-100 rounded-[20px] shadow-2xl flex flex-col p-4 animate-in fade-in zoom-in-95 duration-200 ${coords.openUp ? "mb-2" : "mt-2"}`}
             style={{
               top: coords.openUp ? "auto" : coords.top,
               bottom: coords.openUp ? window.innerHeight - coords.top : "auto",
               left: coords.left,
-              width: coords.width,
+              width: 180,
             }}
           >
-            <div className="text-center mb-6">
-              <span className="text-[13px] font-bold text-slate-400 uppercase tracking-widest">Select Time</span>
+            <div className="text-center mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Select Time</span>
             </div>
 
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-1.5 overflow-hidden">
               {/* Hours */}
-              <div className="flex flex-col items-center gap-1">
-                <button onClick={() => adjust("h", "up")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={20} /></button>
-                <span className="text-slate-200 font-bold text-[14px]">{String(hour === 1 ? 12 : hour - 1).padStart(2, "0")}</span>
-                <span className="text-slate-800 font-black text-[22px] py-1">{String(hour).padStart(2, "0")}</span>
-                <span className="text-slate-200 font-bold text-[14px]">{String(hour === 12 ? 1 : hour + 1).padStart(2, "0")}</span>
-                <button onClick={() => adjust("h", "down")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={20} /></button>
+              <div 
+                className="flex flex-col items-center gap-0.5 w-[42px]"
+                onWheel={(e) => {
+                  if (e.deltaY > 0) adjust("h", "down");
+                  else adjust("h", "up");
+                }}
+              >
+                <button onClick={() => adjust("h", "up")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={16} /></button>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">{String(stagingHour === 1 ? 12 : stagingHour - 1).padStart(2, "0")}</span>
+                </div>
+                <div className="h-[28px] flex items-center justify-center pointer-events-none">
+                  <span 
+                    key={`h-${stagingHour}`}
+                    className={`text-slate-800 font-black text-[18px] py-0.5 ${hourDir === 'up' ? 'animate-tp-wheel-down' : hourDir === 'down' ? 'animate-tp-wheel-up' : ''}`}
+                  >
+                    {String(stagingHour).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">{String(stagingHour === 12 ? 1 : stagingHour + 1).padStart(2, "0")}</span>
+                </div>
+                <button onClick={() => adjust("h", "down")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={16} /></button>
               </div>
 
-              <div className="text-slate-800 font-black text-[22px] mb-1 px-1">:</div>
+              <div className="text-slate-800 font-black text-[18px] mb-1 px-0.5 flex items-center h-[72px]">:</div>
 
               {/* Minutes */}
-              <div className="flex flex-col items-center gap-1">
-                <button onClick={() => adjust("m", "up")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={20} /></button>
-                <span className="text-slate-200 font-bold text-[14px]">{String(minute === 0 ? 59 : minute - 1).padStart(2, "0")}</span>
-                <span className="text-slate-800 font-black text-[22px] py-1">{String(minute).padStart(2, "0")}</span>
-                <span className="text-slate-200 font-bold text-[14px]">{String(minute === 59 ? 0 : minute + 1).padStart(2, "0")}</span>
-                <button onClick={() => adjust("m", "down")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={20} /></button>
+              <div 
+                className="flex flex-col items-center gap-0.5 w-[42px]"
+                onWheel={(e) => {
+                  if (e.deltaY > 0) adjust("m", "down");
+                  else adjust("m", "up");
+                }}
+              >
+                <button onClick={() => adjust("m", "up")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={16} /></button>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">{String(stagingMinute === 0 ? 59 : stagingMinute - 1).padStart(2, "0")}</span>
+                </div>
+                <div className="h-[28px] flex items-center justify-center pointer-events-none">
+                  <span 
+                    key={`m-${stagingMinute}`}
+                    className={`text-slate-800 font-black text-[18px] py-0.5 ${minDir === 'up' ? 'animate-tp-wheel-down' : minDir === 'down' ? 'animate-tp-wheel-up' : ''}`}
+                  >
+                    {String(stagingMinute).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">{String(stagingMinute === 59 ? 0 : stagingMinute + 1).padStart(2, "0")}</span>
+                </div>
+                <button onClick={() => adjust("m", "down")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={16} /></button>
               </div>
 
-              <div className="w-4"></div>
+              <div className="w-1"></div>
 
               {/* Period */}
-              <div className="flex flex-col items-center gap-1">
-                <button onClick={() => adjust("p", "up")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={20} /></button>
-                <span className="text-slate-200 font-bold text-[14px] opacity-0">{period === "AM" ? "PM" : "AM"}</span>
-                <span className="text-teal-600 font-black text-[20px] py-1">{period}</span>
-                <span className="text-slate-200 font-bold text-[14px]">{period === "AM" ? "PM" : "AM"}</span>
-                <button onClick={() => adjust("p", "down")} className="p-1 hover:bg-teal-50 rounded-lg text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={20} /></button>
+              <div 
+                className="flex flex-col items-center gap-0.5 w-[42px]"
+                onWheel={(e) => {
+                  adjust("p", e.deltaY > 0 ? "down" : "up");
+                }}
+              >
+                <button onClick={() => adjust("p", "up")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronUp size={16} /></button>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">
+                    {stagingPeriod === "PM" ? "AM" : ""}
+                  </span>
+                </div>
+                <div className="h-[28px] flex items-center justify-center pointer-events-none">
+                  <span 
+                    key={`p-${stagingPeriod}`}
+                    className={`text-teal-600 font-black text-[16px] py-0.5 ${periodDir === 'up' ? 'animate-tp-wheel-down' : periodDir === 'down' ? 'animate-tp-wheel-up' : ''}`}
+                  >
+                    {stagingPeriod}
+                  </span>
+                </div>
+                <div className="h-[20px] flex items-center justify-center pointer-events-none">
+                  <span className="text-slate-200 font-bold text-[12px] opacity-40">
+                    {stagingPeriod === "AM" ? "PM" : ""}
+                  </span>
+                </div>
+                <button onClick={() => adjust("p", "down")} className="p-0.5 hover:bg-teal-50 rounded text-slate-300 hover:text-teal-500 transition-all"><ChevronDown size={16} /></button>
               </div>
             </div>
 
             <button 
-              onClick={() => setIsOpen(false)}
-              className="mt-6 w-full py-2.5 bg-teal-600 text-white rounded-xl font-bold text-[13px] hover:bg-teal-700 shadow-lg shadow-teal-100 active:scale-95 transition-all"
+              onClick={handleDone}
+              className="mt-4 w-full py-2 bg-teal-600 text-white rounded-xl font-bold text-[12px] hover:bg-teal-700 shadow-md shadow-teal-100 active:scale-95 transition-all"
             >
               Done
             </button>
