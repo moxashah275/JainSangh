@@ -71,7 +71,7 @@ export default function Modal({
         {/* Scrollable body — ref used to reset scroll on open */}
         <div
           ref={scrollRef}
-          className="px-5 py-5 overflow-y-auto flex-1 bg-gradient-to-b from-white to-slate-50/40"
+          className="px-5 py-5 overflow-y-auto overflow-x-hidden scrollbar-none flex-1 bg-gradient-to-b from-white to-slate-50/40"
         >
           {children}
         </div>

@@ -42,15 +42,6 @@ export const apiService = {
   },
 };
 
-// Example specific service for Members
-export const memberService = {
-  getMembers: () => apiService.get('members/'),
-  getMember: (id) => apiService.get(`members/${id}/`),
-  createMember: (data) => apiService.post('members/', data),
-  updateMember: (id, data) => apiService.put(`members/${id}/`, data),
-  deleteMember: (id) => apiService.delete(`members/${id}/`),
-};
-
 // Authentication Service
 export const authService = {
   login: async (credentials) => {

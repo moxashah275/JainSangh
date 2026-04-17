@@ -187,7 +187,7 @@ export default function LinkedTrusts() {
 
   return (
     <CommonPageLayout title="Linked Trusts" stats={stats}>
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="p-4 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="w-full sm:max-w-sm">
             <div className="relative">

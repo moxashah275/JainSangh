@@ -20,3 +20,13 @@
 .animate-tp-wheel-up {
   animation: tp-wheel-in-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
