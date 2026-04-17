@@ -1,5 +1,5 @@
 import { Building2, Users } from 'lucide-react'
-import StatusBadge from '../common/StatusBadge'
+import StatusBadge from '../ui/StatusBadge'
 
 export default function UserCard({ user, role, trust, sangh, status, onView, index = 0 }) {
   const initials = String(user?.name || 'User')

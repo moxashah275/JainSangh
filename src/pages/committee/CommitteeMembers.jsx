@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Users, ShieldCheck, Building2, Plus } from 'lucide-react'
-import Button from '../../components/common/Button'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
+import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
+import CommonPageLayout from '../../components/ui/CommonPageLayout'
 import UserCard from '../../components/users/UserCard'
 import { INITIAL_USERS, INITIAL_USER_DOCS, getDocCount } from '../users/userData'
 import { INITIAL_ROLES } from '../RolesAndPermissions/RoleData'
@@ -13,7 +13,7 @@ export default function CommitteeMembers() {
   const [search, setSearch] = useState('')
   const [users] = useState(function() {
     try {
-      const stored = localStorage.getItem('users_full')
+      const stored = sessionStorage.getItem('users_full')
       return stored ? JSON.parse(stored) : INITIAL_USERS
     } catch {
       return INITIAL_USERS
@@ -21,7 +21,7 @@ export default function CommitteeMembers() {
   })
   const [docs] = useState(function() {
     try {
-      const stored = localStorage.getItem('user_docs')
+      const stored = sessionStorage.getItem('user_docs')
       return stored ? JSON.parse(stored) : INITIAL_USER_DOCS
     } catch {
       return INITIAL_USER_DOCS
@@ -29,7 +29,7 @@ export default function CommitteeMembers() {
   })
   const [roles] = useState(function() {
     try {
-      const stored = localStorage.getItem('rp_roles')
+      const stored = sessionStorage.getItem('rp_roles')
       return stored ? JSON.parse(stored) : INITIAL_ROLES
     } catch {
       return INITIAL_ROLES

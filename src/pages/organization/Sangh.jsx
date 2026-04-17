@@ -1,28 +1,38 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Building2, Users, UserCog, BookOpen, Plus } from 'lucide-react'
-import Button from '../../components/common/Button'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
+import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
+import CommonPageLayout from '../../components/ui/CommonPageLayout'
 import SanghCard from '../../components/organization/SanghCard'
 import { INITIAL_SANGHS, INITIAL_TRUSTS, getTrustName } from './orgData'
+import { orgService } from '../../services/apiService'
 
 export default function Sangh() {
   const [search, setSearch] = useState('')
-  const sanghs = useMemo(function() {
+  const [sanghs, setSanghs] = useState([])
+  const [trusts, setTrusts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = async () => {
+    setLoading(true)
     try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
+      const [sanghData, trustData] = await Promise.all([
+        orgService.getSanghs(),
+        orgService.getTrusts()
+      ])
+      setSanghs(Array.isArray(sanghData) ? sanghData : [])
+      setTrusts(Array.isArray(trustData) ? trustData : [])
+    } catch (error) {
+      console.error('Failed to fetch sangh data:', error)
+      setSanghs(INITIAL_SANGHS)
+      setTrusts(INITIAL_TRUSTS)
+    } finally {
+      setLoading(false)
     }
-  }, [])
-  const trusts = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
-    }
+  }
+
+  useEffect(() => {
+    fetchData()
   }, [])
 
   const filteredSanghs = useMemo(function() {
@@ -56,14 +66,30 @@ export default function Sangh() {
       searchValue={search}
       onSearchChange={setSearch}
       searchPlaceholder="Search sangh, type, city, area, or trust..."
-      isEmpty={!filteredSanghs.length}
+      isEmpty={!loading && !filteredSanghs.length}
       emptyState={<EmptyState message="No sangh records found" description="Try a wider search or create a sangh under the selected trust." icon={Users} action={<Button variant="secondary" size="sm" icon={Plus}>Add Sangh</Button>} />}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredSanghs.map(function(sangh, index) {
-          return <SanghCard key={sangh.id} sangh={sangh} trustName={getTrustName(sangh.trustId, trusts)} memberCount={sangh.memberCount} index={index} />
-        })}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-64 rounded-[24px] bg-white border border-slate-100 animate-pulse p-6 flex flex-col space-y-4">
+              <div className="h-4 bg-slate-100 rounded w-1/2" />
+              <div className="h-3 bg-slate-50 rounded w-1/3" />
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="h-12 bg-slate-50 rounded-2xl" />
+                <div className="h-12 bg-slate-50 rounded-2xl" />
+              </div>
+              <div className="h-10 bg-slate-50 rounded-xl mt-auto" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filteredSanghs.map(function(sangh, index) {
+            return <SanghCard key={sangh.id} sangh={sangh} trustName={getTrustName(sangh.trustId, trusts)} memberCount={sangh.memberCount} index={index} />
+          })}
+        </div>
+      )}
     </CommonPageLayout>
   )
 }

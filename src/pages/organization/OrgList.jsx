@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import PageHeader from '../../components/common/PageHeader';
-import Table from '../../components/common/Table';
-import FilterBar from '../../components/common/FilterBar';
-import Pagination from '../../components/common/Pagination';
-import SearchBar from '../../components/common/SearchBar';
-import StatusBadge from '../../components/common/StatusBadge';
+import PageHeader from '../../components/ui/PageHeader';
+import Table from '../../components/ui/Table';
+import FilterBar from '../../components/ui/FilterBar';
+import Pagination from '../../components/ui/Pagination';
+import SearchBar from '../../components/ui/SearchBar';
+import StatusBadge from '../../components/ui/StatusBadge';
 import { Pencil, Trash2, Eye } from 'lucide-react';
 import { mockOrgs } from './orgData';
 

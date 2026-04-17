@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Building2, CalendarDays, Clock3, FileText, Mail, Pencil, Phone, ShieldCheck, Users } from 'lucide-react'
-import Button from '../../components/common/Button'
-import Modal from '../../components/common/Modal'
-import StatusBadge from '../../components/common/StatusBadge'
+import Button from '../../components/ui/Button'
+import Modal from '../../components/ui/Modal'
+import StatusBadge from '../../components/ui/StatusBadge'
 import UserActivity from '../../components/users/UserActivity'
 import UserDocuments from '../../components/users/UserDocuments'
 import UserPermissions from '../../components/users/UserPermissions'
@@ -17,7 +17,7 @@ const TABS = ['Overview', 'Permissions', 'Documents', 'Activity', 'Status Histor
 
 function readStored(key, fallback) {
   try {
-    const stored = localStorage.getItem(key)
+    const stored = sessionStorage.getItem(key)
     return stored ? JSON.parse(stored) : fallback
   } catch {
     return fallback
@@ -40,15 +40,15 @@ export default function UserProfileDetails() {
   const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(function() {
-    localStorage.setItem('users_full', JSON.stringify(users))
+    sessionStorage.setItem('users_full', JSON.stringify(users))
   }, [users])
 
   useEffect(function() {
-    localStorage.setItem('user_docs', JSON.stringify(docs))
+    sessionStorage.setItem('user_docs', JSON.stringify(docs))
   }, [docs])
 
   useEffect(function() {
-    localStorage.setItem('user_activities', JSON.stringify(activities))
+    sessionStorage.setItem('user_activities', JSON.stringify(activities))
   }, [activities])
 
   const user = useMemo(function() {

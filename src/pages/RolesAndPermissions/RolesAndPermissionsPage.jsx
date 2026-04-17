@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Shield, Users, Landmark, Lock } from 'lucide-react'
-import Card from '../../components/common/Card'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
+import Card from '../../components/ui/Card'
+import EmptyState from '../../components/ui/EmptyState'
+import CommonPageLayout from '../../components/ui/CommonPageLayout'
 import RoleCard from '../../components/roles/RoleCard'
 import { INITIAL_ROLES, INITIAL_USERS, PERM_GROUPS, getCount, getUserCount, hasPerm } from './RoleData'
 
@@ -21,7 +21,7 @@ export default function RolesAndPermissionsPage() {
   const [typeFilter, setTypeFilter] = useState('All')
   const [roles] = useState(function() {
     try {
-      const stored = localStorage.getItem('rp_roles')
+      const stored = sessionStorage.getItem('rp_roles')
       return stored ? JSON.parse(stored) : INITIAL_ROLES
     } catch {
       return INITIAL_ROLES
@@ -29,7 +29,7 @@ export default function RolesAndPermissionsPage() {
   })
   const [users] = useState(function() {
     try {
-      const stored = localStorage.getItem('users_full')
+      const stored = sessionStorage.getItem('users_full')
       return stored ? JSON.parse(stored) : INITIAL_USERS
     } catch {
       return INITIAL_USERS

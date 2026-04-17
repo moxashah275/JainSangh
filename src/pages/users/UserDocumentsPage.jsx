@@ -1,15 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import Button from '../../components/common/Button'
+import Button from '../../components/ui/Button'
 import UserDocuments from '../../components/users/UserDocuments'
 import { INITIAL_USERS, INITIAL_USER_DOCS } from './userData.jsx'
 
 export default function UserDocumentsPage() {
   var params = useParams(); var userId = parseInt(params.id)
   var navigate = useNavigate()
-  var usersState = useState(function() { try { var s = localStorage.getItem('users_full'); return s ? JSON.parse(s) : INITIAL_USERS } catch(e) { return INITIAL_USERS } })[0]
+  var usersState = useState(function() { try { var s = sessionStorage.getItem('users_full'); return s ? JSON.parse(s) : INITIAL_USERS } catch(e) { return INITIAL_USERS } })[0]
   var users = usersState[0]
-  var docsState = useState(function() { try { var s = localStorage.getItem('user_docs'); return s ? JSON.parse(s) : INITIAL_USER_DOCS } catch(e) { return INITIAL_USER_DOCS } })[0]
+  var docsState = useState(function() { try { var s = sessionStorage.getItem('user_docs'); return s ? JSON.parse(s) : INITIAL_USER_DOCS } catch(e) { return INITIAL_USER_DOCS } })[0]
   var docs = docsState[0]; var setDocs = docsState[1]
 
   var user = users.find(function(u) { return u.id === userId })

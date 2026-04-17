@@ -1,5 +1,5 @@
 import React from 'react';
-import PageHeader from '../../components/common/PageHeader';
+import PageHeader from '../../components/ui/PageHeader';
 import SanghCard from '../../components/organization/SanghCard';
 import TrustCard from '../../components/organization/TrustCard';
 

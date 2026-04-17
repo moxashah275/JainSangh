@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Building2, CalendarDays, ChevronLeft, ChevronRight, FileText, Mail, Pencil, Phone, Plus, ShieldCheck, Trash2, Upload, Users, UserCheck, UserX } from 'lucide-react'
-import Button from '../../components/common/Button'
-import ConfirmModal from '../../components/common/ConfirmModal'
-import Modal from '../../components/common/Modal'
-import FilterBar from '../../components/common/FilterBar'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
-import Input from '../../components/common/Input'
-import PermissionChip from '../../components/common/PermissionChip'
+import Button from '../../components/ui/Button'
+import ConfirmModal from '../../components/ui/ConfirmModal'
+import Modal from '../../components/ui/Modal'
+import FilterBar from '../../components/ui/FilterBar'
+import EmptyState from '../../components/ui/EmptyState'
+import CommonPageLayout from '../../components/ui/CommonPageLayout'
+import Input from '../../components/ui/Input'
+import PermissionChip from '../../components/ui/PermissionChip'
 import UserCard from '../../components/users/UserCard'
 import UserDocuments from '../../components/users/UserDocuments'
 import UserStatusToggle from '../../components/users/UserStatusToggle'
 import { INITIAL_USERS, INITIAL_USER_DOCS, INITIAL_ACTIVITIES, getStatusCounts } from './userData'
 import { getCount, hasPerm, INITIAL_ROLES, PERM_GROUPS } from '../RolesAndPermissions/RoleData'
 import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData'
+import { userService, orgService } from '../../services/apiService'
 
 const ITEMS_PER_PAGE = 6
 const DOC_OPTIONS = ['Aadhaar Card', 'PAN Card', 'Photo', 'ID Card']
@@ -426,62 +427,14 @@ function InlineUserQuickView({ user, role, trust, department, status, documents,
 }
 
 export default function UserList() {
-  const [users, setUsers] = useState(function() {
-    try {
-      const stored = localStorage.getItem('users_full')
-      return stored ? JSON.parse(stored) : INITIAL_USERS
-    } catch {
-      return INITIAL_USERS
-    }
-  })
-  const [docs, setDocs] = useState(function() {
-    try {
-      const stored = localStorage.getItem('user_docs')
-      return stored ? JSON.parse(stored) : INITIAL_USER_DOCS
-    } catch {
-      return INITIAL_USER_DOCS
-    }
-  })
-  const [activities, setActivities] = useState(function() {
-    try {
-      const stored = localStorage.getItem('user_activities')
-      return stored ? JSON.parse(stored) : INITIAL_ACTIVITIES
-    } catch {
-      return INITIAL_ACTIVITIES
-    }
-  })
-  const [roles] = useState(function() {
-    try {
-      const stored = localStorage.getItem('rp_roles')
-      return stored ? JSON.parse(stored) : INITIAL_ROLES
-    } catch {
-      return INITIAL_ROLES
-    }
-  })
-  const [trusts] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
-    }
-  })
-  const [sanghs] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
-    }
-  })
-  const [departments] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_departments')
-      return stored ? JSON.parse(stored) : INITIAL_DEPARTMENTS
-    } catch {
-      return INITIAL_DEPARTMENTS
-    }
-  })
+  const [users, setUsers] = useState([])
+  const [docs, setDocs] = useState([])
+  const [activities, setActivities] = useState([])
+  const [roles, setRoles] = useState(INITIAL_ROLES) // Roles usually stay static or have their own service
+  const [trusts, setTrusts] = useState([])
+  const [sanghs, setSanghs] = useState([])
+  const [departments, setDepartments] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({})
@@ -491,17 +444,33 @@ export default function UserList() {
   const [deleteId, setDeleteId] = useState(null)
   const [page, setPage] = useState(1)
 
-  useEffect(function() {
-    localStorage.setItem('users_full', JSON.stringify(users))
-  }, [users])
+  const fetchAllData = async () => {
+    setLoading(true)
+    try {
+      const [uData, dData, aData, tData, sData, depData] = await Promise.all([
+        userService.getUsers(),
+        userService.getDocuments(),
+        userService.getActivities(),
+        orgService.getTrusts(),
+        orgService.getSanghs(),
+        orgService.getDepartments()
+      ])
+      setUsers(Array.isArray(uData) ? uData : [])
+      setDocs(Array.isArray(dData) ? dData : [])
+      setActivities(Array.isArray(aData) ? aData : [])
+      setTrusts(Array.isArray(tData) ? tData : [])
+      setSanghs(Array.isArray(sData) ? sData : [])
+      setDepartments(Array.isArray(depData) ? depData : [])
+    } catch (error) {
+      console.error('Data fetch error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(function() {
-    localStorage.setItem('user_docs', JSON.stringify(docs))
-  }, [docs])
-
-  useEffect(function() {
-    localStorage.setItem('user_activities', JSON.stringify(activities))
-  }, [activities])
+    fetchAllData()
+  }, [])
 
   const filteredUsers = useMemo(function() {
     return users.filter(function(user) {
@@ -608,87 +577,22 @@ export default function UserList() {
     }
 
     if (editingUser) {
-      setUsers(function(current) {
-        return current.map(function(user) {
-          return user.id === editingUser.id ? { ...user, ...userPayload } : user
-        })
-      })
-      if (starterDocuments.length) {
-        setDocs(function(current) {
-          const existingTypes = current
-            .filter(function(item) { return item.userId === editingUser.id })
-            .map(function(item) { return item.type })
-          const newDocs = starterDocuments
-            .filter(function(type) { return !existingTypes.includes(type) })
-            .map(function(type, index) {
-              return {
-                id: Date.now() + index,
-                userId: editingUser.id,
-                type,
-                fileName: type.toLowerCase().replace(/\s+/g, '_') + '.pdf',
-                status: 'Pending',
-                uploadedDate: joinedDate,
-                uploadDate: joinedDate,
-                uploadedBy: 'Admin',
-                notes: 'Added from edit user form',
-              }
-            })
-          return current.concat(newDocs)
-        })
-      }
-      setActivities(function(current) {
-        return current.concat([{ id: Date.now(), userId: editingUser.id, action: 'updated', description: 'User details updated', doneBy: 'Admin', date: timestamp }])
-      })
+      userService.updateUser(editingUser.id, userPayload)
+        .then(() => fetchAllData())
+        .catch(err => console.error('Update fail', err))
     } else {
-      const nextId = users.reduce(function(maxId, user) { return Math.max(maxId, user.id) }, 0) + 1
-      setUsers(function(current) {
-        return current.concat([{ ...userPayload, id: nextId, joined: joinedDate, lastLogin: '-', committee: false }])
-      })
-      if (starterDocuments.length) {
-        setDocs(function(current) {
-          return current.concat(
-            starterDocuments.map(function(type, index) {
-              return {
-                id: Date.now() + index,
-                userId: nextId,
-                type,
-                fileName: type.toLowerCase().replace(/\s+/g, '_') + '.pdf',
-                status: 'Pending',
-                uploadedDate: joinedDate,
-                uploadDate: joinedDate,
-                uploadedBy: 'Admin',
-                notes: 'Added during user creation',
-              }
-            })
-          )
-        })
-      }
-      setActivities(function(current) {
-        return current.concat([{ id: Date.now(), userId: nextId, action: 'created', description: 'User created', doneBy: 'Admin', date: timestamp }])
-      })
+      userService.createUser(userPayload)
+        .then(() => fetchAllData())
+        .catch(err => console.error('Create fail', err))
     }
     closeModal()
   }
 
   function handleStatusChange(nextStatus) {
     if (!selectedUser || nextStatus === selectedUser.status) return
-
-    const timestamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    setUsers(function(current) {
-      return current.map(function(user) {
-        return user.id === selectedUser.id ? { ...user, status: nextStatus } : user
-      })
-    })
-    setActivities(function(current) {
-      return current.concat([{
-        id: Date.now(),
-        userId: selectedUser.id,
-        action: 'status_change',
-        description: 'Status changed from ' + selectedUser.status + ' to ' + nextStatus,
-        doneBy: 'Admin',
-        date: timestamp,
-      }])
-    })
+    userService.updateUser(selectedUser.id, { status: nextStatus })
+      .then(() => fetchAllData())
+      .catch(err => console.error('Status fail', err))
   }
 
   function handleDocUpload(docData) {
@@ -727,15 +631,10 @@ export default function UserList() {
   }
 
   function handleDelete() {
-    setUsers(function(current) {
-      return current.filter(function(user) { return user.id !== deleteId })
-    })
-    setDocs(function(current) {
-      return current.filter(function(item) { return item.userId !== deleteId })
-    })
-    setActivities(function(current) {
-      return current.filter(function(item) { return item.userId !== deleteId })
-    })
+    userService.deleteUser(deleteId)
+      .then(() => fetchAllData())
+      .catch(err => console.error('Delete fail', err))
+
     if (selectedUserId === deleteId) setSelectedUserId(null)
     setDeleteId(null)
   }

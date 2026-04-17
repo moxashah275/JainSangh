@@ -1,295 +1,222 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  HandHeart, Users, Landmark, Gem, ArrowUpRight,
-  IndianRupee, UserPlus, Receipt, FileText, BookOpen,
-  BarChart3, CalendarDays, TrendingUp, ArrowDownRight, Wallet
+  HandHeart, Users, Landmark, MapPin, 
+  Building2, UserPlus, FileText, Settings, 
+  TrendingUp, ArrowDownRight, Wallet, ArrowUpRight, PlusCircle
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
-import StatCard from '../../components/common/StatCard'
-import Button from '../../components/common/Button'
+import StatCard from '../../components/ui/StatCard'
+import Button from '../../components/ui/Button'
 
-// ── Data ──
-const MONTHLY = [
-  { month: 'Jan', income: 86000, expense: 62000 },
-  { month: 'Feb', income: 183000, expense: 95000 },
-  { month: 'Mar', income: 83000, expense: 72000 },
-  { month: 'Apr', income: 145000, expense: 88000 },
-  { month: 'May', income: 97000, expense: 54000 },
-  { month: 'Jun', income: 112000, expense: 67000 }
+const MONTHLY_TRENDS = [
+  { month: 'Jan', income: 120000, expense: 80000 },
+  { month: 'Feb', income: 250000, expense: 110000 },
+  { month: 'Mar', income: 180000, expense: 95000 },
+  { month: 'Apr', income: 320000, expense: 140000 },
+  { month: 'May', income: 210000, expense: 105000 },
+  { month: 'Jun', income: 280000, expense: 130000 }
 ]
 
-const BY_TYPE = [
-  { name: 'Devdravya', value: 72000 },
-  { name: 'Jivdaya', value: 100000 },
-  { name: 'Derasar', value: 101000 },
-  { name: 'Pathshala', value: 10000 },
-  { name: 'Aayambil', value: 31000 }
+const DONATION_DISTRIBUTION = [
+  { name: 'Devdravya', value: 450000 },
+  { name: 'Jivdaya', value: 300000 },
+  { name: 'General', value: 150000 },
+  { name: 'Pathshala', value: 100000 }
 ]
 
-const COLORS = ['#0d9488', '#059669', '#e11d48', '#8b5cf6', '#d97706']
+const COLORS = ['#0d9488', '#10b981', '#0891b2', '#4f46e5']
 
-const RECENT = [
-  { id: 1, donor: 'Rajesh Shah', type: 'Devdravya', amount: 51000, date: '05 Mar', status: 'Verified' },
-  { id: 2, donor: 'Meena Patel', type: 'Jivdaya', amount: 25000, date: '04 Mar', status: 'Pending' },
-  { id: 3, donor: 'Suresh Jain', type: 'Pathshala', amount: 10000, date: '03 Mar', status: 'Verified' },
-  { id: 4, donor: 'Aarav Mehta', type: 'Derasar', amount: 76000, date: '01 Mar', status: 'Verified' }
+const RECENT_ACTIVITIES = [
+  { donor: 'Rajesh Shah', type: 'Devdravya', amount: 51000, date: '10 Apr', status: 'Verified', initial: 'RS' },
+  { donor: 'Vimal Mehta', type: 'Jivdaya', amount: 25000, date: '09 Apr', status: 'Pending', initial: 'VM' },
+  { donor: 'Amit Sanghavi', type: 'General', amount: 11000, date: '08 Apr', status: 'Verified', initial: 'AS' }
 ]
 
-const EVENTS = [
-  { name: 'Mahaveer Jayanti', date: '2026-04-13', type: 'Festival' },
-  { name: 'Kartak Sud Poonam', date: '2026-11-05', type: 'Salgirah' },
-  { name: 'Paryushan Parva', date: '2026-08-28', type: 'Festival' }
+const QUICK_LINKS = [
+  { icon: Building2, label: 'Organizations', to: '/organizations', color: 'from-blue-500/10 to-blue-600/5', iconCol: 'text-blue-600' },
+  { icon: MapPin, label: 'Locations', to: '/locations/states', color: 'from-teal-500/10 to-teal-600/5', iconCol: 'text-teal-600' },
+  { icon: UserPlus, label: 'Add Member', to: '/members/add', color: 'from-indigo-500/10 to-indigo-600/5', iconCol: 'text-indigo-600' },
+  { icon: HandHeart, label: 'Donations', to: '/finance/donations', color: 'from-emerald-500/10 to-emerald-600/5', iconCol: 'text-emerald-600' },
+  { icon: FileText, label: 'Reports', to: '/reports', color: 'from-rose-500/10 to-rose-600/5', iconCol: 'text-rose-600' },
+  { icon: Settings, label: 'Settings', to: '/settings', color: 'from-slate-500/10 to-slate-600/5', iconCol: 'text-slate-600' }
 ]
 
-const QUICK = [
-  { icon: FileText, label: 'Upload Doc', to: '/donations', c: 'violet' },
-  { icon: IndianRupee, label: 'New Donation', to: '/donations/add', c: 'teal' },
-  { icon: UserPlus, label: 'Add Member', to: '/masters/sangh', c: 'sky' },
-  { icon: Receipt, label: 'Post Expense', to: '/reports/expenses', c: 'rose' },
-  { icon: BookOpen, label: 'Exam', to: '/pathshala/exams', c: 'amber' },
-  { icon: BarChart3, label: 'Reports', to: '/reports/analytics', c: 'emerald' }
-]
-
-const QClr = {
-  teal:    { bg: 'bg-teal-50',    icon: 'text-teal-600',    hv: 'group-hover:bg-teal-600 group-hover:text-white',    bd: 'hover:border-teal-200' },
-  sky:     { bg: 'bg-sky-50',     icon: 'text-sky-600',     hv: 'group-hover:bg-sky-600 group-hover:text-white',     bd: 'hover:border-sky-200' },
-  rose:    { bg: 'bg-rose-50',    icon: 'text-rose-600',    hv: 'group-hover:bg-rose-600 group-hover:text-white',    bd: 'hover:border-rose-200' },
-  violet:  { bg: 'bg-violet-50',  icon: 'text-violet-600',  hv: 'group-hover:bg-violet-600 group-hover:text-white',  bd: 'hover:border-violet-200' },
-  amber:   { bg: 'bg-amber-50',   icon: 'text-amber-600',   hv: 'group-hover:bg-amber-600 group-hover:text-white',   bd: 'hover:border-amber-200' },
-  emerald: { bg: 'bg-emerald-50', icon: 'text-emerald-600', hv: 'group-hover:bg-emerald-600 group-hover:text-white', bd: 'hover:border-emerald-200' }
-}
-
-const EClr = [
-  { bg: 'bg-rose-50',  bd: 'border-rose-100',  tx: 'text-rose-600',  badge: 'bg-rose-100/60 text-rose-600' },
-  { bg: 'bg-amber-50', bd: 'border-amber-100', tx: 'text-amber-600', badge: 'bg-amber-100/60 text-amber-600' },
-  { bg: 'bg-sky-50',   bd: 'border-sky-100',   tx: 'text-sky-600',   badge: 'bg-sky-100/60 text-sky-600' }
-]
-
-// ── Local Components (To Keep Code Size Optimized) ──
-const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-2xl border border-slate-100 p-6 ${className}`}>{children}</div>
-)
-
-const SectionHead = ({ title, sub, action }) => (
-  <div className="flex items-center justify-between mb-5">
-    <div>
-      <h3 className="text-[15px] font-bold text-slate-800">{title}</h3>
-      {sub && <p className="text-[12px] text-slate-400 mt-0.5">{sub}</p>}
-    </div>
-    {action}
-  </div>
-)
-
-const FinRow = ({ icon: Icon, label, value, bg, border, iconBg, iconClr, valClr }) => (
-  <div className={`flex items-center justify-between p-3.5 rounded-xl ${bg} border ${border}`}>
-    <span className="flex items-center gap-3 text-[13px] font-medium text-slate-700">
-      <span className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}>
-        <Icon className={`w-4 h-4 ${iconClr}`} />
-      </span>
-      {label}
-    </span>
-    <span className={`text-[16px] font-bold ${valClr}`}>{value}</span>
-  </div>
-)
-
-// Clean status badge with dynamic colors
-const StatusTag = ({ status }) => {
-  const isVer = status === 'Verified';
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-      isVer ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-    }`}>
-      {status}
-    </span>
-  );
-}
-
-// ── Main Dashboard Component ──
 export default function Dashboard() {
   const navigate = useNavigate()
-  const totalInc = MONTHLY.reduce((s, m) => s + m.income, 0)
-  const totalExp = MONTHLY.reduce((s, m) => s + m.expense, 0)
-  
-  const tipStyle = { 
-    borderRadius: '12px', border: '1px solid #e2e8f0', 
-    fontSize: '12px', fontWeight: '600', padding: '10px',
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-  }
+  const totalInc = MONTHLY_TRENDS.reduce((s, m) => s + m.income, 0)
+  const totalExp = MONTHLY_TRENDS.reduce((s, m) => s + m.expense, 0)
 
   return (
-    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 px-5 lg:px-7 pt-6 pb-8 bg-[#fafafa] min-h-[calc(100vh-3.5rem)]">
-      <div className="max-w-[1480px] space-y-6">
-
-        {/* ── Header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 bg-white min-h-screen font-sans pb-10">
+      
+      {/* ── TOP HEADER ── */}
+      <div className="px-5 lg:px-7 pt-8 pb-6 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-[22px] font-bold text-teal-700 tracking-tight">Dashboard</h1>
-            <p className="text-[13px] font-medium text-slate-400 mt-0.5">Overview of Trust activities</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent tracking-tight leading-tight">Dashboard</h1>
+            <p className="text-[12px] font-semibold text-slate-400 mt-0.5 uppercase tracking-[0.1em]">System Overview & Analytics</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" icon={CalendarDays}>Events</Button>
-            <Button size="sm" icon={IndianRupee} onClick={() => navigate('/donations/add')}>Add Donation</Button>
+          <Button 
+            size="sm" icon={PlusCircle} 
+            className="bg-gradient-to-r from-teal-600 to-emerald-500 text-white rounded-xl font-bold px-6 h-11 transition-all active:scale-95 shadow-sm"
+            onClick={() => navigate('/events/add')}
+          >
+            New Event
+          </Button>
+        </div>
+
+        {/* Quick Links Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {QUICK_LINKS.map((item, i) => (
+            <button key={i} onClick={() => navigate(item.to)} 
+              className="group flex flex-col items-center justify-center p-5 rounded-2xl border border-slate-100 bg-white hover:border-teal-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-2"
+            >
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500`}>
+                <item.icon className={`w-6 h-6 ${item.iconCol}`} strokeWidth={2.5} />
+              </div>
+              <span className="text-[13px] font-bold text-slate-500 group-hover:text-teal-600 transition-colors uppercase tracking-tight">{item.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <StatCard title="Total Sanghs" value="124" icon={Building2} color="teal" />
+          <StatCard title="Total Members" value="12,450" icon={Users} color="emerald" />
+          <StatCard title="Donations" value="₹24.8L" icon={HandHeart} color="teal" />
+          <StatCard title="Total Trusts" value="86" icon={Landmark} color="emerald" />
+        </div>
+
+        {/* CHARTS Section */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="lg:w-[70%] bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+            <h3 className="text-[14.5px] font-bold text-slate-700 uppercase tracking-widest mb-8">Financial Overview</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={MONTHLY_TRENDS}>
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0d9488" stopOpacity={0.15}/><stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b', fontWeight: 600}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#94a3b8'}} tickFormatter={(v) => `₹${v/1000}k`} />
+                  <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.08)'}} />
+                  <Area type="monotone" dataKey="income" stroke="#0d9488" strokeWidth={4} fill="url(#chartGrad)" isAnimationActive={true} animationDuration={1200} />
+                  <Area type="monotone" dataKey="expense" stroke="#fb7185" strokeWidth={2} fill="transparent" strokeDasharray="6 6" isAnimationActive={true} animationDuration={1500} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
 
-        {/* ── 1. Quick Actions ── */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-          {QUICK.map((q) => {
-            const s = QClr[q.c]
-            return (
-              <button key={q.label} onClick={() => navigate(q.to)}
-                className={`group flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-100 ${s.bd} hover:shadow-lg hover:shadow-slate-500/5 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer`}>
-                <div className={`w-9 h-9 rounded-lg ${s.bg} ${s.icon} ${s.hv} flex items-center justify-center transition-all duration-300`}>
-                  <q.icon className="w-4.5 h-4.5" strokeWidth={2} />
-                </div>
-                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 text-center leading-tight">{q.label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* ── 2. Stats Row ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Donations" value="₹15.4L" icon={HandHeart} color="teal" trend="up" trendValue="+12.5%" />
-          <StatCard title="Total Members" value="4,850" icon={Users} color="emerald" trend="up" trendValue="+3.2%" />
-          <StatCard title="Net Balance" value="₹2.1L" icon={Landmark} color="sky" trend="up" trendValue="+18%" />
-          <StatCard title="Derasar Active" value="3" icon={Gem} color="rose" />
-        </div>
-
-        {/* ── Charts Row ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Area Chart */}
-          <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h3 className="text-[15px] font-bold text-slate-800">Income vs Expense</h3>
-                <p className="text-[12px] font-medium text-slate-400 mt-0.5">Monthly overview</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-teal-600"><span className="w-2 h-2 rounded-full bg-teal-500" />Income</span>
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-rose-500"><span className="w-2 h-2 rounded-full bg-rose-500" />Expense</span>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={MONTHLY} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gI" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0d9488" stopOpacity={0.12} /><stop offset="95%" stopColor="#0d9488" stopOpacity={0} /></linearGradient>
-                  <linearGradient id="gE" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#e11d48" stopOpacity={0.06} /><stop offset="95%" stopColor="#e11d48" stopOpacity={0} /></linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }} tickFormatter={(v) => `₹${v / 1000}K`} />
-                <Tooltip formatter={(v, n) => [`₹${v.toLocaleString()}`, n === 'income' ? 'Income' : 'Expense']} contentStyle={tipStyle} />
-                <Area type="monotone" dataKey="income" stroke="#0d9488" strokeWidth={2} fill="url(#gI)" dot={false} activeDot={{ r: 5, fill: '#0d9488', stroke: '#fff', strokeWidth: 2 }} isAnimationActive animationDuration={1200} />
-                <Area type="monotone" dataKey="expense" stroke="#e11d48" strokeWidth={1.5} fill="url(#gE)" dot={false} activeDot={{ r: 4, fill: '#e11d48', stroke: '#fff', strokeWidth: 2 }} isAnimationActive animationDuration={1200} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
-
-          {/* Pie Chart */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <h3 className="text-[15px] font-bold text-slate-800">Donation Type</h3>
-              <p className="text-[12px] font-medium text-slate-400">This year breakdown</p>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center mx-auto">
-              <ResponsiveContainer width={180} height={180}>
+          <div className="lg:w-[30%] bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col items-center">
+            <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest mb-10">Donation Type</h3>
+            <div className="w-full flex justify-center flex-1">
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
-                  <Pie data={BY_TYPE} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value" strokeWidth={0} isAnimationActive animationDuration={1200}>
-                    {BY_TYPE.map((_, i) => (<Cell key={i} fill={COLORS[i]} />))}
+                  <Pie data={DONATION_DISTRIBUTION} innerRadius={70} outerRadius={95} paddingAngle={8} dataKey="value" strokeWidth={0} isAnimationActive={true} animationDuration={1000}>
+                    {DONATION_DISTRIBUTION.map((_, i) => (<Cell key={i} fill={COLORS[i % COLORS.length]} />))}
                   </Pie>
-                  <Tooltip formatter={(v) => [`₹${v.toLocaleString()}`]} contentStyle={tipStyle} />
+                  <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-
-            <div className="space-y-1.5 mt-2">
-              {BY_TYPE.map((item, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px]">
-                  <span className="flex items-center gap-1.5 text-slate-500 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                    {item.name}
-                  </span>
-                  <span className="text-slate-700 font-bold">₹{(item.value / 1000).toFixed(0)}K</span>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 mt-8 w-full px-2">
+              {DONATION_DISTRIBUTION.map((item, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i] }} />
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.name}</span>
+                  </div>
+                  <span className="text-[15px] font-bold text-slate-700">₹{(item.value / 1000)}k</span>
                 </div>
               ))}
             </div>
-          </Card>
-        </div>
-
-        {/* ── Recent Donations ── */}
-        <Card>
-          <SectionHead
-            title="Recent Donations"
-            action={
-              <button onClick={() => navigate('/donations')} className="flex items-center gap-1.5 text-[12px] font-bold text-teal-600 hover:text-teal-700 transition-colors">
-                View All <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-            }
-          />
-          <div className="divide-y divide-slate-50">
-            {RECENT.map((d) => (
-              <div key={d.id} className="flex items-center justify-between py-3.5 px-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-teal-50 border border-teal-100/50 flex items-center justify-center text-teal-600 font-semibold text-[12px] shrink-0">
-                    {d.donor.split(' ').map((n) => n[0]).join('')}
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-medium text-slate-700">{d.donor}</p>
-                    <p className="text-[11px] font-medium text-slate-400 mt-0.5">{d.type} · {d.date}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[14px] font-bold text-slate-800">₹{d.amount.toLocaleString()}</p>
-                  <div className="mt-0.5"><StatusTag status={d.status} /></div>
-                </div>
-              </div>
-            ))}
           </div>
-        </Card>
+        </div>
+      </div>
 
-        {/* ── Bottom Row ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          {/* Upcoming Events */}
-          <Card>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[15px] font-bold text-slate-800">Upcoming Events</h3>
-              <span className="text-[12px] font-semibold text-teal-600">{EVENTS.length} Active Events</span>
+      {/* ── BOTTOM SECTION - ALIGNED & SYMMETRICAL ── */}
+      <div className="px-5 lg:px-7 py-4">
+        <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Recent Activity Box */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-7 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest">Recent Activity</h3>
+              <button className="text-teal-600 hover:text-emerald-600 flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest transition-colors">
+                View <ArrowUpRight size={14} strokeWidth={3} />
+              </button>
             </div>
-            <div className="space-y-3">
-              {EVENTS.map((evt, i) => {
-                const ec = EClr[i]
-                return (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-50 hover:border-slate-100 transition-all cursor-pointer group">
-                    <div className={`w-11 h-11 rounded-xl ${ec.bg} border ${ec.bd} flex flex-col items-center justify-center ${ec.tx} shrink-0`}>
-                      <span className="uppercase text-[9px] font-bold tracking-wider">{new Date(evt.date).toLocaleString('en', { month: 'short' })}</span>
-                      <span className="text-[15px] font-bold leading-none">{new Date(evt.date).getDate()}</span>
+            <hr className="border-slate-200 mb-9" /> {/* Darker Horizontal Line */}
+            
+            <div className="space-y-8">
+              {RECENT_ACTIVITIES.map((d, i) => (
+                <div key={i} className="flex items-center justify-between h-[52px]">
+                  <div className="flex items-center gap-4">
+                    <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-[11px] shadow-lg shadow-emerald-100">
+                      {d.initial}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-slate-700 group-hover:text-teal-700 transition-colors truncate">{evt.name}</p>
-                      <span className={`inline-block mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${ec.badge}`}>{evt.type}</span>
+                    <div>
+                      <p className="text-[15px] font-bold text-slate-700 leading-none">{d.donor}</p>
+                      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-2">{d.type} • {d.date}</p>
                     </div>
                   </div>
-                )
-              })}
+                  <div className="text-right">
+                    <p className="text-[16px] font-bold text-slate-800 mb-2 font-sans">₹{d.amount.toLocaleString()}</p>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      d.status === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${d.status === 'Verified' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                      {d.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </Card>
+          </div>
 
-          {/* Financial Summary */}
-          <Card>
-            <h3 className="text-[15px] font-bold text-slate-800 mb-5">Financial Summary</h3>
-            <div className="space-y-3">
-              <FinRow icon={TrendingUp} label="Total Income" value={`₹${(totalInc / 100000).toFixed(1)}L`} bg="bg-teal-50/50" border="border-teal-100/40" iconBg="bg-teal-100" iconClr="text-teal-600" valClr="text-teal-700" />
-              <FinRow icon={ArrowDownRight} label="Total Expense" value={`₹${(totalExp / 100000).toFixed(1)}L`} bg="bg-rose-50/40" border="border-rose-100/40" iconBg="bg-rose-100" iconClr="text-rose-500" valClr="text-rose-600" />
-              <FinRow icon={Wallet} label="Net Savings" value={`₹${((totalInc - totalExp) / 100000).toFixed(1)}L`} bg="bg-emerald-50/50" border="border-emerald-100/40" iconBg="bg-emerald-100" iconClr="text-emerald-600" valClr="text-emerald-700" />
+          {/* Financial Summary Box - Matched with Left Side */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-7 shadow-sm">
+            <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-widest mb-4">Financial Summary</h3>
+            <hr className="border-slate-200 mb-9" /> {/* Darker Horizontal Line */}
+            
+            <div className="space-y-8">
+              {/* Total Income - Aligned with RS */}
+              <div className="flex items-center justify-between h-[52px] group">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center transition-transform group-hover:scale-105"><TrendingUp size={22} /></div>
+                  <span className="text-[14px] font-bold text-slate-500 uppercase tracking-wider">Total Income</span>
+                </div>
+                <span className="text-[16px] font-bold text-emerald-600 font-sans tracking-tight">₹{(totalInc / 100000).toFixed(2)}L</span>
+              </div>
+
+              {/* Total Expense - Aligned with VM */}
+              <div className="flex items-center justify-between h-[52px] group">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center transition-transform group-hover:scale-105"><ArrowDownRight size={22} /></div>
+                  <span className="text-[14px] font-bold text-slate-500 uppercase tracking-wider">Total Expense</span>
+                </div>
+                <span className="text-[16px] font-bold text-rose-600 font-sans tracking-tight">₹{(totalExp / 100000).toFixed(2)}L</span>
+              </div>
+
+              {/* Net Balance - Bottom Part */}
+              <div className="flex items-center justify-between h-[52px] pt-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-100"><Wallet size={22} /></div>
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block leading-none mb-1">Net Balance</span>
+                    <span className="text-[13px] font-bold text-teal-700 uppercase tracking-tighter">Consolidated</span>
+                  </div>
+                </div>
+                <span className="text-2xl font-bold text-teal-600 tracking-tighter font-sans">₹{((totalInc - totalExp) / 100000).toFixed(2)}L</span>
+              </div>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
