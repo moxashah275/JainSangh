@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* TimePicker Wheel Animations */
+@keyframes tp-wheel-in-down {
+  0% { transform: translateY(-20px); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes tp-wheel-in-up {
+  0% { transform: translateY(20px); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-tp-wheel-down {
+  animation: tp-wheel-in-down 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-tp-wheel-up {
+  animation: tp-wheel-in-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
