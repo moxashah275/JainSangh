@@ -13,7 +13,7 @@ export default function CommitteeMembers() {
   const [search, setSearch] = useState('')
   const [users] = useState(function() {
     try {
-      const stored = localStorage.getItem('users_full')
+      const stored = sessionStorage.getItem('users_full')
       return stored ? JSON.parse(stored) : INITIAL_USERS
     } catch {
       return INITIAL_USERS
@@ -21,7 +21,7 @@ export default function CommitteeMembers() {
   })
   const [docs] = useState(function() {
     try {
-      const stored = localStorage.getItem('user_docs')
+      const stored = sessionStorage.getItem('user_docs')
       return stored ? JSON.parse(stored) : INITIAL_USER_DOCS
     } catch {
       return INITIAL_USER_DOCS
@@ -29,7 +29,7 @@ export default function CommitteeMembers() {
   })
   const [roles] = useState(function() {
     try {
-      const stored = localStorage.getItem('rp_roles')
+      const stored = sessionStorage.getItem('rp_roles')
       return stored ? JSON.parse(stored) : INITIAL_ROLES
     } catch {
       return INITIAL_ROLES
