@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Shield, Users, Landmark, Lock } from 'lucide-react'
-import Card from '../../components/common/Card'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
+import Card from '../../components/ui/Card'
+import EmptyState from '../../components/ui/EmptyState'
+import CommonPageLayout from '../../components/ui/CommonPageLayout'
 import RoleCard from '../../components/roles/RoleCard'
 import { INITIAL_ROLES, INITIAL_USERS, PERM_GROUPS, getCount, getUserCount, hasPerm } from './RoleData'
 

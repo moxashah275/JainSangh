@@ -1,8 +1,8 @@
 import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Edit2, Trash2, Eye, X, Check, AlertTriangle, ArrowLeft, ChevronDown } from 'lucide-react';
 import { locationService } from '../../services/apiService';
-import StatusToggle from '../../components/common/StatusToggle';
-import { useToast } from '../../components/common/Toast';
+import StatusToggle from '../../components/ui/StatusToggle';
+import { useToast } from '../../components/ui/Toast';
 
 const generateInitialData = () => {
   return {

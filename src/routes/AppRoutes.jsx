@@ -29,6 +29,8 @@ import SanghCommitteeMembers from '../pages/sanghAdmin/mySangh/CommitteeMembers'
 import Members from '../pages/sanghAdmin/members/Members'
 import Derasar from '../pages/sanghAdmin/institutions/Derasar'
 import Pathshala from '../pages/sanghAdmin/institutions/Pathshala'
+import AyambliShala from '../pages/sanghAdmin/institutions/AyambliShala'
+import Upashray from '../pages/sanghAdmin/institutions/Upashray'
 import Login from '../pages/auth/Login'
 
 export default function AppRoutes() {
@@ -70,6 +72,8 @@ export default function AppRoutes() {
             <Route path="members" element={<Members />} />
             <Route path="institutions/derasar" element={<Derasar />} />
             <Route path="institutions/Pathshala" element={<Pathshala />} />
+            <Route path="institutions/aayambil" element={<AyambliShala />} />
+            <Route path="institutions/upasray" element={<Upashray />} />
           </Route>
         </Route>
       </Route>

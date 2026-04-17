@@ -45,12 +45,10 @@ export default function FilterButton({ filters, options, onChange, onClear, data
             const spaceBelow = window.innerHeight - rect.bottom;
             const spaceAbove = rect.top;
             
-            // Heuristic for "less data" as requested by user
-            // If dataCount is low (<= 3) or space below is tight (< 380px),
-            // we open UP if there's more space above than below.
-            const isLessData = dataCount !== undefined && dataCount <= 3;
-            if (isLessData || spaceBelow < 380) {
-              setOpenUp(spaceAbove > spaceBelow);
+            // Dynamically adjust to open UP if space below is less than typical popup height
+            // and there is more space above than below.
+            if (spaceBelow < 350 && spaceAbove > spaceBelow) {
+              setOpenUp(true);
             } else {
               setOpenUp(false);
             }
@@ -77,17 +75,6 @@ export default function FilterButton({ filters, options, onChange, onClear, data
         <div className={`absolute right-0 w-64 bg-white rounded-xl border border-slate-100 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200 p-3.5 ${openUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}>
           <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-50">
             <h3 className="text-[13px] font-bold text-slate-800">Filter By</h3>
-            {hasActive && (
-              <button
-                onClick={() => {
-                  onClear();
-                  setIsOpen(false);
-                }}
-                className="text-[10px] font-bold text-teal-600 hover:text-teal-700 uppercase tracking-wider"
-              >
-                Clear All
-              </button>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -99,9 +86,9 @@ export default function FilterButton({ filters, options, onChange, onClear, data
 
                 {/* Custom Styled Select Trigger */}
                 <CustomSelect
-                  value={localFilters[opt.key] || ""}
+                  value={localFilters[opt.key] || "All"}
                   options={[
-                    { label: `All ${opt.placeholder}`, value: "" },
+                    { label: `All ${opt.placeholder}`, value: "All" },
                     ...opt.items,
                   ]}
                   onChange={(val) => handleLocalChange(opt.key, val)}
@@ -162,7 +149,14 @@ function CustomSelect({ value, options, onChange }) {
         onClick={() => {
           if (!isOpen && selectRef.current) {
             const rect = selectRef.current.getBoundingClientRect();
-            setOpenUp(window.innerHeight - rect.bottom < 200);
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            
+            if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+              setOpenUp(true);
+            } else {
+              setOpenUp(false);
+            }
           }
           setIsOpen(!isOpen);
         }}

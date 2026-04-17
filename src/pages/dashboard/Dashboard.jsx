@@ -8,8 +8,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
-import StatCard from '../../components/common/StatCard'
-import Button from '../../components/common/Button'
+import StatCard from '../../components/ui/StatCard'
+import Button from '../../components/ui/Button'
 
 const MONTHLY_TRENDS = [
   { month: 'Jan', income: 120000, expense: 80000 },

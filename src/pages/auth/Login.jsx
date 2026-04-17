@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, ChevronRight, ShieldCheck } from 'lucide-react';
-import { useToast } from '../../components/common/Toast';
+import { useToast } from '../../components/ui/Toast';
 import { authService } from '../../services/apiService';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
 import { ROLES } from '../../config/roles';
 
 

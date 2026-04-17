@@ -8,7 +8,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
-import SearchBar from "../common/SearchBar";
+import SearchBar from "../ui/SearchBar";
 import { ROLES } from "../../config/roles";
 
 

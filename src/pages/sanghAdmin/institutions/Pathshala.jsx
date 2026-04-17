@@ -4,19 +4,19 @@ import {
   Search, Phone, Mail, Clock, Building2, ChevronRight, Image as ImageIcon,
   ArrowLeft, X, Check, Globe, School, Camera
 } from 'lucide-react';
-import CommonPageLayout from '../../../components/common/CommonPageLayout';
-import Button from '../../../components/common/Button';
-import Table from '../../../components/common/Table';
-import StatusToggle from '../../../components/common/StatusToggle';
-import { useToast } from '../../../components/common/Toast';
-import Modal from '../../../components/common/Modal';
-import ConfirmModal from '../../../components/common/ConfirmModal';
+import CommonPageLayout from '../../../components/ui/CommonPageLayout';
+import Button from '../../../components/ui/Button';
+import Table from '../../../components/ui/Table';
+import StatusToggle from '../../../components/ui/StatusToggle';
+import { useToast } from '../../../components/ui/Toast';
+import Modal from '../../../components/ui/Modal';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 import { pathshalaService } from '../../../services/pathshalaService';
-import FilterButton from '../../../components/common/FilterButton';
-import Input from '../../../components/common/Input';
-import Pagination from '../../../components/common/Pagination';
-import CustomDropdown from '../../../components/common/CustomDropdown';
-import TimePicker from '../../../components/common/TimePicker';
+import FilterButton from '../../../components/ui/FilterButton';
+import Input from '../../../components/ui/Input';
+import Pagination from '../../../components/ui/Pagination';
+import CustomDropdown from '../../../components/ui/CustomDropdown';
+import TimePicker from '../../../components/ui/TimePicker';
 
 // ── Tab config ──────────────────────────────────────────────────────────────
 const TABS = ['Institute Details', 'Location', 'Contact & Management'];
@@ -74,7 +74,7 @@ export default function Pathshala() {
   const [pathshalas, setPathshalas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ status: 'All' });
+  const [filters, setFilters] = useState({ status: 'All', district: 'All' });
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [previewImage, setPreviewImage] = useState(null);
@@ -112,7 +112,8 @@ export default function Pathshala() {
         item.city?.toLowerCase().includes(q) || 
         item.trustName?.toLowerCase().includes(q)
       ) && 
-      (filters.status === 'All' || item.status === filters.status)
+      (filters.status === 'All' || item.status === filters.status) &&
+      (filters.district === 'All' || item.district === filters.district)
     );
   }), [pathshalas, search, filters]);
 
@@ -180,14 +181,7 @@ export default function Pathshala() {
 
   const isView = modalMode === 'view';
 
-  const renderTab = () => {
-    switch (activeTab) {
-      case 0: return <Tab1 formData={formData} set={set} isView={isView} onImageClick={setPreviewImage} />;
-      case 1: return <Tab2 formData={formData} set={set} isView={isView} />;
-      case 2: return <Tab3 formData={formData} set={set} isView={isView} />;
-      default: return null;
-    }
-  };
+
 
   const columns = [
     { key: 'id', label: 'SR. NO', align: 'center', render: (_, __, i) => i + 1 },
@@ -200,7 +194,7 @@ export default function Pathshala() {
       </div>
     )},
     { key: 'trustName', label: 'SANGH', render: v => <span className="text-slate-600 font-medium text-sm">{v || '—'}</span> },
-    { key: 'city', label: 'CITY / DISTRICT', render: (v, r) => (
+    { key: 'city', label: 'VILLAGE / CITY', render: (v, r) => (
       <div className="flex flex-col">
         <span className="text-slate-600 font-medium text-sm">{v}</span>
         <span className="text-xs text-slate-400">{r.district || ''}</span>
@@ -271,14 +265,23 @@ export default function Pathshala() {
 
   return (
     <CommonPageLayout title="Institute Management" stats={stats}>
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
         <div className="p-4 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="w-full sm:max-w-sm relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search Institute, City, or Sangh..." className="w-full h-[40px] pl-11 pr-4 rounded-xl border border-slate-200 bg-slate-50/30 text-[13px] focus:ring-2 focus:ring-teal-50 focus:border-teal-500 outline-none transition-all font-medium" />
           </div>
           <div className="flex items-center gap-2">
-            <FilterButton filters={filters} options={[{ key: 'status', placeholder: 'Status', items: [{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }] }]} onChange={(k, v) => { setFilters(p => ({ ...p, [k]: v })); setCurrentPage(1); }} onClear={() => { setFilters({ status: 'All' }); setCurrentPage(1); }} dataCount={filteredData.length} />
+            <FilterButton 
+              filters={filters} 
+              options={[
+                { key: 'status', placeholder: 'Status', items: [{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }] },
+                { key: 'district', placeholder: 'City', items: GUJARAT_DISTRICTS.map(d => ({ label: d, value: d })) }
+              ]} 
+              onChange={(k, v) => { setFilters(p => ({ ...p, [k]: v })); setCurrentPage(1); }} 
+              onClear={() => { setFilters({ status: 'All', district: 'All' }); setCurrentPage(1); }} 
+              dataCount={filteredData.length} 
+            />
             <Button icon={Plus} onClick={() => openModal('add')} className="bg-teal-600 hover:bg-teal-700 shadow-lg shadow-teal-100 text-[13px] h-[40px] px-4">Add Institute</Button>
           </div>
         </div>
@@ -293,9 +296,9 @@ export default function Pathshala() {
         title={modalHeader}
         footer={modalFooter}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col -mx-5 sm:-mx-6 -mt-4 sm:-mt-6">
           {/* Tabs - Sticky */}
-          <div className="sticky -top-5 z-20 bg-white/95 backdrop-blur-sm -mx-5 px-5 pt-1 pb-4 mb-2 border-b border-slate-100/50">
+          <div className="sticky top-0 z-[100] bg-white/95 backdrop-blur-xl px-5 sm:px-6 py-3 mb-2 border-b border-slate-100 shadow-sm">
             <div className="flex gap-2 p-1 bg-slate-100/60 rounded-xl w-fit">
               {TABS.map((tab, i) => (
                 <button
@@ -312,8 +315,16 @@ export default function Pathshala() {
             </div>
           </div>
 
-          <div className="py-2">
-            {renderTab()}
+          <div className="px-5 sm:px-6 py-2 grid">
+            <div className={`col-start-1 row-start-1 transition-opacity duration-300 ${activeTab === 0 ? 'opacity-100 z-10' : 'opacity-0 -z-10 pointer-events-none invisible'}`}>
+              <Tab1 formData={formData} set={set} isView={isView} onImageClick={setPreviewImage} />
+            </div>
+            <div className={`col-start-1 row-start-1 transition-opacity duration-300 ${activeTab === 1 ? 'opacity-100 z-10' : 'opacity-0 -z-10 pointer-events-none invisible'}`}>
+              <Tab2 formData={formData} set={set} isView={isView} />
+            </div>
+            <div className={`col-start-1 row-start-1 transition-opacity duration-300 ${activeTab === 2 ? 'opacity-100 z-10' : 'opacity-0 -z-10 pointer-events-none invisible'}`}>
+              <Tab3 formData={formData} set={set} isView={isView} />
+            </div>
           </div>
         </div>
       </Modal>
@@ -567,18 +578,18 @@ function Tab2({ formData, set, isView }) {
       <Input label="Landmark" placeholder="Landmark" value={formData.landmark} onChange={e => set('landmark', e.target.value)} disabled={isView} />
       
       <div className="flex flex-col gap-1.5">
-        <label className="text-[13px] font-medium text-slate-600">District *</label>
+        <label className="text-[13px] font-medium text-slate-600">City *</label>
         <CustomDropdown
           value={formData.district}
           onChange={v => set('district', v)}
           items={GUJARAT_DISTRICTS}
-          placeholder="Select District"
+          placeholder="Select City"
           disabled={isView}
         />
       </div>
       
-      <Input label="City / Village" placeholder="City" value={formData.city} onChange={e => set('city', e.target.value)} required disabled={isView} icon={Building2} />
-      <Input label="Sub-district / Area" placeholder="Area" value={formData.taluka} onChange={e => set('taluka', e.target.value)} disabled={isView} icon={Building2} />
+      <Input label="Village" placeholder="Village" value={formData.city} onChange={e => set('city', e.target.value)} required disabled={isView} icon={Building2} />
+      <Input label="Area" placeholder="Area" value={formData.taluka} onChange={e => set('taluka', e.target.value)} disabled={isView} icon={Building2} />
       <Input label="Pincode" placeholder="6 Digits" value={formData.pincode} onChange={e => set('pincode', e.target.value)} required disabled={isView} maxLength={6} />
       <Input label="Google Maps Link" placeholder="Link" value={formData.mapLink} onChange={e => set('mapLink', e.target.value)} disabled={isView} icon={MapPin} />
     </div>

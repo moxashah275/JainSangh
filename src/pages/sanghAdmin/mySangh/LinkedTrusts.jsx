@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Landmark, Eye, Trash2, CheckCircle2, Search } from "lucide-react";
-import CommonPageLayout from "../../../components/common/CommonPageLayout";
-import Table from "../../../components/common/Table";
-import ConfirmModal from "../../../components/common/ConfirmModal";
-import FilterButton from "../../../components/common/FilterButton";
-import Modal from "../../../components/common/Modal";
-import Pagination from "../../../components/common/Pagination";
+import CommonPageLayout from "../../../components/ui/CommonPageLayout";
+import Table from "../../../components/ui/Table";
+import ConfirmModal from "../../../components/ui/ConfirmModal";
+import FilterButton from "../../../components/ui/FilterButton";
+import Modal from "../../../components/ui/Modal";
+import Pagination from "../../../components/ui/Pagination";
 import { sanghService } from "../../../services/apiService";
 
 export default function LinkedTrusts() {

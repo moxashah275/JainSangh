@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Download, Pencil, Trash2, FileText, IndianRupee } from 'lucide-react'
-import PageHeader from '../../components/common/PageHeader'
-import Button from '../../components/common/Button'
-import SearchBar from '../../components/common/SearchBar'
-import StatusBadge from '../../components/common/StatusBadge'
-import Table from '../../components/common/Table'
+import PageHeader from '../../components/ui/PageHeader'
+import Button from '../../components/ui/Button'
+import SearchBar from '../../components/ui/SearchBar'
+import StatusBadge from '../../components/ui/StatusBadge'
+import Table from '../../components/ui/Table'
 
 const DONATIONS = [
   { id: 1, donorName: 'Rajesh Shah', type: 'Devdravya', amount: 51000, date: '2025-01-15', mode: 'Cheque', status: 'Verified', receiptNo: 'RCP-001' },
