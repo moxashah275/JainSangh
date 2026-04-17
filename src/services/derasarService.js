@@ -2,7 +2,7 @@ import api from '../api/axios';
 import { apiService } from './apiService';
 
 // Mock Data for Derasar
-const MOCK_DERASARS = [
+let MOCK_DERASARS = [
   { 
     id: 1, 
     name: 'Shree Chandraprabhu Derasar', 
@@ -119,7 +119,7 @@ export const derasarService = {
   getDerasars: async (params) => {
     if (USE_MOCK) {
       console.log('Using mock data for getDerasars');
-      return Promise.resolve(MOCK_DERASARS);
+      return Promise.resolve([...MOCK_DERASARS]);
     }
     return apiService.get('v1/derasar/', params);
   },
@@ -127,7 +127,7 @@ export const derasarService = {
   getDerasar: async (id) => {
     if (USE_MOCK) {
       const derasar = MOCK_DERASARS.find(d => d.id === parseInt(id));
-      return Promise.resolve(derasar || null);
+      return Promise.resolve(derasar ? { ...derasar } : null);
     }
     return apiService.get(`v1/derasar/${id}/`);
   },
@@ -135,7 +135,9 @@ export const derasarService = {
   createDerasar: async (data) => {
     if (USE_MOCK) {
       console.log('Mock: Creating derasar', data);
-      return Promise.resolve({ ...data, id: Date.now() });
+      const newDerasar = { ...data, id: Date.now() };
+      MOCK_DERASARS.push(newDerasar);
+      return Promise.resolve(newDerasar);
     }
     return apiService.post('v1/derasar/', data);
   },
@@ -143,7 +145,12 @@ export const derasarService = {
   updateDerasar: async (id, data) => {
     if (USE_MOCK) {
       console.log('Mock: Updating derasar', id, data);
-      return Promise.resolve({ ...data, id });
+      const index = MOCK_DERASARS.findIndex(d => d.id === parseInt(id));
+      if (index !== -1) {
+        MOCK_DERASARS[index] = { ...MOCK_DERASARS[index], ...data, id: parseInt(id) };
+        return Promise.resolve(MOCK_DERASARS[index]);
+      }
+      return Promise.reject(new Error('Derasar not found'));
     }
     return apiService.put(`v1/derasar/${id}/`, data);
   },
@@ -151,6 +158,7 @@ export const derasarService = {
   deleteDerasar: async (id) => {
     if (USE_MOCK) {
       console.log('Mock: Deleting derasar', id);
+      MOCK_DERASARS = MOCK_DERASARS.filter(d => d.id !== parseInt(id));
       return Promise.resolve({ success: true });
     }
     return apiService.delete(`v1/derasar/${id}/`);
