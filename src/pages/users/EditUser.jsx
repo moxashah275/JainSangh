@@ -1,53 +1,144 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import Button from '../../components/common/Button'
-import UserForm from '../../components/users/UserForm'
-import { useState, useMemo } from 'react'
-import { INITIAL_USERS, INITIAL_ACTIVITIES } from './userData'
-import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData'
-import { INITIAL_ROLES } from '../RolesAndPermissions/RoleData'
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import UserForm from "../../components/users/UserForm";
+import Button from "../../components/common/Button";
 
+// Data hooks and logic imports
+import { INITIAL_USERS, INITIAL_ACTIVITIES } from "./userData";
+import { INITIAL_ROLES } from "../RolesAndPermissions/RoleData";
+import {
+  INITIAL_TRUSTS,
+  INITIAL_SANGHS,
+  INITIAL_DEPARTMENTS,
+} from "../organization/orgData";
+
+/**
+ * EditUser component provides a dedicated page for updating existing user profiles.
+ * It loads user data from master state and handles persistence and activity tracking.
+ */
 export default function EditUser() {
-  var params = useParams(); var userId = parseInt(params.id)
-  var navigate = useNavigate()
+  const { id } = useParams();
+  const userId = Number(id);
+  const navigate = useNavigate();
 
-  var usersState = useState(function() { try { var s = localStorage.getItem('users_full'); return s ? JSON.parse(s) : INITIAL_USERS } catch(e) { return INITIAL_USERS } })
-  var users = usersState[0]; var setUsers = usersState[1]
-  var actsState = useState(function() { try { var s = localStorage.getItem('user_activities'); return s ? JSON.parse(s) : INITIAL_ACTIVITIES } catch(e) { return INITIAL_ACTIVITIES } })
-  var acts = actsState[0]; var setActs = actsState[1]
-  var trusts = useState(function() { try { var s = localStorage.getItem('org_trusts'); return s ? JSON.parse(s) : INITIAL_TRUSTS } catch(e) { return INITIAL_TRUSTS } })[0]
-  var sanghs = useState(function() { try { var s = localStorage.getItem('org_sanghs'); return s ? JSON.parse(s) : INITIAL_SANGHS } catch(e) { return INITIAL_SANGHS } })[0]
-  var depts = useState(function() { try { var s = localStorage.getItem('org_departments'); return s ? JSON.parse(s) : INITIAL_DEPARTMENTS } catch(e) { return INITIAL_DEPARTMENTS } })[0]
-  var roles = useState(function() { try { var s = localStorage.getItem('rp_roles'); return s ? JSON.parse(s) : INITIAL_ROLES } catch(e) { return INITIAL_ROLES } })[0]
+  // --- Master Data State (Persisted in LocalStorage to sync with UserList) ---
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem("users_master");
+    return saved ? JSON.parse(saved) : INITIAL_USERS;
+  });
+  const [activities, setActivities] = useState(() => {
+    const saved = localStorage.getItem("user_activities_master");
+    return saved ? JSON.parse(saved) : INITIAL_ACTIVITIES;
+  });
 
-  var user = useMemo(function() { return users.find(function(u) { return u.id === userId }) }, [users, userId])
+  // Keep LocalStorage in sync with state changes
+  useEffect(() => {
+    localStorage.setItem("users_master", JSON.stringify(users));
+  }, [users]);
+  useEffect(() => {
+    localStorage.setItem("user_activities_master", JSON.stringify(activities));
+  }, [activities]);
 
-  var handleSave = function(data) {
-    setUsers(function(prev) { return prev.map(function(u) { return u.id === userId ? Object.assign({}, u, data) : u }) })
-    setActs(function(prev) { return prev.concat([{ id: Date.now(), userId: userId, action: 'updated', description: 'User profile updated', doneBy: 'Admin', date: new Date().toISOString().slice(0, 16).replace('T', ' ') }]) })
-    navigate('/users/' + userId)
+  // Resolve the specific user record
+  const user = useMemo(() => {
+    return users.find((u) => u.id === userId);
+  }, [users, userId]);
+
+  const handleSave = (formData) => {
+    const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+    // 1. Update user record in state
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, ...formData } : u)),
+    );
+
+    // 2. Record the update activity
+    setActivities((prev) => [
+      {
+        id: Date.now(),
+        userId: userId,
+        action: "updated",
+        description: "User profile details updated via administrative console.",
+        doneBy: "Admin",
+        date: timestamp,
+      },
+      ...prev,
+    ]);
+
+    // 3. Redirect back to main directory
+    navigate("/users/all");
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center bg-[#f8fafc]">
+        <div className="text-center p-10 bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50">
+          <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
+            <ArrowLeft className="w-8 h-8 text-slate-300" />
+          </div>
+          <h2 className="text-[18px] font-bold text-slate-800 mb-2">
+            User Not Found
+          </h2>
+          <p className="text-[13px] text-slate-400 mb-6 max-w-[240px]">
+            The profile you are looking for does not exist or has been removed.
+          </p>
+          <Button
+            variant="secondary"
+            onClick={() => navigate("/users/all")}
+            className="w-full rounded-xl"
+          >
+            Return to Directory
+          </Button>
+        </div>
+      </div>
+    );
   }
 
-  if (!user) return (
-    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 flex items-center justify-center min-h-[calc(100vh-3.5rem)] bg-[#f8fafc]">
-      <div className="text-center"><p className="text-[14px] font-bold text-slate-600 mb-3">User not found</p><Button variant="secondary" onClick={function() { navigate('/users') }}>Go Back</Button></div>
-    </div>
-  )
-
   return (
-    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 min-h-[calc(100vh-3.5rem)] bg-gradient-to-br from-slate-50 via-white to-teal-50/30" style={{ animation: 'pageIn 0.3s ease-out' }}>
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">
-          <button onClick={function() { navigate('/users/' + userId) }} className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"><ArrowLeft className="w-4 h-4" /></button>
-          <div><h2 className="text-[18px] font-bold text-slate-800 tracking-tight">Edit User</h2><p className="text-[12px] text-slate-400 mt-0.5">{user.name}</p></div>
+    <div className="-mx-5 lg:-mx-7 -mt-5 lg:-mt-7 min-h-[calc(100vh-3.5rem)] bg-[#f8fafc] animate-in fade-in duration-300">
+      {/* Sticky Header Section */}
+      <div className="bg-white border-b border-slate-100 px-8 py-5 sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <button
+            onClick={() => navigate("/users/all")}
+            className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-200 transition-all shadow-sm group"
+          >
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+          <div>
+            <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
+              Edit User Profile
+            </h1>
+            <p className="text-[12px] text-slate-400 font-medium">
+              Updating information for{" "}
+              <span className="text-slate-600 font-bold">{user.name}</span>
+            </p>
+          </div>
         </div>
       </div>
-      <div className="max-w-3xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-          <UserForm user={user} roles={roles} trusts={trusts} sanghs={sanghs} departments={depts} onSave={handleSave} onCancel={function() { navigate('/users/' + userId) }} />
-        </div>
+
+      {/* Page Content */}
+      <div className="max-w-4xl mx-auto px-8 py-8">
+        <UserForm
+          user={user}
+          roles={INITIAL_ROLES}
+          trusts={INITIAL_TRUSTS}
+          sanghs={INITIAL_SANGHS}
+          departments={INITIAL_DEPARTMENTS}
+          onSave={handleSave}
+          onCancel={() => navigate("/users/all")}
+        />
       </div>
-      <style dangerouslySetInnerHTML={{ __html: "@keyframes pageIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }" }} />
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fade-in 0.4s ease-out; }
+      `,
+        }}
+      />
     </div>
-  )
+  );
 }
