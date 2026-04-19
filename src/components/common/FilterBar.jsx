@@ -29,7 +29,7 @@ export default function FilterBar({
               key={opt.key}
               value={filters?.[opt.key] || ""}
               onChange={(e) => onChange(opt.key, e.target.value)}
-              className="min-w- px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text- text-slate-700 font-medium focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all cursor-pointer hover:border-slate-300"
+              className="min-w-[140px] px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 font-semibold focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all cursor-pointer hover:border-teal-400 shadow-sm"
             >
               <option value="">{opt.placeholder}</option>
               {(opt.items || []).map((item) => {

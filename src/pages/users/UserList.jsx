@@ -1,887 +1,465 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Building2, CalendarDays, ChevronLeft, ChevronRight, FileText, Mail, Pencil, Phone, Plus, ShieldCheck, Trash2, Upload, Users, UserCheck, UserX } from 'lucide-react'
-import Button from '../../components/common/Button'
-import ConfirmModal from '../../components/common/ConfirmModal'
-import Modal from '../../components/common/Modal'
-import FilterBar from '../../components/common/FilterBar'
-import EmptyState from '../../components/common/EmptyState'
-import CommonPageLayout from '../../components/common/CommonPageLayout'
-import Input from '../../components/common/Input'
-import PermissionChip from '../../components/common/PermissionChip'
-import UserCard from '../../components/users/UserCard'
-import UserDocuments from '../../components/users/UserDocuments'
-import UserStatusToggle from '../../components/users/UserStatusToggle'
-import { INITIAL_USERS, INITIAL_USER_DOCS, INITIAL_ACTIVITIES, getStatusCounts } from './userData'
-import { getCount, hasPerm, INITIAL_ROLES, PERM_GROUPS } from '../RolesAndPermissions/RoleData'
-import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData'
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Users, UserCheck, UserX, Trash2, Plus, Search, SlidersHorizontal, Eye, Edit2, AlertTriangle, X, ArrowLeft, ChevronDown } from 'lucide-react';
+import StatCard from '../../components/common/StatCard';
+import Pagination from '../../components/common/Pagination';
+import Modal from '../../components/common/Modal';
+import UserForm from '../../components/users/UserForm';
+import { useToast } from '../../components/common/Toast';
+import CustomDropdown from '../../components/common/CustomDropdown';
+import StatusBadge from '../../components/common/StatusBadge';
 
-const ITEMS_PER_PAGE = 6
-const DOC_OPTIONS = ['Aadhaar Card', 'PAN Card', 'Photo', 'ID Card']
-const DEFAULT_PROFILE_IMAGE = 'https://randomuser.me/api/portraits/men/32.jpg'
+import { INITIAL_USERS, INITIAL_USER_DOCS, INITIAL_ACTIVITIES, getStatusCounts } from './userData';
+import { INITIAL_ROLES, PERM_GROUPS } from '../RolesAndPermissions/RoleData';
+import { INITIAL_TRUSTS, INITIAL_SANGHS, INITIAL_DEPARTMENTS } from '../organization/orgData';
 
-function getDisplayStatus(status) {
-  return status === 'Suspended' ? 'Inactive' : status
-}
+const DEFAULT_FILTERS = { status: '', trustId: '', sanghId: '', departmentId: '', roleId: '', approvalStatus: '' };
 
-function createInlineForm(user) {
-  return {
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    roleId: user?.roleId || '',
-    trustId: user?.trustId || '',
-    sanghId: user?.sanghId || '',
-    departmentId: user?.departmentId || '',
-    status: user?.status === 'Suspended' ? 'Inactive' : user?.status || 'Active',
-    notes: user?.notes || '',
-    avatar: user?.avatar || '',
-    permissions: Array.isArray(user?.permissions) ? user.permissions : [],
-    starterDocuments: Array.isArray(user?.starterDocuments) ? user.starterDocuments : [],
-  }
-}
-
-function InfoTile({ label, value, icon }) {
-  const Icon = icon
+function Toggle({ active, onToggle }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3">
-      <div className="flex items-center gap-2 text-slate-400">
-        <Icon className="w-4 h-4" />
-        <span className="text-[10px] font-semibold uppercase tracking-wide">{label}</span>
-      </div>
-      <p className="mt-2 text-[12px] font-semibold text-slate-700 break-words">{value || '-'}</p>
+    <div className="flex justify-center items-center">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
+        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors duration-200 focus:outline-none ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}
+      >
+        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${active ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
     </div>
-  )
-}
-
-function PermissionSummary({ role, extraPerms = [] }) {
-  if (!role) return null
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50/70 px-4 py-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <ShieldCheck className="w-4 h-4 text-teal-600" />
-          <span className="text-[12px] font-semibold text-slate-700">{role.name}</span>
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">{role.type}</span>
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
-            {getCount(role)} / {extraPerms.length} extra
-          </span>
-        </div>
-      </div>
-
-      {extraPerms.length ? (
-        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
-          <p className="text-[12px] font-semibold text-amber-700">Added Permissions</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {extraPerms.map(function(permissionKey) {
-              return <PermissionChip key={permissionKey} label={permissionKey.split('_').slice(1).join(' ')} granted={true} />
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {PERM_GROUPS.map(function(group) {
-          return (
-            <div key={group.key} className="rounded-2xl border border-slate-200 bg-white p-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[12px] font-semibold text-slate-700">{group.label}</p>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{group.type}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {group.perms.map(function(permission) {
-                  const permissionKey = group.key + '_' + permission.toLowerCase().replace(/\s+/g, '_')
-                  const granted = hasPerm(role, permissionKey) || extraPerms.includes(permissionKey)
-                  return <PermissionChip key={permissionKey} label={permission} granted={granted} />
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-function InlineUserForm({ user, roles, trusts, sanghs, departments, onSave, onCancel }) {
-  const [form, setForm] = useState(function() { return createInlineForm(user) })
-  const [errors, setErrors] = useState({})
-  const [permissionToAdd, setPermissionToAdd] = useState('')
-
-  const availableSanghs = useMemo(function() {
-    if (!form.trustId) return sanghs
-    return sanghs.filter(function(item) { return Number(item.trustId) === Number(form.trustId) })
-  }, [form.trustId, sanghs])
-
-  const availableDepartments = useMemo(function() {
-    return departments.filter(function(item) {
-      const trustMatch = !form.trustId || Number(item.trustId) === Number(form.trustId)
-      const sanghMatch = !form.sanghId || Number(item.sanghId) === Number(form.sanghId)
-      return trustMatch && sanghMatch
-    })
-  }, [departments, form.sanghId, form.trustId])
-
-  const selectedRole = useMemo(function() {
-    return roles.find(function(role) { return Number(role.id) === Number(form.roleId) }) || null
-  }, [form.roleId, roles])
-
-  const availablePermissionOptions = useMemo(function() {
-    return PERM_GROUPS.flatMap(function(group) {
-      return group.perms.map(function(permission) {
-        const key = group.key + '_' + permission.toLowerCase().replace(/\s+/g, '_')
-        return { key, label: group.label + ' - ' + permission }
-      })
-    }).filter(function(item) {
-      return !form.permissions.includes(item.key)
-    })
-  }, [form.permissions])
-
-  function updateField(key, value) {
-    setForm(function(current) {
-      if (key === 'trustId') return { ...current, trustId: value, sanghId: '', departmentId: '' }
-      if (key === 'sanghId') return { ...current, sanghId: value, departmentId: '' }
-      return { ...current, [key]: value }
-    })
-  }
-
-  function toggleStarterDocument(type) {
-    setForm(function(current) {
-      const exists = current.starterDocuments.includes(type)
-      return {
-        ...current,
-        starterDocuments: exists
-          ? current.starterDocuments.filter(function(item) { return item !== type })
-          : current.starterDocuments.concat(type),
-      }
-    })
-  }
-
-  function togglePermission(permissionKey) {
-    setForm(function(current) {
-      const exists = current.permissions.includes(permissionKey)
-      return {
-        ...current,
-        permissions: exists
-          ? current.permissions.filter(function(item) { return item !== permissionKey })
-          : current.permissions.concat(permissionKey),
-      }
-    })
-  }
-
-  function addPermission() {
-    if (!permissionToAdd) return
-    togglePermission(permissionToAdd)
-    setPermissionToAdd('')
-  }
-
-  function handleAvatarChange(event) {
-    const file = event.target.files && event.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = function(loadEvent) {
-      updateField('avatar', String(loadEvent.target?.result || ''))
-    }
-    reader.readAsDataURL(file)
-  }
-
-  function validate() {
-    const nextErrors = {}
-    if (!form.name.trim()) nextErrors.name = 'Full name is required'
-    if (!form.phone.trim()) nextErrors.phone = 'Phone number is required'
-    if (!form.roleId) nextErrors.roleId = 'Role selection is required'
-    if (!form.trustId) nextErrors.trustId = 'Trust selection is required'
-    if (!form.sanghId) nextErrors.sanghId = 'Sangh selection is required'
-    if (!form.departmentId) nextErrors.departmentId = 'Department selection is required'
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Enter a valid email address'
-    setErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    if (!validate()) return
-    onSave({
-      ...form,
-      roleId: Number(form.roleId),
-      trustId: Number(form.trustId),
-      sanghId: Number(form.sanghId),
-      departmentId: Number(form.departmentId),
-      name: form.name.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      notes: form.notes.trim(),
-    })
-  }
-
-  const fieldClass = 'w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-[12px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-50 focus:border-teal-500 transition-all font-medium'
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-[22px] border border-teal-100 bg-gradient-to-r from-teal-50/80 via-white to-emerald-50/70 p-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
-            <img src={form.avatar || DEFAULT_PROFILE_IMAGE} alt="Profile preview" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[13px] font-semibold text-slate-800">Profile Photo</p>
-            <p className="text-[11px] text-slate-400 mt-1">Upload if you want custom image, otherwise default profile image will be used.</p>
-          </div>
-          <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-slate-200 text-[12px] font-semibold text-slate-600 hover:border-teal-200 hover:text-teal-700 cursor-pointer transition-all">
-            <Upload className="w-4 h-4" />
-            Upload
-            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-          </label>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Input label="Full Name" required placeholder="Enter full name" value={form.name} onChange={function(event) { updateField('name', event.target.value) }} error={errors.name} />
-        <Input label="Phone Number" required placeholder="+91 98765 43210" value={form.phone} onChange={function(event) { updateField('phone', event.target.value) }} error={errors.phone} />
-        <Input label="Email Address" type="email" placeholder="name@organization.com" value={form.email} onChange={function(event) { updateField('email', event.target.value) }} error={errors.email} />
-        <div className="space-y-1.5">
-          <label className="block text-[13px] font-medium text-slate-600">Role <span className="text-rose-500">*</span></label>
-          <select value={form.roleId} onChange={function(event) { updateField('roleId', event.target.value) }} className={fieldClass}>
-            <option value="">Select role</option>
-            {roles.map(function(role) { return <option key={role.id} value={role.id}>{role.name}</option> })}
-          </select>
-          {errors.roleId ? <p className="text-xs text-rose-500">{errors.roleId}</p> : null}
-        </div>
-        <div className="space-y-1.5">
-          <label className="block text-[13px] font-medium text-slate-600">Trust <span className="text-rose-500">*</span></label>
-          <select value={form.trustId} onChange={function(event) { updateField('trustId', event.target.value) }} className={fieldClass}>
-            <option value="">Select trust</option>
-            {trusts.map(function(trust) { return <option key={trust.id} value={trust.id}>{trust.name}</option> })}
-          </select>
-          {errors.trustId ? <p className="text-xs text-rose-500">{errors.trustId}</p> : null}
-        </div>
-        <div className="space-y-1.5">
-          <label className="block text-[13px] font-medium text-slate-600">Sangh <span className="text-rose-500">*</span></label>
-          <select value={form.sanghId} onChange={function(event) { updateField('sanghId', event.target.value) }} className={fieldClass}>
-            <option value="">Select sangh</option>
-            {availableSanghs.map(function(sangh) { return <option key={sangh.id} value={sangh.id}>{sangh.name}</option> })}
-          </select>
-          {errors.sanghId ? <p className="text-xs text-rose-500">{errors.sanghId}</p> : null}
-        </div>
-        <div className="space-y-1.5">
-          <label className="block text-[13px] font-medium text-slate-600">Department <span className="text-rose-500">*</span></label>
-          <select value={form.departmentId} onChange={function(event) { updateField('departmentId', event.target.value) }} className={fieldClass}>
-            <option value="">Select department</option>
-            {availableDepartments.map(function(department) { return <option key={department.id} value={department.id}>{department.name}</option> })}
-          </select>
-          {errors.departmentId ? <p className="text-xs text-rose-500">{errors.departmentId}</p> : null}
-        </div>
-        <div className="space-y-1.5">
-          <label className="block text-[13px] font-medium text-slate-600">Status</label>
-          <select value={form.status} onChange={function(event) { updateField('status', event.target.value) }} className={fieldClass}>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-        <div className="space-y-1.5 md:col-span-2">
-          <label className="block text-[13px] font-medium text-slate-600">Notes</label>
-          <textarea rows={3} value={form.notes} onChange={function(event) { updateField('notes', event.target.value) }} placeholder="Add short notes..." className={`${fieldClass} resize-none`} />
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">
-            {selectedRole?.name || 'Select role'}
-          </span>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-            {selectedRole ? getCount(selectedRole) : 0} / {form.permissions.length} extra
-          </span>
-        </div>
-        <div className="mt-3 flex flex-col md:flex-row gap-3">
-          <select value={permissionToAdd} onChange={function(event) { setPermissionToAdd(event.target.value) }} className={fieldClass}>
-            <option value="">Select extra permission</option>
-            {availablePermissionOptions.map(function(option) {
-              return <option key={option.key} value={option.key}>{option.label}</option>
-            })}
-          </select>
-          <Button type="button" onClick={addPermission} disabled={!permissionToAdd}>Add</Button>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {form.permissions.length ? form.permissions.map(function(permissionKey) {
-            return (
-              <button key={permissionKey} type="button" onClick={function() { togglePermission(permissionKey) }}>
-                <PermissionChip label={permissionKey.split('_').slice(1).join(' ')} granted={true} />
-              </button>
-            )
-          }) : <div className="text-[12px] text-slate-400">No extra permissions selected.</div>}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <p className="text-[13px] font-semibold text-slate-800">Starter Documents</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {DOC_OPTIONS.map(function(type) {
-            const selected = form.starterDocuments.includes(type)
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={function() { toggleStarterDocument(type) }}
-                className={`rounded-full px-3.5 py-2 text-[11px] font-semibold transition-all ${
-                  selected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {type}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-3 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">{user ? 'Save Changes' : 'Create User'}</Button>
-      </div>
-    </form>
-  )
-}
-
-function InlineUserQuickView({ user, role, trust, department, status, documents, onEdit, onDelete, onDocUpload, onDocDelete, onStatusChange }) {
-  const [activeTab, setActiveTab] = useState('Overview')
-  if (!user) return null
-
-  const tabs = ['Overview', 'Permissions', 'Documents']
-  const statItems = [
-    { label: 'Role', value: role?.name || '-', icon: ShieldCheck },
-    { label: 'Trust', value: trust?.name || '-', icon: Building2 },
-    { label: 'Documents', value: String(documents.length), icon: FileText },
-    { label: 'Permissions', value: `${role ? getCount(role) : 0} / ${(user.permissions || []).length}`, icon: ShieldCheck },
-  ]
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-[24px] border border-slate-200 bg-white p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 min-w-0">
-            <img src={user.avatar || DEFAULT_PROFILE_IMAGE} alt={user.name} className="w-16 h-16 rounded-full object-cover border border-slate-200 shadow-sm shrink-0" />
-            <div className="min-w-0 space-y-1">
-              <h2 className="text-[18px] font-bold text-slate-900 truncate">{user.name}</h2>
-              <p className="text-[12px] font-medium text-slate-500">{role?.name || 'No role assigned'}</p>
-              <div className="pt-1">
-                <UserStatusToggle status={status} onChange={onStatusChange} />
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button type="button" onClick={onEdit} className="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center justify-center">
-              <Pencil className="w-4 h-4" />
-            </button>
-            <button type="button" onClick={onDelete} className="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        {statItems.map(function(item) {
-          return <InfoTile key={item.label} label={item.label} value={item.value} icon={item.icon} />
-        })}
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-2 flex flex-wrap gap-2">
-        {tabs.map(function(tab) {
-          return (
-            <button
-              key={tab}
-              type="button"
-              onClick={function() { setActiveTab(tab) }}
-              className={`px-4 py-2 rounded-xl text-[12px] font-medium transition-all ${
-                activeTab === tab ? 'bg-teal-600 text-white' : 'text-slate-500 hover:bg-slate-50'
-              }`}
-            >
-              {tab}
-            </button>
-          )
-        })}
-      </div>
-
-      {activeTab === 'Overview' ? (
-        <div className="grid grid-cols-2 gap-3">
-          <InfoTile label="Email" value={user.email} icon={Mail} />
-          <InfoTile label="Phone" value={user.phone} icon={Phone} />
-          <InfoTile label="Joined" value={user.joined} icon={CalendarDays} />
-          <InfoTile label="Department" value={department?.name || '-'} icon={FileText} />
-          <div className="col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Notes</p>
-            <p className="mt-2 text-[12px] leading-6 text-slate-600">{user.notes || 'No note added yet.'}</p>
-          </div>
-        </div>
-      ) : null}
-
-      {activeTab === 'Permissions' ? <PermissionSummary role={role} extraPerms={user.permissions || []} /> : null}
-
-      {activeTab === 'Documents' ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <UserDocuments documents={documents} onUpload={onDocUpload} onDelete={onDocDelete} />
-        </div>
-      ) : null}
-    </div>
-  )
+  );
 }
 
 export default function UserList() {
-  const [users, setUsers] = useState(function() {
-    try {
-      const stored = localStorage.getItem('users_full')
-      return stored ? JSON.parse(stored) : INITIAL_USERS
-    } catch {
-      return INITIAL_USERS
-    }
-  })
-  const [docs, setDocs] = useState(function() {
-    try {
-      const stored = localStorage.getItem('user_docs')
-      return stored ? JSON.parse(stored) : INITIAL_USER_DOCS
-    } catch {
-      return INITIAL_USER_DOCS
-    }
-  })
-  const [activities, setActivities] = useState(function() {
-    try {
-      const stored = localStorage.getItem('user_activities')
-      return stored ? JSON.parse(stored) : INITIAL_ACTIVITIES
-    } catch {
-      return INITIAL_ACTIVITIES
-    }
-  })
-  const [roles] = useState(function() {
-    try {
-      const stored = localStorage.getItem('rp_roles')
-      return stored ? JSON.parse(stored) : INITIAL_ROLES
-    } catch {
-      return INITIAL_ROLES
-    }
-  })
-  const [trusts] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
-    }
-  })
-  const [sanghs] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
-    }
-  })
-  const [departments] = useState(function() {
-    try {
-      const stored = localStorage.getItem('org_departments')
-      return stored ? JSON.parse(stored) : INITIAL_DEPARTMENTS
-    } catch {
-      return INITIAL_DEPARTMENTS
-    }
-  })
+  const showToast = useToast();
+  const filterRef = useRef(null);
 
-  const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({})
-  const [showModal, setShowModal] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
-  const [selectedUserId, setSelectedUserId] = useState(null)
-  const [deleteId, setDeleteId] = useState(null)
-  const [page, setPage] = useState(1)
+  const [users, setUsers] = useState(() => {
+    const s = localStorage.getItem('users_master');
+    return s ? JSON.parse(s) : INITIAL_USERS;
+  });
+  const [docs, setDocs] = useState(() => {
+    const s = localStorage.getItem('user_docs_master');
+    return s ? JSON.parse(s) : INITIAL_USER_DOCS;
+  });
+  const [activities, setActivities] = useState(() => {
+    const s = localStorage.getItem('user_activities_master');
+    return s ? JSON.parse(s) : INITIAL_ACTIVITIES;
+  });
 
-  useEffect(function() {
-    localStorage.setItem('users_full', JSON.stringify(users))
-  }, [users])
+  useEffect(() => localStorage.setItem('users_master', JSON.stringify(users)), [users]);
+  useEffect(() => localStorage.setItem('user_docs_master', JSON.stringify(docs)), [docs]);
+  useEffect(() => localStorage.setItem('user_activities_master', JSON.stringify(activities)), [activities]);
 
-  useEffect(function() {
-    localStorage.setItem('user_docs', JSON.stringify(docs))
-  }, [docs])
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  useEffect(function() {
-    localStorage.setItem('user_activities', JSON.stringify(activities))
-  }, [activities])
+  const [viewUser, setViewUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const filteredUsers = useMemo(function() {
-    return users.filter(function(user) {
-      const query = search.toLowerCase()
-      const role = roles.find(function(item) { return item.id === user.roleId })
-      const status = getDisplayStatus(user.status)
-      const matchesSearch = !query || [user.name, user.phone, user.email, role?.name].some(function(value) {
-        return String(value || '').toLowerCase().includes(query)
-      })
+  useEffect(() => {
+    const handler = (e) => { if (filterRef.current && !filterRef.current.contains(e.target)) setIsFilterOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-      if (!matchesSearch) return false
-      if (filters.role && Number(filters.role) !== user.roleId) return false
-      if (filters.status && filters.status !== status) return false
-      if (filters.trust && Number(filters.trust) !== user.trustId) return false
-      if (filters.sangh && Number(filters.sangh) !== user.sanghId) return false
-      return true
-    })
-  }, [filters, roles, search, users])
+  const enriched = useMemo(() => users.map(u => ({
+    ...u,
+    roleName:       INITIAL_ROLES.find(r => r.id === u.roleId)?.name || '—',
+    trustName:      INITIAL_TRUSTS.find(t => t.id === u.trustId)?.name || '—',
+    sanghName:      INITIAL_SANGHS.find(s => s.id === u.sanghId)?.name || '—',
+    deptName:       INITIAL_DEPARTMENTS.find(d => d.id === u.departmentId)?.name || '—',
+    approvalStatus: u.approvalStatus || 'Approved',
+  })), [users]);
 
-  const stats = useMemo(function() {
-    const counts = getStatusCounts(users.map(function(user) {
-      return { ...user, status: getDisplayStatus(user.status) }
-    }))
+  const filtered = useMemo(() => enriched.filter(u => {
+    const q = search.toLowerCase();
+    return (
+      (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone.includes(q)) &&
+      (!filters.status         || u.status === filters.status) &&
+      (!filters.trustId        || Number(u.trustId) === Number(filters.trustId)) &&
+      (!filters.sanghId        || Number(u.sanghId) === Number(filters.sanghId)) &&
+      (!filters.departmentId   || Number(u.departmentId) === Number(filters.departmentId)) &&
+      (!filters.roleId         || Number(u.roleId) === Number(filters.roleId)) &&
+      (!filters.approvalStatus || u.approvalStatus === filters.approvalStatus)
+    );
+  }), [enriched, search, filters]);
+
+  const stats = useMemo(() => {
+    const c = getStatusCounts(users);
     return [
-      { title: 'Total Users', value: counts.Total, icon: Users, color: 'teal' },
-      { title: 'Active', value: counts.Active, icon: UserCheck, color: 'emerald' },
-      { title: 'Inactive', value: counts.Inactive, icon: UserX, color: 'sky' },
-    ]
-  }, [users])
+      { title: 'Total Users', value: c.Total,    icon: Users,     color: 'teal' },
+      { title: 'Active',      value: c.Active,   icon: UserCheck, color: 'emerald' },
+      { title: 'Inactive',    value: c.Inactive, icon: UserX,     color: 'sky' },
+    ];
+  }, [users]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE))
-  const currentPage = Math.min(page, totalPages)
-  const pageNumbers = useMemo(function() {
-    return Array.from({ length: totalPages }, function(_, index) { return index + 1 })
-  }, [totalPages])
-  const visibleUsers = useMemo(function() {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    return filteredUsers.slice(start, start + ITEMS_PER_PAGE)
-  }, [currentPage, filteredUsers])
+  const paginated = useMemo(() => {
+    const s = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(s, s + itemsPerPage);
+  }, [filtered, currentPage, itemsPerPage]);
 
-  const selectedUser = useMemo(function() {
-    return users.find(function(user) { return user.id === selectedUserId }) || null
-  }, [selectedUserId, users])
+  const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
-  const selectedRole = useMemo(function() {
-    return selectedUser ? roles.find(function(item) { return item.id === selectedUser.roleId }) : null
-  }, [roles, selectedUser])
+  const handleToggleStatus = (userId) => {
+    const user = users.find(u => u.id === userId);
+    const next = user.status === 'Active' ? 'Inactive' : 'Active';
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: next } : u));
+    if (viewUser?.id === userId) setViewUser(prev => ({ ...prev, status: next }));
+    showToast(`User status updated to ${next} successfully.`);
+    setActivities(prev => [{ id: Date.now(), userId, action: 'status_change', doneBy: 'Admin', description: `Status changed to ${next}`, date: new Date().toISOString().slice(0, 16).replace('T', ' ') }, ...prev]);
+  };
 
-  const selectedTrust = useMemo(function() {
-    return selectedUser ? trusts.find(function(item) { return item.id === selectedUser.trustId }) : null
-  }, [selectedUser, trusts])
+  const handleSaveUser = (formData) => {
+    if (editingUser) {
+      setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
+    } else {
+      const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+      setUsers(prev => [...prev, { ...formData, id: newId, joined: new Date().toISOString().split('T')[0] }]);
+    }
+    setIsFormOpen(false);
+    setEditingUser(null);
+  };
 
-  const selectedSangh = useMemo(function() {
-    return selectedUser ? sanghs.find(function(item) { return item.id === selectedUser.sanghId }) : null
-  }, [sanghs, selectedUser])
-
-  const selectedDepartment = useMemo(function() {
-    return selectedUser ? departments.find(function(item) { return item.id === selectedUser.departmentId }) : null
-  }, [departments, selectedUser])
-
-  const selectedDocs = useMemo(function() {
-    return selectedUser ? docs.filter(function(item) { return item.userId === selectedUser.id }) : []
-  }, [docs, selectedUser])
+  const handleDelete = () => {
+    setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+    setDeleteTarget(null);
+    showToast('User deleted successfully.');
+  };
 
   const filterOptions = [
-    { key: 'trust', placeholder: 'All Trusts', items: trusts.map(function(trust) { return { value: trust.id, label: trust.name } }) },
-    { key: 'sangh', placeholder: 'All Sanghs', items: sanghs.map(function(sangh) { return { value: sangh.id, label: sangh.name } }) },
-    { key: 'role', placeholder: 'All Roles', items: roles.map(function(role) { return { value: role.id, label: role.name } }) },
-    { key: 'status', placeholder: 'All Status', items: ['Active', 'Inactive'] },
-  ]
-
-  function openAddModal() {
-    setPage(1)
-    setEditingUser(null)
-    setShowModal(true)
-  }
-
-  function openEditModal(user) {
-    setSelectedUserId(null)
-    setEditingUser(user)
-    setShowModal(true)
-  }
-
-  function closeModal() {
-    setEditingUser(null)
-    setShowModal(false)
-  }
-
-  function openUserDetails(user) {
-    setSelectedUserId(user.id)
-  }
-
-  function closeUserDetails() {
-    setSelectedUserId(null)
-  }
-
-  function handleSave(data) {
-    const timestamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    const joinedDate = new Date().toISOString().split('T')[0]
-    const starterDocuments = Array.isArray(data.starterDocuments) ? data.starterDocuments : []
-    const userPayload = {
-      ...data,
-      starterDocuments: undefined,
-    }
-
-    if (editingUser) {
-      setUsers(function(current) {
-        return current.map(function(user) {
-          return user.id === editingUser.id ? { ...user, ...userPayload } : user
-        })
-      })
-      if (starterDocuments.length) {
-        setDocs(function(current) {
-          const existingTypes = current
-            .filter(function(item) { return item.userId === editingUser.id })
-            .map(function(item) { return item.type })
-          const newDocs = starterDocuments
-            .filter(function(type) { return !existingTypes.includes(type) })
-            .map(function(type, index) {
-              return {
-                id: Date.now() + index,
-                userId: editingUser.id,
-                type,
-                fileName: type.toLowerCase().replace(/\s+/g, '_') + '.pdf',
-                status: 'Pending',
-                uploadedDate: joinedDate,
-                uploadDate: joinedDate,
-                uploadedBy: 'Admin',
-                notes: 'Added from edit user form',
-              }
-            })
-          return current.concat(newDocs)
-        })
-      }
-      setActivities(function(current) {
-        return current.concat([{ id: Date.now(), userId: editingUser.id, action: 'updated', description: 'User details updated', doneBy: 'Admin', date: timestamp }])
-      })
-    } else {
-      const nextId = users.reduce(function(maxId, user) { return Math.max(maxId, user.id) }, 0) + 1
-      setUsers(function(current) {
-        return current.concat([{ ...userPayload, id: nextId, joined: joinedDate, lastLogin: '-', committee: false }])
-      })
-      if (starterDocuments.length) {
-        setDocs(function(current) {
-          return current.concat(
-            starterDocuments.map(function(type, index) {
-              return {
-                id: Date.now() + index,
-                userId: nextId,
-                type,
-                fileName: type.toLowerCase().replace(/\s+/g, '_') + '.pdf',
-                status: 'Pending',
-                uploadedDate: joinedDate,
-                uploadDate: joinedDate,
-                uploadedBy: 'Admin',
-                notes: 'Added during user creation',
-              }
-            })
-          )
-        })
-      }
-      setActivities(function(current) {
-        return current.concat([{ id: Date.now(), userId: nextId, action: 'created', description: 'User created', doneBy: 'Admin', date: timestamp }])
-      })
-    }
-    closeModal()
-  }
-
-  function handleStatusChange(nextStatus) {
-    if (!selectedUser || nextStatus === selectedUser.status) return
-
-    const timestamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    setUsers(function(current) {
-      return current.map(function(user) {
-        return user.id === selectedUser.id ? { ...user, status: nextStatus } : user
-      })
-    })
-    setActivities(function(current) {
-      return current.concat([{
-        id: Date.now(),
-        userId: selectedUser.id,
-        action: 'status_change',
-        description: 'Status changed from ' + selectedUser.status + ' to ' + nextStatus,
-        doneBy: 'Admin',
-        date: timestamp,
-      }])
-    })
-  }
-
-  function handleDocUpload(docData) {
-    if (!selectedUser) return
-    const createdDate = new Date().toISOString().split('T')[0]
-    setDocs(function(current) {
-      return current.concat([{
-        id: Date.now(),
-        userId: selectedUser.id,
-        type: docData.type,
-        fileName: docData.type.toLowerCase().replace(/\s+/g, '_') + '.pdf',
-        status: 'Pending',
-        uploadedDate: createdDate,
-        uploadDate: createdDate,
-        uploadedBy: 'Admin',
-        notes: docData.notes || '',
-      }])
-    })
-    setActivities(function(current) {
-      return current.concat([{
-        id: Date.now() + 1,
-        userId: selectedUser.id,
-        action: 'updated',
-        description: docData.type + ' document was added to the profile.',
-        doneBy: 'Admin',
-        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      }])
-    })
-  }
-
-  function handleDocDelete(docId) {
-    if (!selectedUser) return
-    setDocs(function(current) {
-      return current.filter(function(item) { return item.id !== docId })
-    })
-  }
-
-  function handleDelete() {
-    setUsers(function(current) {
-      return current.filter(function(user) { return user.id !== deleteId })
-    })
-    setDocs(function(current) {
-      return current.filter(function(item) { return item.userId !== deleteId })
-    })
-    setActivities(function(current) {
-      return current.filter(function(item) { return item.userId !== deleteId })
-    })
-    if (selectedUserId === deleteId) setSelectedUserId(null)
-    setDeleteId(null)
-  }
+    { key: 'status',         label: 'Status',          items: [{ value: 'Active', label: 'Active' }, { value: 'Inactive', label: 'Inactive' }] },
+    { key: 'roleId',         label: 'Role',            items: INITIAL_ROLES.map(r => ({ value: r.id, label: r.name })) },
+  ];
 
   return (
-    <>
-      <CommonPageLayout
-        title="User Management"
-        subtitle="Manage trust, sangh, accounts, and committee users within the current hierarchy."
-        action={<Button icon={Plus} onClick={openAddModal}>Add User</Button>}
-        stats={stats}
-        searchValue={search}
-        onSearchChange={function(value) {
-          setPage(1)
-          setSearch(value)
-        }}
-        searchPlaceholder="Search by name, phone, email, or role..."
-        toolbar={<FilterBar filters={filters} options={filterOptions} onChange={function(key, value) { setPage(1); setFilters({ ...filters, [key]: value }) }} onClear={function() { setPage(1); setFilters({}); setSearch('') }} />}
-        isEmpty={!filteredUsers.length}
-        emptyState={<EmptyState message="No users found" description="Adjust the filters or add a user to the selected trust or sangh." icon={Users} action={<Button variant="secondary" size="sm" icon={Plus} onClick={openAddModal}>Add User</Button>} />}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {visibleUsers.map(function(user, index) {
-            const role = roles.find(function(item) { return item.id === user.roleId })
-            const trust = trusts.find(function(item) { return item.id === user.trustId })
-            const sangh = sanghs.find(function(item) { return item.id === user.sanghId })
-            const displayStatus = getDisplayStatus(user.status)
-            return (
-              <UserCard
-                key={user.id}
-                user={user}
-                role={role}
-                trust={trust}
-                sangh={sangh}
-                status={displayStatus}
-                onView={function() { openUserDetails(user) }}
-                index={index}
+    <div className="-mx-5 lg:-mx-7 -mt-8 lg:-mt-10 bg-slate-50/40 min-h-screen font-sans pb-10">
+      <div className="px-5 lg:px-7 pt-8 pb-4 space-y-5">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent tracking-tight">
+          User Management
+        </h1>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {stats.map(s => <StatCard key={s.title} {...s} />)}
+        </div>
+      </div>
+
+      <div className="px-5 lg:px-7 mt-2">
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-lg shadow-slate-200/40">
+
+          {/* Toolbar */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-5">
+            <div className="relative w-full md:w-80 group">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-600" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-sm font-semibold text-slate-700 outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               />
-            )
-          })}
-        </div>
+            </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-[13px] text-slate-500">
-            {filteredUsers.length ? (
-              <>
-                  Showing <span className="font-semibold text-slate-700">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span>
-                  -
-                  <span className="font-semibold text-slate-700">{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}</span>
-                  {' '}of <span className="font-semibold text-slate-700">{filteredUsers.length}</span> users
-                </>
-              ) : (
-                <>
-                  <span className="font-semibold text-slate-700">0</span> of <span className="font-semibold text-slate-700">0</span> users
-                </>
-              )}
-            </p>
-            {filteredUsers.length > ITEMS_PER_PAGE ? (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 w-full md:w-auto justify-end" ref={filterRef}>
+              <div className="relative">
                 <button
-                  type="button"
-                  onClick={function() { setPage(function(value) { return Math.max(1, value - 1) }) }}
-                  disabled={currentPage === 1}
-                  className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center transition-all hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={() => setIsFilterOpen(v => !v)}
+                  className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-bold shadow-sm transition-all ${isFilterOpen || hasActiveFilters ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-600'}`}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <SlidersHorizontal size={16} strokeWidth={2.5} className="text-emerald-600" />
+                  Filter
+                  {hasActiveFilters && (
+                    <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      {Object.values(filters).filter(v => v !== '').length}
+                    </span>
+                  )}
                 </button>
-                {pageNumbers.map(function(pageNumber) {
-                  return (
-                    <button
-                      key={pageNumber}
-                      type="button"
-                      onClick={function() { setPage(pageNumber) }}
-                      className={`min-w-[40px] h-10 rounded-xl px-3 text-[12px] font-semibold transition-all ${
-                        currentPage === pageNumber
-                          ? 'bg-teal-600 text-white shadow-sm'
-                          : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  )
-                })}
-                <button
-                  type="button"
-                  onClick={function() { setPage(function(value) { return Math.min(totalPages, value + 1) }) }}
-                  disabled={currentPage === totalPages}
-                  className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center transition-all hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+
+                  {isFilterOpen && (
+                  <div className="absolute right-0 mt-3 w-72 bg-white border border-slate-100 shadow-2xl rounded-2xl z-[100] p-5 font-sans">
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                      <h3 className="text-[13px] font-bold text-slate-700">Filter By</h3>
+                      {hasActiveFilters && (
+                        <button onClick={() => { setFilters(DEFAULT_FILTERS); setSearch(''); setCurrentPage(1); }} className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700">Clear All</button>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+
+                      {/* Status — radio like Location */}
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status</label>
+                        <div className="flex items-center gap-4">
+                          {[{ val: '', label: 'All' }, { val: 'Active', label: 'Active' }, { val: 'Inactive', label: 'Inactive' }].map(({ val, label }) => (
+                            <label key={label} className="flex items-center gap-2 cursor-pointer group">
+                              <input type="radio" name="filter_status" className="hidden" checked={filters.status === val} onChange={() => { setFilters(prev => ({ ...prev, status: val })); setCurrentPage(1); }} />
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${filters.status === val ? 'border-emerald-500' : 'border-slate-300 group-hover:border-emerald-400'}`}>
+                                {filters.status === val && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                              </div>
+                              <span className={`text-xs font-bold ${filters.status === val ? 'text-slate-700' : 'text-slate-400'}`}>{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Other filters — dropdown, instant apply */}
+                      {filterOptions.filter(o => o.key !== 'status').map(opt => (
+                        <div key={opt.key} className="space-y-1.5">
+                          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{opt.label}</label>
+                          <div className="relative">
+                            <select
+                              className="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none appearance-none focus:border-emerald-500 transition-all"
+                              value={filters[opt.key] || ''}
+                              onChange={(e) => { setFilters(prev => ({ ...prev, [opt.key]: e.target.value })); setCurrentPage(1); }}
+                            >
+                              <option value="">All {opt.label}</option>
+                              {opt.items.map(item => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                              ))}
+                            </select>
+                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <button onClick={() => { setFilters(DEFAULT_FILTERS); setSearch(''); setCurrentPage(1); setIsFilterOpen(false); }} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all">Reset</button>
+                      <button onClick={() => setIsFilterOpen(false)} className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all">Done</button>
+                    </div>
+                  </div>
+                )}
               </div>
-            ) : null}
+
+              <button
+                onClick={() => { setEditingUser(null); setIsFormOpen(true); }}
+                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold px-5 py-2.5 transition-all shadow-md text-sm hover:opacity-90"
+              >
+                <Plus size={16} strokeWidth={2.5} /> ADD USER
+              </button>
+            </div>
           </div>
+
+          {/* Table */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+            <table className="w-full table-fixed border-collapse">
+              <thead>
+                <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
+                  <th className="w-[10%] px-6 py-3 text-center">Sr. No.</th>
+                  <th className="w-[35%] px-6 py-3 text-center">User Name</th>
+                  <th className="w-[25%] px-6 py-3 text-center">Role</th>
+                  <th className="w-[15%] px-6 py-3 text-center">Status</th>
+                  <th className="w-[15%] px-6 py-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {paginated.length > 0 ? paginated.map((u, idx) => (
+                  <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-3 text-center text-sm font-medium text-slate-500 align-middle">
+                      {(currentPage - 1) * itemsPerPage + idx + 1}
+                    </td>
+                    <td className="px-6 py-3 text-center text-sm font-medium text-slate-500 align-middle">
+                      {u.name}
+                    </td>
+                    <td className="px-6 py-3 text-center align-middle">
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 text-[11px] font-bold border border-teal-100">
+                        {u.roleName}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-center align-middle">
+                      <Toggle active={u.status === 'Active'} onToggle={() => handleToggleStatus(u.id)} />
+                    </td>
+                    <td className="px-6 py-3 text-center align-middle">
+                      <div className="flex items-center justify-center gap-3">
+                        <button onClick={() => setViewUser(enriched.find(e => e.id === u.id))} className="text-slate-400 hover:text-emerald-600 transition-all p-1 hover:bg-emerald-50 rounded-full">
+                          <Eye size={15} />
+                        </button>
+                        <button onClick={() => { setEditingUser(u); setIsFormOpen(true); }} className="text-slate-400 hover:text-emerald-600 transition-all p-1 hover:bg-emerald-50 rounded-full">
+                          <Edit2 size={15} />
+                        </button>
+                        <button onClick={() => setDeleteTarget({ id: u.id, name: u.name })} className="text-slate-400 hover:text-rose-500 transition-all p-1 hover:bg-rose-50 rounded-full">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-sm text-slate-400">No matching records found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={filtered.length}
+            recordsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onRecordsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+          />
         </div>
-      </CommonPageLayout>
+      </div>
 
-      <Modal
-        isOpen={showModal}
-        onClose={closeModal}
-        title={editingUser ? 'Edit User' : 'Add User'}
-        subtitle={editingUser ? 'Update the selected user profile with the latest organization details.' : 'Create a clean user profile that matches your trust and sangh structure.'}
-        size="xl"
-      >
-        <InlineUserForm user={editingUser} roles={roles} trusts={trusts} sanghs={sanghs} departments={departments} onSave={handleSave} onCancel={closeModal} />
-      </Modal>
+      {/* View Popup */}
+      {viewUser && (
+        <UserViewPopup
+          user={viewUser}
+          onClose={() => setViewUser(null)}
+          onEdit={() => { setViewUser(null); setEditingUser(enriched.find(e => e.id === viewUser.id)); setIsFormOpen(true); }}
+          onToggleStatus={() => handleToggleStatus(viewUser.id)}
+        />
+      )}
 
-      <Modal
-        isOpen={!!selectedUser}
-        onClose={closeUserDetails}
-        title="User Details"
-        subtitle="Review the profile, update status, and open the full edit form from here."
-        size="lg"
-      >
-        <InlineUserQuickView
-          user={selectedUser}
-          role={selectedRole}
-          trust={selectedTrust}
-          sangh={selectedSangh}
-          department={selectedDepartment}
-          status={selectedUser ? getDisplayStatus(selectedUser.status) : 'Inactive'}
-          documents={selectedDocs}
-          onEdit={function() {
-            if (!selectedUser) return
-            closeUserDetails()
-            openEditModal(selectedUser)
-          }}
-          onDelete={function() {
-            if (!selectedUser) return
-            setDeleteId(selectedUser.id)
-          }}
-          onDocUpload={handleDocUpload}
-          onDocDelete={handleDocDelete}
-          onStatusChange={handleStatusChange}
+      {/* Add / Edit Form */}
+      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} title={editingUser ? 'Update Profile' : 'Onboard New User'} size="xl">
+        <UserForm
+          user={editingUser}
+          roles={INITIAL_ROLES}
+          trusts={INITIAL_TRUSTS}
+          sanghs={INITIAL_SANGHS}
+          departments={INITIAL_DEPARTMENTS}
+          onSave={handleSaveUser}
+          onCancel={() => setIsFormOpen(false)}
         />
       </Modal>
 
-      <ConfirmModal
-        isOpen={!!deleteId}
-        onClose={function() { setDeleteId(null) }}
-        onConfirm={handleDelete}
-        title="Delete User?"
-        message="This user and its related documents will be removed from the current list."
-      />
-    </>
-  )
+      {/* Delete Confirm */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-[280px] rounded-[24px] p-6 text-center shadow-2xl">
+            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={24} />
+            </div>
+            <h3 className="font-medium text-slate-800 text-sm">Confirm Delete?</h3>
+            <p className="text-[11px] text-slate-400 mt-1">{deleteTarget.name} will be removed permanently.</p>
+            <div className="flex gap-2 mt-6">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 text-xs font-medium text-slate-400 bg-slate-50 rounded-xl">No</button>
+              <button onClick={handleDelete} className="flex-1 py-2 text-xs font-medium text-white bg-rose-500 rounded-xl shadow-lg">Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
+// ── UserViewPopup — same style as LocationTable modal ────────────────────────
+function UserViewPopup({ user, onClose, onEdit, onToggleStatus }) {
+  const role = INITIAL_ROLES.find(r => r.id === user.roleId);
+
+  const permGroups = PERM_GROUPS.map(group => {
+    const granted = group.perms.filter(perm => {
+      const key = `${group.key}_${perm.toLowerCase().replace(/\s+/g, '_')}`;
+      if (!role) return false;
+      if (role.permissions === 'all') return true;
+      return Array.isArray(role.permissions) && role.permissions.includes(key);
+    });
+    return { ...group, granted };
+  }).filter(g => g.granted.length > 0);
+
+  const infoRows = [
+    { label: 'Full Name',   value: user.name },
+    { label: 'Email',       value: user.email },
+    { label: 'Mobile',      value: user.phone },
+    { label: 'Role',        value: user.roleName },
+    { label: 'Trust',       value: user.trustName },
+    { label: 'Sangh',       value: user.sanghName },
+    { label: 'Department',  value: user.deptName },
+    { label: 'Joined Date', value: user.joined },
+    { label: 'Last Login',  value: user.lastLogin || '—' },
+    { label: 'Committee',   value: user.committee ? `Yes — ${user.committeeRole || ''}` : 'No' },
+    { label: 'Notes',       value: user.notes || '—' },
+  ];
+
+  const badgeColor = (perm) => {
+    if (perm === 'View')   return 'bg-sky-50 text-sky-600 border-sky-100';
+    if (perm === 'Create') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+    if (perm === 'Edit')   return 'bg-amber-50 text-amber-600 border-amber-100';
+    if (perm === 'Delete') return 'bg-rose-50 text-rose-600 border-rose-100';
+    return 'bg-slate-50 text-slate-600 border-slate-100';
+  };
+
+  return (
+    <div className="fixed inset-0 z-[400] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 font-sans">
+      <div className="bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+
+        {/* Header */}
+        <div className="px-8 pt-6 pb-0 shrink-0">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              <button onClick={onClose} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors">
+                <ArrowLeft size={18} className="text-slate-600" />
+              </button>
+              <h3 className="font-medium text-slate-800 text-lg tracking-tight">User Details</h3>
+            </div>
+            <button onClick={onClose} className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-full transition-all">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="w-full h-[1px] bg-slate-100 mb-6" />
+        </div>
+
+        {/* Scrollable body */}
+        <div className="px-8 pb-8 pt-2 overflow-y-auto space-y-3">
+
+          {/* Badges */}
+          <div className="flex gap-2 flex-wrap mb-1">
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-medium border border-emerald-100 uppercase">{user.name}</span>
+            <StatusBadge status={user.status} />
+            <StatusBadge status={user.approvalStatus} />
+          </div>
+
+          {/* Info cards */}
+          {infoRows.map(item => (
+            <div key={item.label} className="p-4 border border-slate-100 rounded-2xl bg-white shadow-sm">
+              <p className="text-xs font-medium text-slate-400 uppercase mb-1">{item.label}</p>
+              <p className="font-medium text-slate-800 text-sm">{item.value}</p>
+            </div>
+          ))}
+
+          {/* Permissions card */}
+          <div className="p-4 border border-slate-100 rounded-2xl bg-white shadow-sm">
+            <p className="text-xs font-medium text-slate-400 uppercase mb-3">Permissions</p>
+            {permGroups.length === 0 ? (
+              <p className="text-sm text-slate-400 italic">No permissions assigned</p>
+            ) : (
+              <div className="space-y-2.5">
+                {permGroups.map(group => (
+                  <div key={group.key} className="flex items-start gap-3">
+                    <span className="text-[11px] font-semibold text-slate-600 w-[150px] shrink-0 pt-0.5 leading-tight">{group.label}</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {group.granted.map(perm => (
+                        <span key={perm} className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor(perm)}`}>
+                          {perm}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Status Toggle */}
+          <div className="p-4 border border-slate-100 rounded-2xl bg-slate-50 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Quick Status Toggle</p>
+              <Toggle active={user.status === 'Active'} onToggle={onToggleStatus} />
+            </div>
+          </div>
+
+          {/* Edit button */}
+          <button
+            onClick={onEdit}
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-emerald-200 transition-all"
+          >
+            Edit User
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

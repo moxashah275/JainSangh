@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { X, ChevronDown } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, X } from 'lucide-react';
+import CustomDropdown from '../../../components/common/CustomDropdown';
 
 export default function LinkTrustSanghModal({ isOpen, onClose, trusts, sanghs, onLink }) {
   const [trustId, setTrustId] = useState('');
   const [sanghId, setSanghId] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setTrustId('');
+    setSanghId('');
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -18,31 +25,38 @@ export default function LinkTrustSanghModal({ isOpen, onClose, trusts, sanghs, o
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="text-lg font-bold text-slate-800">Link Trust & Sangh</h3>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors">
+              <ArrowLeft className="w-4.5 h-4.5 text-slate-600" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-800">Link Trust & Sangh</h3>
+          </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">Select Trust</label>
-            <div className="relative">
-              <select value={trustId} onChange={e => setTrustId(e.target.value)} className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none appearance-none focus:border-emerald-500 transition-all">
-                <option value="">Choose a Trust</option>
-                {trusts.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
+            <label className="block text-[13px] font-medium text-slate-600">Select Trust</label>
+            <CustomDropdown
+              value={trustId}
+              onChange={setTrustId}
+              placeholder="Choose a Trust"
+              items={trusts.map((trust) => ({ label: trust.name, value: String(trust.id) }))}
+              searchable={false}
+              className="w-full"
+            />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">Select Sangh</label>
-            <div className="relative">
-              <select value={sanghId} onChange={e => setSanghId(e.target.value)} className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none appearance-none focus:border-emerald-500 transition-all">
-                <option value="">Choose a Sangh</option>
-                {sanghs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
+            <label className="block text-[13px] font-medium text-slate-600">Select Sangh</label>
+            <CustomDropdown
+              value={sanghId}
+              onChange={setSanghId}
+              placeholder="Choose a Sangh"
+              items={sanghs.map((sangh) => ({ label: sangh.name, value: String(sangh.id) }))}
+              searchable={false}
+              className="w-full"
+            />
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={onClose} className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50">Cancel</button>

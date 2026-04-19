@@ -1,29 +1,14 @@
 export default function UserStatusToggle({ status, onChange }) {
-  const active = status === 'Active'
+  const active = status === 'Active';
   return (
-    <button
-      type="button"
-      onClick={function() { onChange(active ? 'Inactive' : 'Active') }}
-      className={`inline-flex items-center gap-3 rounded-full border px-2 py-1.5 transition-all ${
-        active
-          ? 'border-emerald-200 bg-emerald-50'
-          : 'border-slate-200 bg-slate-100'
-      }`}
-    >
-      <span
-        className={`relative flex h-7 w-12 items-center rounded-full transition-all ${
-          active ? 'bg-emerald-500' : 'bg-slate-300'
-        }`}
+    <div className="flex justify-center items-center">
+      <button
+        type="button"
+        onClick={() => onChange(active ? 'Inactive' : 'Active')}
+        className={`w-11 h-6 rounded-full relative cursor-pointer transition-colors duration-200 focus:outline-none ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}
       >
-        <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${
-            active ? 'left-6' : 'left-1'
-          }`}
-        />
-      </span>
-      <span className={`min-w-[52px] text-left text-[12px] font-semibold ${active ? 'text-emerald-700' : 'text-slate-600'}`}>
-        {active ? 'Active' : 'Inactive'}
-      </span>
-    </button>
-  )
+        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${active ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
+    </div>
+  );
 }

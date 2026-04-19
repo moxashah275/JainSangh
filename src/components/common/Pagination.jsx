@@ -35,21 +35,22 @@ export default function Pagination({
   return (
     <div className="px-4 py-3 bg-white border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-slate-500">Show</span>
+        <span className="text-[13px] font-semibold text-slate-500">Show</span>
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsLimitOpen(!isLimitOpen)}
-            className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-3 h-[34px] text-[13px] font-medium text-slate-600 transition-all cursor-pointer min-w-[55px] justify-between"
-            style={{ backgroundColor: 'white' }}
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+            className={`flex min-w-[58px] items-center justify-between gap-1.5 rounded-lg border px-3 h-[34px] text-[13px] font-semibold transition-all cursor-pointer ${
+              isLimitOpen
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-500'
+            }`}
           >
             <span>{recordsPerPage}</span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {isLimitOpen && (
-            <div className="absolute bottom-full left-0 mb-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
+            <div className="absolute bottom-full left-0 mb-1 w-full bg-white border border-emerald-500 rounded-lg shadow-lg z-50 overflow-hidden">
               {limitOptions.map((opt) => (
                 <button
                   key={opt}
@@ -57,20 +58,11 @@ export default function Pagination({
                     onRecordsPerPageChange(opt);
                     setIsLimitOpen(false);
                   }}
-                  className="w-full text-center py-2 text-[13px] font-medium transition-all text-slate-600"
-                  style={recordsPerPage === opt ? { backgroundColor: '#10b981', color: 'white' } : {}}
-                  onMouseEnter={(e) => {
-                    if (recordsPerPage !== opt) {
-                      e.currentTarget.style.backgroundColor = '#ecfdf5';
-                      e.currentTarget.style.color = '#059669';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (recordsPerPage !== opt) {
-                      e.currentTarget.style.backgroundColor = '';
-                      e.currentTarget.style.color = '#475569';
-                    }
-                  }}
+                  className={`w-full py-2 text-[13px] font-medium transition-all ${
+                    recordsPerPage === opt
+                      ? 'bg-emerald-500 text-white'
+                      : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
+                  }`}
                 >
                   {opt}
                 </button>
@@ -78,7 +70,7 @@ export default function Pagination({
             </div>
           )}
         </div>
-        <span className="text-[13px] text-slate-500">entries</span>
+        <span className="text-[13px] font-semibold text-slate-500">entries</span>
       </div>
 
       <div className="text-[13px] text-slate-500 font-medium order-3 sm:order-2">
@@ -102,20 +94,11 @@ export default function Pagination({
           <button
             key={num}
             onClick={() => onPageChange(num)}
-            className="w-[32px] h-[32px] flex items-center justify-center rounded-lg text-[13px] font-medium transition-all border border-slate-200"
-            style={currentPage === num ? { backgroundColor: '#10b981', color: 'white' } : { color: '#475569' }}
-            onMouseEnter={(e) => {
-              if (currentPage !== num) {
-                e.currentTarget.style.backgroundColor = '#ecfdf5';
-                e.currentTarget.style.color = '#059669';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentPage !== num) {
-                e.currentTarget.style.backgroundColor = '';
-                e.currentTarget.style.color = '#475569';
-              }
-            }}
+            className={`w-[32px] h-[32px] flex items-center justify-center rounded-lg text-[13px] font-medium transition-all border ${
+              currentPage === num
+                ? 'border-emerald-500 bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                : 'border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
+            }`}
           >
             {num}
           </button>

@@ -52,10 +52,12 @@ export default function AppRoutes() {
         <Route element={<RoleGuard allowedRoles={[ROLES.SUPER_ADMIN]} />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
             
             {/* 🛠️ Organization Management - FIXED PATHS */}
             {/* Sidebar na badha link ek j OrgIndex page par jase jya tame Tabs banaya che */}
             <Route path="organizations">
+              <Route index element={<Navigate to="all" replace />} />
               <Route path="all" element={<OrgIndex />} />
               <Route path="trusts" element={<OrgIndex />} />
               <Route path="sanghs" element={<OrgIndex />} />

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { CheckCircle2, Trash2, X } from "lucide-react";
+import { CheckCircle2, X } from "lucide-react";
 
 // ── Context ──────────────────────────────────────────────────────────────────
 const ToastContext = createContext(null);
@@ -53,16 +53,11 @@ export function ToastProvider({ children }) {
 
 // ── Individual Toast ─────────────────────────────────────────────────────────
 function ToastItem({ toast, onDismiss }) {
-  const isDelete = toast.type === "delete";
-
-  const containerClass = isDelete
-    ? "bg-white border border-rose-100 shadow-[0_8px_30px_rgba(244,63,94,0.12)]"
-    : "bg-white border border-teal-100 shadow-[0_8px_30px_rgba(20,184,166,0.12)]";
-
-  const iconBgClass = isDelete ? "bg-rose-50" : "bg-teal-50";
-  const iconClass = isDelete ? "text-rose-500" : "text-teal-600";
-  const progressClass = isDelete ? "bg-rose-400" : "bg-teal-500";
-  const Icon = isDelete ? Trash2 : CheckCircle2;
+  const containerClass = "bg-white border border-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.16)]";
+  const iconBgClass = "bg-emerald-50";
+  const iconClass = "text-emerald-600";
+  const progressClass = "bg-emerald-500";
+  const Icon = CheckCircle2;
 
   return (
     <div

@@ -8,6 +8,10 @@ export default function CustomDropdown({
   placeholder,
   items,
   className = "",
+  searchable = true,
+  buttonClassName = "",
+  menuClassName = "",
+  optionClassName = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -62,11 +66,11 @@ export default function CustomDropdown({
   return (
   <div className={`relative min-w-[160px] ${className}`} ref={triggerRef}>
     <div
-      className={`px-3 py-2 bg-white border rounded-lg text-[13px] text-slate-700 font-medium transition-all cursor-pointer flex items-center justify-between group ${
+      className={`px-3 py-2.5 bg-white border rounded-xl text-[13px] text-slate-700 font-semibold transition-all cursor-pointer flex items-center justify-between group ${
         isOpen
-          ? "border-emerald-500"
+          ? "border-emerald-500 ring-4 ring-emerald-50"
           : "border-slate-200 hover:border-emerald-500"
-      }`}
+      } ${buttonClassName}`}
       onClick={toggle}
     >
       <span className="truncate">
@@ -88,7 +92,7 @@ export default function CustomDropdown({
       createPortal(
         <div
           ref={portalRef}
-          className="fixed z-[11000] bg-white border border-emerald-500 rounded-lg shadow-xl overflow-hidden"
+          className={`fixed z-[11000] bg-white border border-emerald-500 rounded-xl shadow-2xl overflow-hidden ${menuClassName}`}
           style={{
             top: coords.openUp ? "auto" : coords.top,
             bottom: coords.openUp
@@ -98,16 +102,18 @@ export default function CustomDropdown({
             width: coords.width,
           }}
         >
-          <div className="p-2 border-b border-emerald-100 bg-white">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-3 py-1.5 text-[12px] border border-emerald-500 rounded-lg focus:outline-none focus:border-emerald-500 text-slate-700"
-              autoFocus
-            />
-          </div>
+          {searchable && (
+            <div className="p-2 border-b border-emerald-100 bg-white">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full px-3 py-1.5 text-[12px] border border-emerald-500 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 text-slate-700"
+                autoFocus
+              />
+            </div>
+          )}
 
           <ul className="py-1 max-h-60 overflow-y-auto">
             {filteredItems.length === 0 ? (
@@ -129,9 +135,9 @@ export default function CustomDropdown({
                     key={`${itemValue}-${index}`}
                     className={`px-3 py-2 text-[13px] font-medium cursor-pointer transition-all ${
                       selected
-                        ? "bg-emerald-50 text-emerald-600"
+                        ? "bg-emerald-500 text-white"
                         : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-600"
-                    }`}
+                    } ${optionClassName}`}
                     onClick={() => {
                       onChange(itemValue);
                       setIsOpen(false);

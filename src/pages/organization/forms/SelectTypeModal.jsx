@@ -18,11 +18,11 @@ export default function SelectTypeModal({ onClose, onSelectTrust, onSelectSangh 
             </div>
             <span className="font-bold text-slate-700 group-hover:text-emerald-700">Create Trust</span>
           </button>
-          <button onClick={onSelectSangh} className="p-6 rounded-2xl border-2 border-slate-100 hover:border-teal-500 hover:bg-teal-50 transition-all group flex flex-col items-center justify-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <button onClick={onSelectSangh} className="p-6 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all group flex flex-col items-center justify-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Users size={24} />
             </div>
-            <span className="font-bold text-slate-700 group-hover:text-teal-700">Create Sangh</span>
+            <span className="font-bold text-slate-700 group-hover:text-emerald-700">Create Sangh</span>
           </button>
         </div>
       </div>

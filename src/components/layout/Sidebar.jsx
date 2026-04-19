@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, MapPin, Building2, UserCog, Users2, Hotel,
@@ -86,6 +86,26 @@ export default function Sidebar({ isOpen: isSidebarOpen, onClose, isMobile }) {
   const { pathname } = useLocation();
   const [openMenus, setOpenMenus] = useState({});
   const showLabels = isMobile || isSidebarOpen;
+
+  useEffect(() => {
+    setOpenMenus((prev) => {
+      const nextMenus = { ...prev };
+
+      menuItems.forEach((item) => {
+        if (!item.children) return;
+
+        const hasActiveChild = item.children.some(
+          (child) => pathname === child.to || pathname.startsWith(child.to + '/')
+        );
+
+        if (hasActiveChild) {
+          nextMenus[item.label] = true;
+        }
+      });
+
+      return nextMenus;
+    });
+  }, [pathname]);
 
   const toggleMenu = (label) => {
     setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));

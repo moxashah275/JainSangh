@@ -1,286 +1,417 @@
-import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
-import { Edit2, Trash2, Eye, Check, AlertTriangle, ArrowLeft, X } from 'lucide-react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import { AlertTriangle, Edit2, Eye, Trash2 } from 'lucide-react';
 import StatusToggle from '../../components/common/StatusToggle';
+import { useToast } from '../../components/common/Toast';
 import TrustFormModal from './forms/TrustFormModal';
 import SanghFormModal from './forms/SanghFormModal';
 import TrustDetailsModal from './details/TrustDetailsModal';
 import SanghDetailsModal from './details/SanghDetailsModal';
 import { getOrgData, saveOrgData } from './orgData';
 
-const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage, currentPage, setCurrentPage, setTotalEntries, onDataChange }, ref) => {
+const ITEM_LABELS = {
+  trust: 'Trust',
+  sangh: 'Sangh',
+};
+
+function getItemType(item) {
+  if (item?.orgType) {
+    return item.orgType.toLowerCase();
+  }
+
+  return item?.mainContactPerson ? 'trust' : 'sangh';
+}
+
+function withActivity(item, action) {
+  return {
+    ...item,
+    updatedAt: new Date().toISOString(),
+    activity: [
+      {
+        id: Date.now(),
+        action,
+        timestamp: new Date().toISOString(),
+        user: 'Admin',
+      },
+      ...(item.activity || []),
+    ],
+  };
+}
+
+const OrgTable = forwardRef(function OrgTable(
+  {
+    activeTab,
+    searchTerm,
+    filterValues,
+    itemsPerPage,
+    currentPage,
+    setCurrentPage,
+    setTotalEntries,
+    onDataChange,
+  },
+  ref
+) {
   const [data, setData] = useState(() => getOrgData());
   const [trustModal, setTrustModal] = useState({ isOpen: false, type: 'add', data: null });
   const [sanghModal, setSanghModal] = useState({ isOpen: false, type: 'add', data: null });
-  const [detailsModal, setDetailsModal] = useState({ isOpen: false, type: '', data: null });
-  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: '' });
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [detailsModal, setDetailsModal] = useState({ isOpen: false, itemType: '', data: null });
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, itemType: '', name: '' });
+  const showToast = useToast();
 
   useImperativeHandle(ref, () => ({
     openTrustModal: () => setTrustModal({ isOpen: true, type: 'add', data: null }),
-    openSanghModal: () => setSanghModal({ isOpen: true, type: 'add', data: null })
+    openSanghModal: () => setSanghModal({ isOpen: true, type: 'add', data: null }),
   }));
 
-  const showToast = (msg, type = 'success') => {
-    setToast({ show: true, message: msg, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  const persistData = (nextData) => {
+    setData(nextData);
+    saveOrgData(nextData);
+    onDataChange?.();
+  };
+
+  const openDetails = (item) => {
+    setDetailsModal({
+      isOpen: true,
+      itemType: getItemType(item),
+      data: item,
+    });
+  };
+
+  const openEdit = (item) => {
+    const itemType = getItemType(item);
+
+    if (itemType === 'trust') {
+      setTrustModal({ isOpen: true, type: 'edit', data: item });
+      return;
+    }
+
+    setSanghModal({ isOpen: true, type: 'edit', data: item });
+  };
+
+  const openDelete = (item) => {
+    setDeleteConfirm({
+      show: true,
+      id: item.id,
+      itemType: getItemType(item),
+      name: item.name,
+    });
   };
 
   const handleSaveTrust = (formData) => {
-    let newTrusts = [...data.trusts];
-    if (trustModal.type === 'add') {
-      if (newTrusts.some(t => t.name.toLowerCase() === formData.name.toLowerCase())) {
-        showToast('Trust Name Already Exists', 'error');
-        return;
-      }
-      newTrusts.push({ ...formData, id: Date.now(), status: true });
-      showToast('Trust Added Successfully');
-    } else {
-      const idx = newTrusts.findIndex(t => t.id === trustModal.data.id);
-      if (idx > -1) newTrusts[idx] = { ...newTrusts[idx], ...formData };
-      showToast('Trust Updated Successfully');
+    const duplicate = data.trusts.some(
+      (trust) =>
+        trust.name.trim().toLowerCase() === formData.name.trim().toLowerCase() &&
+        trust.id !== trustModal.data?.id
+    );
+
+    if (duplicate) {
+      showToast('Trust name already exists.', 'delete');
+      return;
     }
-    const newData = { ...data, trusts: newTrusts };
-    setData(newData);
-    saveOrgData(newData);
+
+    const nextTrusts =
+      trustModal.type === 'add'
+        ? [
+            ...data.trusts,
+            withActivity(
+              {
+                ...formData,
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+              },
+              'Trust Created'
+            ),
+          ]
+        : data.trusts.map((trust) =>
+            trust.id === trustModal.data.id
+              ? withActivity(
+                  {
+                    ...trust,
+                    ...formData,
+                  },
+                  'Trust Updated'
+                )
+              : trust
+          );
+
+    persistData({ ...data, trusts: nextTrusts });
     setTrustModal({ isOpen: false, type: 'add', data: null });
-    if (onDataChange) onDataChange();
+    showToast(trustModal.type === 'add' ? 'Trust added successfully.' : 'Trust updated successfully.');
   };
 
   const handleSaveSangh = (formData) => {
-    let newSanghs = [...data.sanghs];
-    if (sanghModal.type === 'add') {
-      if (newSanghs.some(s => s.name.toLowerCase() === formData.name.toLowerCase())) {
-        showToast('Sangh Name Already Exists', 'error');
-        return;
-      }
-      newSanghs.push({ ...formData, id: Date.now(), status: true });
-      showToast('Sangh Added Successfully');
-    } else {
-      const idx = newSanghs.findIndex(s => s.id === sanghModal.data.id);
-      if (idx > -1) newSanghs[idx] = { ...newSanghs[idx], ...formData };
-      showToast('Sangh Updated Successfully');
+    const duplicate = data.sanghs.some(
+      (sangh) =>
+        sangh.name.trim().toLowerCase() === formData.name.trim().toLowerCase() &&
+        sangh.id !== sanghModal.data?.id
+    );
+
+    if (duplicate) {
+      showToast('Sangh name already exists.', 'delete');
+      return;
     }
-    const newData = { ...data, sanghs: newSanghs };
-    setData(newData);
-    saveOrgData(newData);
+
+    const nextSanghs =
+      sanghModal.type === 'add'
+        ? [
+            ...data.sanghs,
+            withActivity(
+              {
+                ...formData,
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+              },
+              'Sangh Created'
+            ),
+          ]
+        : data.sanghs.map((sangh) =>
+            sangh.id === sanghModal.data.id
+              ? withActivity(
+                  {
+                    ...sangh,
+                    ...formData,
+                  },
+                  'Sangh Updated'
+                )
+              : sangh
+          );
+
+    persistData({ ...data, sanghs: nextSanghs });
     setSanghModal({ isOpen: false, type: 'add', data: null });
-    if (onDataChange) onDataChange();
+    showToast(sanghModal.type === 'add' ? 'Sangh added successfully.' : 'Sangh updated successfully.');
   };
 
   const handleDelete = () => {
-    let newData = { ...data };
-    if (deleteConfirm.type === 'trust') {
-      newData.trusts = newData.trusts.filter(t => t.id !== deleteConfirm.id);
-      newData.links = newData.links.filter(l => l.trustId !== deleteConfirm.id);
-    } else {
-      newData.sanghs = newData.sanghs.filter(s => s.id !== deleteConfirm.id);
-      newData.links = newData.links.filter(l => l.sanghId !== deleteConfirm.id);
+    if (!deleteConfirm.id || !deleteConfirm.itemType) {
+      setDeleteConfirm({ show: false, id: null, itemType: '', name: '' });
+      return;
     }
-    setData(newData);
-    saveOrgData(newData);
-    setDeleteConfirm({ show: false, id: null, type: '' });
-    showToast('Deleted Successfully', 'error');
-    if (onDataChange) onDataChange();
+
+    const nextData =
+      deleteConfirm.itemType === 'trust'
+        ? {
+            ...data,
+            trusts: data.trusts.filter((trust) => trust.id !== deleteConfirm.id),
+            links: data.links.filter((link) => link.trustId !== deleteConfirm.id),
+          }
+        : {
+            ...data,
+            sanghs: data.sanghs.filter((sangh) => sangh.id !== deleteConfirm.id),
+            links: data.links.filter((link) => link.sanghId !== deleteConfirm.id),
+          };
+
+    persistData(nextData);
+    setDeleteConfirm({ show: false, id: null, itemType: '', name: '' });
+    setDetailsModal((current) =>
+      current.data?.id === deleteConfirm.id && current.itemType === deleteConfirm.itemType
+        ? { isOpen: false, itemType: '', data: null }
+        : current
+    );
+    showToast(`${ITEM_LABELS[deleteConfirm.itemType]} deleted successfully.`, 'delete');
   };
 
-  const toggleStatus = (id, type, currentStatus) => {
-    const key = type === 'trust' ? 'trusts' : 'sanghs';
-    const list = [...data[key]];
-    const idx = list.findIndex(i => i.id === id);
-    if (idx > -1) {
-      list[idx].status = !currentStatus;
-      const newData = { ...data, [key]: list };
-      setData(newData);
-      saveOrgData(newData);
-      showToast('Status Changed Successfully');
-      if (onDataChange) onDataChange();
+  const toggleStatus = (id, itemType, currentStatus) => {
+    const nextStatus = !currentStatus;
+    const storageKey = itemType === 'trust' ? 'trusts' : 'sanghs';
+    const nextData = {
+      ...data,
+      [storageKey]: data[storageKey].map((item) =>
+        item.id === id
+          ? withActivity(
+              {
+                ...item,
+                status: nextStatus,
+              },
+              `${ITEM_LABELS[itemType]} Status ${nextStatus ? 'Activated' : 'Deactivated'}`
+            )
+          : item
+      ),
+    };
+
+    persistData(nextData);
+    setDetailsModal((current) =>
+      current.data?.id === id && current.itemType === itemType
+        ? {
+            ...current,
+            data: {
+              ...current.data,
+              status: nextStatus,
+            },
+          }
+        : current
+    );
+    showToast(`${ITEM_LABELS[itemType]} status set to ${nextStatus ? 'active' : 'inactive'}.`);
+  };
+
+  const filteredData = useMemo(() => {
+    const searchValue = searchTerm.trim().toLowerCase();
+    const matchesStatus = (item) => {
+      if (filterValues.status === 'active') return item.status === true;
+      if (filterValues.status === 'inactive') return item.status === false;
+      return true;
+    };
+
+    const trustHasLinkedSangh = (trustId, sanghId) =>
+      data.links.some((link) => link.trustId === trustId && link.sanghId === Number(sanghId) && link.status);
+
+    const sanghHasLinkedTrust = (sanghId, trustId) =>
+      data.links.some((link) => link.sanghId === sanghId && link.trustId === Number(trustId) && link.status);
+
+    if (activeTab === 'all') {
+      return [
+        ...data.trusts.map((trust) => ({ ...trust, orgType: 'Trust' })),
+        ...data.sanghs.map((sangh) => ({ ...sangh, orgType: 'Sangh' })),
+      ].filter((item) => {
+        const searchable = [item.name, item.city, item.state, item.orgType].filter(Boolean).join(' ').toLowerCase();
+        return searchable.includes(searchValue) && matchesStatus(item);
+      });
     }
-  };
 
-  const trustHasLinkedSangh = (trustId, sanghId) => {
-    return data.links.some(l => l.trustId === trustId && l.sanghId === sanghId && l.status);
-  };
+    if (activeTab === 'trusts') {
+      return data.trusts.filter((item) => {
+        const searchable = [item.name, item.city, item.state, item.mainContactPerson].filter(Boolean).join(' ').toLowerCase();
+        const matchesLinked = filterValues.linkedId === 'all' ? true : trustHasLinkedSangh(item.id, filterValues.linkedId);
+        return searchable.includes(searchValue) && matchesStatus(item) && matchesLinked;
+      });
+    }
 
-  const sanghHasLinkedTrust = (sanghId, trustId) => {
-    return data.links.some(l => l.sanghId === sanghId && l.trustId === trustId && l.status);
-  };
-
-  // Filter data
-  let filteredData = [];
-  if (activeTab === 'all') {
-    const allItems = [
-      ...data.trusts.map(t => ({ ...t, orgType: 'Trust' })),
-      ...data.sanghs.map(s => ({ ...s, orgType: 'Sangh' }))
-    ];
-    filteredData = allItems.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = filterValues.status === 'all' ? true : filterValues.status === 'active' ? item.status === true : item.status === false;
-      return matchesSearch && matchesStatus;
+    return data.sanghs.filter((item) => {
+      const searchable = [item.name, item.city, item.state, item.mainPersonName].filter(Boolean).join(' ').toLowerCase();
+      const matchesLinked = filterValues.linkedId === 'all' ? true : sanghHasLinkedTrust(item.id, filterValues.linkedId);
+      return searchable.includes(searchValue) && matchesStatus(item) && matchesLinked;
     });
-  } else if (activeTab === 'trusts') {
-    filteredData = data.trusts.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || (item.city && item.city.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesStatus = filterValues.status === 'all' ? true : filterValues.status === 'active' ? item.status === true : item.status === false;
-      const matchesLinked = filterValues.linkedId === 'all' ? true : trustHasLinkedSangh(item.id, Number(filterValues.linkedId));
-      return matchesSearch && matchesStatus && matchesLinked;
-    });
-  } else {
-    filteredData = data.sanghs.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || (item.city && item.city.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesStatus = filterValues.status === 'all' ? true : filterValues.status === 'active' ? item.status === true : item.status === false;
-      const matchesLinked = filterValues.linkedId === 'all' ? true : sanghHasLinkedTrust(item.id, Number(filterValues.linkedId));
-      return matchesSearch && matchesStatus && matchesLinked;
-    });
-  }
+  }, [activeTab, data, filterValues.linkedId, filterValues.status, searchTerm]);
 
-  useEffect(() => { setTotalEntries(filteredData.length); }, [filteredData.length]);
+  useEffect(() => {
+    setTotalEntries(filteredData.length);
+    const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
+
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, filteredData.length, itemsPerPage, setCurrentPage, setTotalEntries]);
+
   const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const renderHeaders = () => {
+  const columns = useMemo(() => {
+    const renderStatus = (item, itemType) => (
+      <div className="flex justify-center">
+        <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, itemType, item.status)} />
+      </div>
+    );
+
+    const renderActions = (item) => {
+      const itemType = getItemType(item);
+
+      return (
+        <div className="flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => openDetails(item)}
+            className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-emerald-50 hover:text-emerald-600"
+          >
+            <Eye size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => openEdit(item)}
+            className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-emerald-50 hover:text-emerald-600"
+          >
+            <Edit2 size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => openDelete(item)}
+            className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-rose-50 hover:text-rose-500"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      );
+    };
+
     if (activeTab === 'all') {
-      return (
-        <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/4 px-6 py-2 text-center">Sr. No.</th>
-          <th className="w-1/4 px-6 py-2 text-center">Organization Name</th>
-          <th className="w-1/4 px-6 py-2 text-center">Type</th>
-          <th className="w-1/4 px-6 py-2 text-center">Actions</th>
-        </tr>
-      );
-    } else if (activeTab === 'trusts') {
-      return (
-        <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/5 px-6 py-2 text-center">Sr. No.</th>
-          <th className="w-1/5 px-6 py-2 text-center">Trust Name</th>
-          <th className="w-1/5 px-6 py-2 text-center">City</th>
-          <th className="w-1/5 px-6 py-2 text-center">Admin Name</th>
-          <th className="w-1/5 px-6 py-2 text-center">Status</th>
-          <th className="w-1/5 px-6 py-2 text-center">Actions</th>
-        </tr>
-      );
-    } else {
-      return (
-        <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-          <th className="w-1/6 px-6 py-2 text-center">Sr. No.</th>
-          <th className="w-1/6 px-6 py-2 text-center">Sangh Name</th>
-          <th className="w-1/6 px-6 py-2 text-center">City</th>
-          <th className="w-1/6 px-6 py-2 text-center">Members</th>
-          <th className="w-1/6 px-6 py-2 text-center">Status</th>
-          <th className="w-1/6 px-6 py-2 text-center">Actions</th>
-        </tr>
-      );
+      return [
+        { key: 'serial', label: 'Sr. No.', className: 'w-[12%] text-center', render: (_, index) => index + 1 },
+        { key: 'name', label: 'Organization Name', className: 'w-[24%] text-center', render: (item) => item.name },
+        {
+          key: 'type',
+          label: 'Type',
+          className: 'w-[16%] text-center',
+          render: (item) => (
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase text-emerald-700">
+              {item.orgType}
+            </span>
+          ),
+        },
+        {
+          key: 'location',
+          label: 'Location',
+          className: 'w-[18%] text-center',
+          render: (item) => [item.city, item.state].filter(Boolean).join(', ') || '---',
+        },
+        { key: 'status', label: 'Status', className: 'w-[14%] text-center', render: (item) => renderStatus(item, getItemType(item)) },
+        { key: 'actions', label: 'Actions', className: 'w-[16%] text-center', render: (item) => renderActions(item) },
+      ];
     }
-  };
+
+    if (activeTab === 'trusts') {
+      return [
+        { key: 'serial', label: 'Sr. No.', className: 'w-[12%] text-center', render: (_, index) => index + 1 },
+        { key: 'name', label: 'Trust Name', className: 'w-[22%] text-center', render: (item) => item.name },
+        { key: 'city', label: 'City', className: 'w-[18%] text-center', render: (item) => item.city || '---' },
+        {
+          key: 'contact',
+          label: 'Main Contact',
+          className: 'w-[18%] text-center',
+          render: (item) => item.mainContactPerson || '---',
+        },
+        { key: 'status', label: 'Status', className: 'w-[14%] text-center', render: (item) => renderStatus(item, 'trust') },
+        { key: 'actions', label: 'Actions', className: 'w-[16%] text-center', render: (item) => renderActions(item) },
+      ];
+    }
+
+    return [
+      { key: 'serial', label: 'Sr. No.', className: 'w-[12%] text-center', render: (_, index) => index + 1 },
+      { key: 'name', label: 'Sangh Name', className: 'w-[22%] text-center', render: (item) => item.name },
+      { key: 'city', label: 'City', className: 'w-[18%] text-center', render: (item) => item.city || '---' },
+      {
+        key: 'members',
+        label: 'Total Members',
+        className: 'w-[18%] text-center',
+        render: (item) => item.totalMembers?.toLocaleString() || '0',
+      },
+      { key: 'status', label: 'Status', className: 'w-[14%] text-center', render: (item) => renderStatus(item, 'sangh') },
+      { key: 'actions', label: 'Actions', className: 'w-[16%] text-center', render: (item) => renderActions(item) },
+    ];
+  }, [activeTab, data]);
 
   return (
-    <div className="w-full font-sans antialiased text-slate-600">
-      <style>{`
-        @keyframes toast-in-out {
-          0% { transform: translateX(120%); opacity: 0; }
-          10% { transform: translateX(0); opacity: 1; }
-          90% { transform: translateX(0); opacity: 1; }
-          100% { transform: translateX(-150%); opacity: 0; }
-        }
-        .animate-toast-custom { animation: toast-in-out 3s ease-in-out forwards; }
-      `}</style>
-
-      {/* Toast */}
-      {toast.show && (
-        <div className="fixed top-8 right-8 z-[999] animate-toast-custom">
-          <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-md ${toast.type === 'error' ? 'bg-rose-500 border-rose-400' : 'bg-emerald-500 border-emerald-400'} text-white`}>
-            <div className="p-1.5 rounded-lg bg-white/20">
-              {toast.type === 'error' ? <AlertTriangle size={18} className="text-white" /> : <Check size={18} strokeWidth={3} className="text-white" />}
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-[13px] font-medium uppercase tracking-wide leading-none">{toast.message}</span>
-              <span className="text-[9px] font-normal opacity-80 uppercase mt-1 tracking-widest">System Notification</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Table */}
-      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+    <div className="w-full font-sans text-slate-600">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full table-fixed border-collapse">
-          <thead>{renderHeaders()}</thead>
+          <thead>
+            <tr className="border-b border-emerald-600 bg-emerald-500 text-[12px] font-semibold uppercase text-white">
+              {columns.map((column) => (
+                <th key={column.key} className={`${column.className} px-6 py-3`}>
+                  {column.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
           <tbody className="divide-y divide-slate-100">
             {paginatedData.length > 0 ? (
-              paginatedData.map((item, idx) => {
-                const serialNo = (currentPage - 1) * itemsPerPage + idx + 1;
-                
-                if (activeTab === 'all') {
-                  return (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/4 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.orgType}</td>
-                      <td className="w-1/4 px-6 py-2 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          <button onClick={() => setDetailsModal({ isOpen: true, type: item.orgType === 'Trust' ? 'trust' : 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
-                            <Eye size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                } else if (activeTab === 'trusts') {
-                  return (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.city}</td>
-                      <td className="w-1/5 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.admin}</td>
-                      <td className="w-1/5 px-6 py-2 text-center">
-                        <div className="flex justify-center">
-                          <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'trust', item.status)} />
-                        </div>
-                      </td>
-                      <td className="w-1/5 px-6 py-2 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          <button onClick={() => setDetailsModal({ isOpen: true, type: 'trust', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
-                            <Eye size={15} />
-                          </button>
-                          <button onClick={() => setTrustModal({ isOpen: true, type: 'edit', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
-                            <Edit2 size={15} />
-                          </button>
-                          <button onClick={() => setDeleteConfirm({ show: true, id: item.id, type: 'trust' })} className="text-slate-400 hover:text-rose-500 transition-all p-1.5 hover:bg-rose-50 rounded-lg">
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                } else {
-                  return (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{serialNo}</td>
-                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.name}</td>
-                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.city}</td>
-                      <td className="w-1/6 px-6 py-2 text-center text-sm font-medium text-slate-500">{item.members?.toLocaleString() || 0}</td>
-                      <td className="w-1/6 px-6 py-2 text-center">
-                        <div className="flex justify-center">
-                          <StatusToggle status={item.status} onToggle={() => toggleStatus(item.id, 'sangh', item.status)} />
-                        </div>
-                      </td>
-                      <td className="w-1/6 px-6 py-2 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          <button onClick={() => setDetailsModal({ isOpen: true, type: 'sangh', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
-                            <Eye size={15} />
-                          </button>
-                          <button onClick={() => setSanghModal({ isOpen: true, type: 'edit', data: item })} className="text-slate-400 hover:text-emerald-600 transition-all p-1.5 hover:bg-emerald-50 rounded-lg">
-                            <Edit2 size={15} />
-                          </button>
-                          <button onClick={() => setDeleteConfirm({ show: true, id: item.id, type: 'sangh' })} className="text-slate-400 hover:text-rose-500 transition-all p-1.5 hover:bg-rose-50 rounded-lg">
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                }
-              })
+              paginatedData.map((item, rowIndex) => (
+                <tr key={`${getItemType(item)}-${item.id}`} className="transition-colors hover:bg-slate-50/50">
+                  {columns.map((column) => (
+                    <td key={column.key} className={`${column.className} px-6 py-3 text-sm font-medium text-slate-500`}>
+                      {column.render(item, (currentPage - 1) * itemsPerPage + rowIndex)}
+                    </td>
+                  ))}
+                </tr>
+              ))
             ) : (
               <tr>
-                <td colSpan={activeTab === 'all' ? 4 : 6} className="py-6 text-center text-sm text-slate-400">
+                <td colSpan={columns.length} className="py-8 text-center text-sm text-slate-400">
                   No matching records found
                 </td>
               </tr>
@@ -289,57 +420,67 @@ const OrgTable = forwardRef(({ activeTab, searchTerm, filterValues, itemsPerPage
         </table>
       </div>
 
-      {/* Modals */}
       {trustModal.isOpen && (
-        <TrustFormModal 
-          isOpen={trustModal.isOpen} 
-          onClose={() => setTrustModal({ isOpen: false, type: 'add', data: null })} 
-          initialData={trustModal.data} 
-          onSave={handleSaveTrust} 
+        <TrustFormModal
+          isOpen={trustModal.isOpen}
+          onClose={() => setTrustModal({ isOpen: false, type: 'add', data: null })}
+          initialData={trustModal.data}
+          onSave={handleSaveTrust}
         />
       )}
 
       {sanghModal.isOpen && (
-        <SanghFormModal 
-          isOpen={sanghModal.isOpen} 
-          onClose={() => setSanghModal({ isOpen: false, type: 'add', data: null })} 
-          initialData={sanghModal.data} 
-          onSave={handleSaveSangh} 
+        <SanghFormModal
+          isOpen={sanghModal.isOpen}
+          onClose={() => setSanghModal({ isOpen: false, type: 'add', data: null })}
+          initialData={sanghModal.data}
+          onSave={handleSaveSangh}
         />
       )}
 
-      {detailsModal.isOpen && detailsModal.type === 'trust' && (
-        <TrustDetailsModal 
-          isOpen={detailsModal.isOpen} 
-          onClose={() => setDetailsModal({ isOpen: false, type: '', data: null })} 
-          trust={detailsModal.data} 
-          allData={data} 
-          onStatusToggle={toggleStatus}
-        />
-      )}
-      
-      {detailsModal.isOpen && detailsModal.type === 'sangh' && (
-        <SanghDetailsModal 
-          isOpen={detailsModal.isOpen} 
-          onClose={() => setDetailsModal({ isOpen: false, type: '', data: null })} 
-          sangh={detailsModal.data} 
-          allData={data} 
+      {detailsModal.isOpen && detailsModal.itemType === 'trust' && (
+        <TrustDetailsModal
+          isOpen={detailsModal.isOpen}
+          onClose={() => setDetailsModal({ isOpen: false, itemType: '', data: null })}
+          trust={detailsModal.data}
+          allData={data}
           onStatusToggle={toggleStatus}
         />
       )}
 
-      {/* Delete Confirmation */}
+      {detailsModal.isOpen && detailsModal.itemType === 'sangh' && (
+        <SanghDetailsModal
+          isOpen={detailsModal.isOpen}
+          onClose={() => setDetailsModal({ isOpen: false, itemType: '', data: null })}
+          sangh={detailsModal.data}
+          allData={data}
+          onStatusToggle={toggleStatus}
+        />
+      )}
+
       {deleteConfirm.show && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-[280px] rounded-2xl p-5 text-center shadow-2xl animate-in zoom-in duration-200">
-            <div className="w-11 h-11 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="w-full max-w-[320px] rounded-2xl bg-white p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500">
               <AlertTriangle size={22} />
             </div>
-            <h3 className="font-semibold text-slate-800 text-sm">Confirm Delete?</h3>
-            <p className="text-[11px] text-slate-400 mt-1">This action cannot be undone</p>
-            <div className="flex gap-2 mt-4">
-              <button onClick={() => setDeleteConfirm({ show: false, id: null, type: '' })} className="flex-1 py-2 text-xs font-medium text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
-              <button onClick={handleDelete} className="flex-1 py-2 text-xs font-medium text-white bg-rose-500 rounded-xl shadow-md hover:bg-rose-600 transition-all">Delete</button>
+            <h3 className="text-sm font-semibold text-slate-800">Delete {ITEM_LABELS[deleteConfirm.itemType]}?</h3>
+            <p className="mt-1 text-[11px] text-slate-400">{deleteConfirm.name || 'This record'} will be removed permanently.</p>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm({ show: false, id: null, itemType: '', name: '' })}
+                className="flex-1 rounded-xl bg-slate-100 py-2.5 text-xs font-medium text-slate-500 transition-all hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="flex-1 rounded-xl bg-rose-500 py-2.5 text-xs font-medium text-white shadow-md transition-all hover:bg-rose-600"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

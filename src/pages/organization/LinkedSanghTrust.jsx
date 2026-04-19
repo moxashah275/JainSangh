@@ -1,108 +1,150 @@
-import React, { useState, useEffect } from "react";
-import { Link2, Unlink, Check, AlertTriangle } from "lucide-react";
-import { getOrgData, saveOrgData, getTrustName, getSanghName } from "./orgData";
-import LinkTrustSanghModal from "./forms/LinkTrustSanghModal";
+import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Link2, Unlink } from 'lucide-react';
+import { useToast } from '../../components/common/Toast';
+import Pagination from '../../components/common/Pagination';
+import { getOrgData, getSanghName, getTrustName, saveOrgData } from './orgData';
+import LinkTrustSanghModal from './forms/LinkTrustSanghModal';
 
-export default function LinkedSanghTrust({ onDataChange }) {
+export default function LinkedSanghTrust({ searchTerm = '', onDataChange }) {
   const [data, setData] = useState(() => getOrgData());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(5);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
+  const showToast = useToast();
 
   useEffect(() => {
-    const newData = getOrgData();
-    setData(newData);
-    if (onDataChange) {
-      onDataChange({
-        Trusts: newData.trusts.length,
-        Sanghs: newData.sanghs.length,
-        Linked: newData.links.length,
-      });
-    }
+    const nextData = getOrgData();
+    setData(nextData);
   }, []);
 
-  const showToast = (msg, type = "success") => {
-    setToast({ show: true, message: msg, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "success" }), 3000);
-  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
-  const handleRemoveLink = (id) => {
-    const newLinks = data.links.filter((l) => l.id !== id);
-    const newData = { ...data, links: newLinks };
-    setData(newData);
-    saveOrgData(newData);
-    showToast("Link Removed Successfully");
-    if (onDataChange) onDataChange({ Trusts: data.trusts.length, Sanghs: data.sanghs.length, Linked: newLinks.length });
+  const filteredLinks = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    return data.links.filter((link) => {
+      const trustName = getTrustName(link.trustId, data.trusts).toLowerCase();
+      const sanghName = getSanghName(link.sanghId, data.sanghs).toLowerCase();
+      return `${trustName} ${sanghName}`.includes(query);
+    });
+  }, [data.links, data.sanghs, data.trusts, searchTerm]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(filteredLinks.length / recordsPerPage));
+
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, filteredLinks.length, recordsPerPage]);
+
+  const paginatedLinks = filteredLinks.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
+
+  const handleRemoveLink = () => {
+    if (!deleteConfirm.id) {
+      setDeleteConfirm({ show: false, id: null });
+      return;
+    }
+
+    const nextData = {
+      ...data,
+      links: data.links.filter((link) => link.id !== deleteConfirm.id),
+    };
+
+    setData(nextData);
+    saveOrgData(nextData);
+    setDeleteConfirm({ show: false, id: null });
+    onDataChange?.();
+    showToast('Link removed successfully.', 'delete');
   };
 
   const handleCreateLink = (trustId, sanghId) => {
-    const exists = data.links.some((l) => l.trustId === Number(trustId) && l.sanghId === Number(sanghId));
+    const exists = data.links.some((link) => link.trustId === Number(trustId) && link.sanghId === Number(sanghId));
+
     if (exists) {
-      showToast("This link already exists!", "error");
+      showToast('This trust and sangh are already linked.', 'delete');
       return;
     }
-    const newLinks = [...data.links, { 
-      id: Date.now(), 
-      trustId: Number(trustId), 
-      sanghId: Number(sanghId), 
-      linkedAt: new Date().toISOString().split('T')[0],
-      status: true 
-    }];
-    const newData = { ...data, links: newLinks };
-    setData(newData);
-    saveOrgData(newData);
-    showToast("Linked Successfully!");
+
+    const nextData = {
+      ...data,
+      links: [
+        ...data.links,
+        {
+          id: Date.now(),
+          trustId: Number(trustId),
+          sanghId: Number(sanghId),
+          linkedAt: new Date().toISOString().split('T')[0],
+          status: true,
+        },
+      ],
+    };
+
+    setData(nextData);
+    saveOrgData(nextData);
     setIsModalOpen(false);
-    if (onDataChange) onDataChange({ Trusts: data.trusts.length, Sanghs: data.sanghs.length, Linked: newLinks.length });
+    onDataChange?.();
+    showToast('Link created successfully.');
   };
 
   return (
-    <div className="w-full font-sans antialiased text-slate-600">
-      {toast.show && (
-        <div className="fixed top-8 right-8 z-[999] animate-in fade-in slide-in-from-right-10 duration-300">
-          <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-md ${toast.type === "error" ? "bg-rose-500 border-rose-400" : "bg-emerald-500 border-emerald-400"} text-white`}>
-            <div className="p-1.5 rounded-lg bg-white/20">
-              {toast.type === "error" ? <AlertTriangle size={18} className="text-white" /> : <Check size={18} strokeWidth={3} className="text-white" />}
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-[13px] font-medium uppercase tracking-wide leading-none">{toast.message}</span>
-              <span className="text-[9px] font-normal opacity-80 uppercase mt-1 tracking-widest">System Notification</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="w-full font-sans text-slate-600">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:flex-row">
           <div>
-            <h3 className="font-bold text-slate-700 text-sm">Manage Trust-Sangh Relations</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Connect Trusts with Sanghs to establish relationships</p>
+            <h3 className="text-sm font-bold text-slate-700">Manage Trust-Sangh Relations</h3>
+            <p className="mt-0.5 text-[11px] font-medium text-slate-400">
+              Link trusts with sanghs and manage relation records from the same table.
+            </p>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-white border border-emerald-500 text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-xl font-bold text-[12px] transition-all shadow-sm">
-            <Link2 size={14} /> Create New Link
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 rounded-xl border border-emerald-500 bg-white px-4 py-2 text-[12px] font-bold text-emerald-600 shadow-sm transition-all hover:bg-emerald-50"
+          >
+            <Link2 size={14} />
+            Create New Link
           </button>
         </div>
 
-        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+        <div className="mb-5 flex flex-col items-center justify-between gap-4 md:flex-row">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Total Linked Relations: <span className="text-slate-700">{filteredLinks.length}</span>
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full table-fixed border-collapse">
             <thead>
-              <tr className="bg-emerald-500 border-b border-emerald-600 text-white uppercase text-[12px] font-semibold">
-                <th className="w-1/3 px-6 py-3 text-left">Trust Name</th>
-                <th className="w-1/3 px-6 py-3 text-left">Sangh Name</th>
-                <th className="w-1/3 px-6 py-3 text-center">Actions</th>
+              <tr className="border-b border-emerald-600 bg-emerald-500 text-[12px] font-semibold uppercase text-white">
+                <th className="w-[14%] px-6 py-3 text-center">Sr. No.</th>
+                <th className="w-[34%] px-6 py-3 text-left">Trust Name</th>
+                <th className="w-[34%] px-6 py-3 text-left">Sangh Name</th>
+                <th className="w-[18%] px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {data.links.length > 0 ? (
-                data.links.map((link) => (
-                  <tr key={link.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="w-1/3 px-6 py-3 text-left">
-                      <span className="text-sm font-semibold text-slate-700">{getTrustName(link.trustId, data.trusts)}</span>
+              {paginatedLinks.length > 0 ? (
+                paginatedLinks.map((link, index) => (
+                  <tr key={link.id} className="transition-colors hover:bg-slate-50/50">
+                    <td className="px-6 py-3 text-center text-sm font-medium text-slate-500">
+                      {(currentPage - 1) * recordsPerPage + index + 1}
                     </td>
-                    <td className="w-1/3 px-6 py-3 text-left">
-                      <span className="text-sm font-medium text-slate-600">{getSanghName(link.sanghId, data.sanghs)}</span>
+                    <td className="px-6 py-3 text-left text-sm font-semibold text-slate-700">
+                      {getTrustName(link.trustId, data.trusts)}
                     </td>
-                    <td className="w-1/3 px-6 py-3 text-center">
-                      <button onClick={() => handleRemoveLink(link.id)} className="text-slate-400 hover:text-rose-500 transition-all p-1.5 hover:bg-rose-50 rounded-lg" title="Remove Link">
+                    <td className="px-6 py-3 text-left text-sm font-medium text-slate-600">
+                      {getSanghName(link.sanghId, data.sanghs)}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirm({ show: true, id: link.id })}
+                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-rose-50 hover:text-rose-500"
+                        title="Remove Link"
+                      >
                         <Unlink size={15} />
                       </button>
                     </td>
@@ -110,13 +152,13 @@ export default function LinkedSanghTrust({ onDataChange }) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="py-10 text-center">
+                  <td colSpan="4" className="py-10 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
                         <Link2 size={20} className="text-slate-300" />
                       </div>
                       <p className="text-sm font-medium text-slate-400">No links found</p>
-                      <p className="text-[11px] text-slate-300 mt-1">Click "Create New Link" to start</p>
+                      <p className="mt-1 text-[11px] text-slate-300">Create a new relation to get started</p>
                     </div>
                   </td>
                 </tr>
@@ -125,17 +167,16 @@ export default function LinkedSanghTrust({ onDataChange }) {
           </table>
         </div>
 
-        {data.links.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
-            <p className="text-[11px] font-medium text-slate-400">
-              Total Linked Relations: <span className="font-bold text-slate-600">{data.links.length}</span>
-            </p>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">All links are active</span>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalRecords={filteredLinks.length}
+          recordsPerPage={recordsPerPage}
+          onPageChange={setCurrentPage}
+          onRecordsPerPageChange={(value) => {
+            setRecordsPerPage(value);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {isModalOpen && (
@@ -146,6 +187,34 @@ export default function LinkedSanghTrust({ onDataChange }) {
           sanghs={data.sanghs}
           onLink={handleCreateLink}
         />
+      )}
+
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/30 backdrop-blur-sm">
+          <div className="w-full max-w-[320px] rounded-2xl bg-white p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+              <AlertTriangle size={22} />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800">Delete Link?</h3>
+            <p className="mt-1 text-[11px] text-slate-400">This linked relation will be removed permanently.</p>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm({ show: false, id: null })}
+                className="flex-1 rounded-xl bg-slate-100 py-2.5 text-xs font-medium text-slate-500 transition-all hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveLink}
+                className="flex-1 rounded-xl bg-rose-500 py-2.5 text-xs font-medium text-white shadow-md transition-all hover:bg-rose-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
