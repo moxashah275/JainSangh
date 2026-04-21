@@ -17,7 +17,7 @@ const TABS = ['Overview', 'Permissions', 'Documents', 'Activity', 'Status Histor
 
 function readStored(key, fallback) {
   try {
-    const stored = localStorage.getItem(key)
+    const stored = sessionStorage.getItem(key)
     return stored ? JSON.parse(stored) : fallback
   } catch {
     return fallback
@@ -40,15 +40,15 @@ export default function UserProfileDetails() {
   const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(function() {
-    localStorage.setItem('users_full', JSON.stringify(users))
+    sessionStorage.setItem('users_full', JSON.stringify(users))
   }, [users])
 
   useEffect(function() {
-    localStorage.setItem('user_docs', JSON.stringify(docs))
+    sessionStorage.setItem('user_docs', JSON.stringify(docs))
   }, [docs])
 
   useEffect(function() {
-    localStorage.setItem('user_activities', JSON.stringify(activities))
+    sessionStorage.setItem('user_activities', JSON.stringify(activities))
   }, [activities])
 
   const user = useMemo(function() {

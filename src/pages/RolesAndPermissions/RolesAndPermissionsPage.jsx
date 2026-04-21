@@ -21,7 +21,7 @@ export default function RolesAndPermissionsPage() {
   const [typeFilter, setTypeFilter] = useState('All')
   const [roles] = useState(function() {
     try {
-      const stored = localStorage.getItem('rp_roles')
+      const stored = sessionStorage.getItem('rp_roles')
       return stored ? JSON.parse(stored) : INITIAL_ROLES
     } catch {
       return INITIAL_ROLES
@@ -29,7 +29,7 @@ export default function RolesAndPermissionsPage() {
   })
   const [users] = useState(function() {
     try {
-      const stored = localStorage.getItem('users_full')
+      const stored = sessionStorage.getItem('users_full')
       return stored ? JSON.parse(stored) : INITIAL_USERS
     } catch {
       return INITIAL_USERS

@@ -1,38 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Building2, Users, Landmark, Plus } from 'lucide-react'
 import Button from '../../components/common/Button'
 import EmptyState from '../../components/common/EmptyState'
 import CommonPageLayout from '../../components/common/CommonPageLayout'
 import DepartmentCard from '../../components/organization/DepartmentCard'
 import { INITIAL_DEPARTMENTS, INITIAL_TRUSTS, INITIAL_SANGHS, getTrustName, getSanghName } from './orgData'
+import { orgService } from '../../services/apiService'
 
 export default function Departments() {
   const [search, setSearch] = useState('')
-  const departments = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_departments')
-      return stored ? JSON.parse(stored) : INITIAL_DEPARTMENTS
-    } catch {
-      return INITIAL_DEPARTMENTS
-    }
-  }, [])
+  const [departments, setDepartments] = useState([])
+  const [trusts, setTrusts] = useState([])
+  const [sanghs, setSanghs] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const trusts = useMemo(function() {
+  const fetchData = async () => {
+    setLoading(true)
     try {
-      const stored = localStorage.getItem('org_trusts')
-      return stored ? JSON.parse(stored) : INITIAL_TRUSTS
-    } catch {
-      return INITIAL_TRUSTS
+      const [depData, trustData, sanghData] = await Promise.all([
+        orgService.getDepartments(),
+        orgService.getTrusts(),
+        orgService.getSanghs()
+      ])
+      setDepartments(Array.isArray(depData) ? depData : [])
+      setTrusts(Array.isArray(trustData) ? trustData : [])
+      setSanghs(Array.isArray(sanghData) ? sanghData : [])
+    } catch (error) {
+      console.error('Failed to fetch department data:', error)
+      setDepartments(INITIAL_DEPARTMENTS)
+      setTrusts(INITIAL_TRUSTS)
+      setSanghs(INITIAL_SANGHS)
+    } finally {
+      setLoading(false)
     }
-  }, [])
+  }
 
-  const sanghs = useMemo(function() {
-    try {
-      const stored = localStorage.getItem('org_sanghs')
-      return stored ? JSON.parse(stored) : INITIAL_SANGHS
-    } catch {
-      return INITIAL_SANGHS
-    }
+  useEffect(() => {
+    fetchData()
   }, [])
 
   const filteredDepartments = useMemo(function() {
@@ -66,14 +70,33 @@ export default function Departments() {
       searchValue={search}
       onSearchChange={setSearch}
       searchPlaceholder="Search department, head, trust, sangh, or description..."
-      isEmpty={!filteredDepartments.length}
+      isEmpty={!loading && !filteredDepartments.length}
       emptyState={<EmptyState message="No departments found" description="Create a department to organize sangh operations cleanly." icon={Building2} action={<Button variant="secondary" size="sm" icon={Plus}>Add Department</Button>} />}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredDepartments.map(function(department, index) {
-          return <DepartmentCard key={department.id} dept={department} trustName={`${getTrustName(department.trustId, trusts)} - ${getSanghName(department.sanghId, sanghs)}`} memberCount={department.memberCount} index={index} />
-        })}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-64 rounded-[24px] bg-white border border-slate-100 animate-pulse p-6 flex flex-col space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-slate-100 rounded w-1/2" />
+                <div className="w-6 h-6 bg-slate-50 rounded-full" />
+              </div>
+              <div className="h-12 bg-slate-50 rounded-2xl w-full" />
+              <div className="space-y-2 mt-4">
+                <div className="h-3 bg-slate-100 rounded w-3/4" />
+                <div className="h-3 bg-slate-100 rounded w-full" />
+              </div>
+              <div className="h-10 bg-slate-50 rounded-xl mt-auto" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filteredDepartments.map(function(department, index) {
+            return <DepartmentCard key={department.id} dept={department} trustName={`${getTrustName(department.trustId, trusts)} - ${getSanghName(department.sanghId, sanghs)}`} memberCount={department.memberCount} index={index} />
+          })}
+        </div>
+      )}
     </CommonPageLayout>
   )
 }
